@@ -1,0 +1,50 @@
+{
+  "short_name": "Safespace",
+  "name": "Safespace — On-Demand Human Emotional Support",
+  "description": "Connect with empathetic peer listeners privately and on-demand.",
+  "icons": [
+    {
+      "src": "/pwa-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/pwa-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "/pwa-maskable.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "background_color": "#FAF9F6",
+  "theme_color": "#123B5D",
+  "display": "standalone",
+  "orientation": "portrait",
+  "categories": ["health", "lifestyle", "medical"],
+  "shortcuts": [
+    {
+      "name": "Start Conversation",
+      "short_name": "Connect",
+      "description": "Find a matched peer listener immediately",
+      "url": "/?action=request"
+    },
+    {
+      "name": "Emergency Support",
+      "short_name": "Safety",
+      "description": "Access crisis helplines and safety tools",
+      "url": "/?action=emergency"
+    },
+    {
+      "name": "Send a Gift Voucher",
+      "short_name": "Gift",
+      "description": "Grant a conversation credit to someone in need",
+      "url": "/?tab=GIFT"
+    }
+  ]
+}
