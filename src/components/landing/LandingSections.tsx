@@ -36,7 +36,7 @@ export const HeroSection: React.FC<LandingProps> = ({ onStartTalk, onTryIntro })
           </div>
 
           {/* Left Column: Emotional Invitation & Copy */}
-          <div className="lg:col-span-7 flex flex-col justify-center space-y-6 sm:space-y-8 text-left">
+          <div className="lg:col-span-4 flex flex-col justify-center space-y-6 sm:space-y-8 text-left">
             
             <div className="space-y-4">
               <h1 className="font-display font-normal text-4xl sm:text-5xl md:text-6xl lg:text-[68px] text-[#17212B] leading-[1.06] tracking-tight">
@@ -83,7 +83,7 @@ export const HeroSection: React.FC<LandingProps> = ({ onStartTalk, onTryIntro })
           </div>
 
           {/* Desktop Right Column: Large Authentic Video */}
-          <div className="hidden lg:block lg:col-span-5">
+          <div className="hidden lg:block lg:col-span-8">
             <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-[#F3F1EC] border border-[#E3E2DE] shadow-xs">
               <video
                 src="/assets/Hero-Video.mp4"
