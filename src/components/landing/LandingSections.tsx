@@ -23,16 +23,14 @@ export const HeroSection: React.FC<LandingProps> = ({ onStartTalk, onTryIntro })
           
           {/* Mobile Video (rendered first on mobile as per mobile narrative order) */}
           <div className="lg:hidden w-full">
-            <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-[#F3F1EC] border border-[#E3E2DE]">
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-[#F3F1EC] border border-[#E3E2DE]">
               <video
                 src="/assets/Hero-Video.mp4"
                 aria-label="A calm, supportive human moment of listening and presence"
                 className="w-full h-full object-cover object-center"
-                autoPlay
-                muted
-                loop
+                controls
                 playsInline
-                preload="auto"
+                preload="metadata"
               />
             </div>
           </div>
@@ -86,16 +84,14 @@ export const HeroSection: React.FC<LandingProps> = ({ onStartTalk, onTryIntro })
 
           {/* Desktop Right Column: Large Authentic Video */}
           <div className="hidden lg:block lg:col-span-5">
-            <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-[#F3F1EC] border border-[#E3E2DE] shadow-xs">
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-[#F3F1EC] border border-[#E3E2DE] shadow-xs">
               <video
                 src="/assets/Hero-Video.mp4"
                 aria-label="A calm, supportive human moment of listening and presence"
                 className="w-full h-full object-cover object-center"
-                autoPlay
-                muted
-                loop
+                controls
                 playsInline
-                preload="auto"
+                preload="metadata"
               />
             </div>
           </div>
