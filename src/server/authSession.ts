@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { randomBytes } from 'node:crypto';
 
 export const AUTH_COOKIE_NAME = 'safespace_session';
@@ -9,6 +10,7 @@ type SessionRecord = {
 };
 
 const sessions = new Map<string, SessionRecord>();
+const requestSessionStore = new AsyncLocalStorage<string | null>();
 
 export function createSession(userId: string): string {
   const sessionId = randomBytes(32).toString('hex');
@@ -28,6 +30,14 @@ export function getSessionUserId(sessionId: string | undefined): string | null {
     return null;
   }
   return session.userId;
+}
+
+export function getRequestSessionUserId(): string | null {
+  return requestSessionStore.getStore() ?? null;
+}
+
+export function runWithRequestSession<T>(userId: string | null, callback: () => T): T {
+  return requestSessionStore.run(userId, callback);
 }
 
 export function revokeSession(sessionId: string | undefined): void {
