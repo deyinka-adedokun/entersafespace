@@ -21,14 +21,18 @@ export const HeroSection: React.FC<LandingProps> = ({ onStartTalk, onTryIntro })
         {/* Editorial Split Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           
-          {/* Mobile Image (rendered first on mobile as per mobile narrative order) */}
+          {/* Mobile Video (rendered first on mobile as per mobile narrative order) */}
           <div className="lg:hidden w-full">
             <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-[#F3F1EC] border border-[#E3E2DE]">
-              <img
-                src="/assets/hero-human-presence.jpg"
-                alt="A calm, supportive human moment of listening and presence"
+              <video
+                src="/assets/Hero-Video.mp4"
+                aria-label="A calm, supportive human moment of listening and presence"
                 className="w-full h-full object-cover object-center"
-                loading="eager"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
               />
             </div>
           </div>
@@ -80,14 +84,18 @@ export const HeroSection: React.FC<LandingProps> = ({ onStartTalk, onTryIntro })
 
           </div>
 
-          {/* Desktop Right Column: Large Authentic Photograph */}
+          {/* Desktop Right Column: Large Authentic Video */}
           <div className="hidden lg:block lg:col-span-5">
             <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-[#F3F1EC] border border-[#E3E2DE] shadow-xs">
-              <img
-                src="/assets/hero-human-presence.jpg"
-                alt="A calm, supportive human moment of listening and presence"
+              <video
+                src="/assets/Hero-Video.mp4"
+                aria-label="A calm, supportive human moment of listening and presence"
                 className="w-full h-full object-cover object-center"
-                loading="eager"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
               />
             </div>
           </div>
