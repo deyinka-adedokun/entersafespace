@@ -1,5 +1,7 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
+import multer from 'multer';
 import { createServer as createViteServer } from 'vite';
 import { 
   CANONICAL_PACKAGES, 
@@ -38,6 +40,27 @@ import {
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  // Identity document uploads: stored outside of /public so files are never
+  // publicly served by URL guessing. Served only via an authenticated route.
+  const uploadsDir = path.join(process.cwd(), 'private-uploads', 'identity-documents');
+  fs.mkdirSync(uploadsDir, { recursive: true });
+
+  const upload = multer({
+    storage: multer.diskStorage({
+      destination: (_req, _file, cb) => cb(null, uploadsDir),
+      filename: (_req, file, cb) => {
+        const ext = path.extname(file.originalname).toLowerCase();
+        cb(null, `id-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+      }
+    }),
+    limits: { fileSize: 8 * 1024 * 1024 }, // 8MB
+    fileFilter: (_req, file, cb) => {
+      const allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+      if (allowed.includes(file.mimetype)) cb(null, true);
+      else cb(new Error('Only JPG, PNG, WEBP, or PDF files are allowed.'));
+    }
+  });
 
   app.use(express.json());
 
@@ -1179,6 +1202,68 @@ async function startServer() {
   });
 
   // Submit completed application
+  app.post('/api/v1/providers/application/upload-id', (req, res) => {
+    const user = getCurrentUser();
+    if (!user) {
+      return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Please sign in.' } });
+    }
+
+    upload.single('identityDocument')(req, res, (err: unknown) => {
+      if (err) {
+        const message = err instanceof Error ? err.message : 'Upload failed. Please try again.';
+        return res.status(400).json({ success: false, error: { code: 'UPLOAD_FAILED', message } });
+      }
+      const file = (req as express.Request & { file?: Express.Multer.File }).file;
+      if (!file) {
+        return res.status(400).json({ success: false, error: { code: 'NO_FILE', message: 'No file was received.' } });
+      }
+
+      let application = providerApplications.find(a => a.userId === user.id);
+      if (!application) {
+        application = {
+          id: `app-${Date.now()}`,
+          userId: user.id,
+          legalName: user.displayName,
+          displayName: user.displayName,
+          dateOfBirth: '',
+          email: user.email,
+          phone: user.phone || '',
+          location: 'Nigeria',
+          preferredLanguages: ['English'],
+          bioIntroduction: '',
+          listeningExperience: '',
+          hasSupportExperience: false,
+          languagesSpoken: ['English'],
+          maxDurationCapability: 30,
+          weeklyAvailabilityWindows: [],
+          isOver18: true,
+          identityVerificationStatus: 'PENDING',
+          backgroundScreeningStatus: 'PENDING',
+          assessmentStatus: 'REQUIRED',
+          safeguardingTrainingStatus: 'REQUIRED',
+          platformTrainingStatus: 'REQUIRED',
+          codeOfConductAccepted: false,
+          status: 'DRAFT',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        providerApplications.unshift(application);
+      }
+
+      application.identityDocumentFileName = file.filename;
+      application.identityDocumentUploadedAt = new Date().toISOString();
+      application.updatedAt = new Date().toISOString();
+
+      logAudit('PROVIDER_ID_DOCUMENT_UPLOADED', 'PROVIDER_APPLICATION', application.id, { originalName: file.originalname });
+
+      res.json({
+        success: true,
+        message: 'Identity document uploaded.',
+        data: { fileName: file.filename }
+      });
+    });
+  });
+
   app.post('/api/v1/providers/application/submit', (req, res) => {
     const user = getCurrentUser();
     if (!user) {
