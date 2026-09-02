@@ -83,6 +83,8 @@ export interface ProviderApplication {
   // Step 4: Identity & Eligibility Declarations
   isOver18: boolean;
   identityDocumentType?: string;
+  identityDocumentFileName?: string;
+  identityDocumentUploadedAt?: string;
   identityVerificationStatus: 'PENDING' | 'IN_REVIEW' | 'VERIFIED' | 'ADDITIONAL_INFO_REQUIRED' | 'UNSUCCESSFUL';
   backgroundScreeningStatus: 'PENDING' | 'IN_PROGRESS' | 'PASSED' | 'FAILED';
   
