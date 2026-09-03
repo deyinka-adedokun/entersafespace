@@ -70,6 +70,12 @@ export const ProviderApplicationForm: React.FC<ProviderApplicationFormProps> = (
   const [identityDocumentType, setIdentityDocumentType] = useState<string>(
     initialApplication?.identityDocumentType || 'National Identification Number (NIN)'
   );
+  const [identityDocumentFile, setIdentityDocumentFile] = useState<File | null>(null);
+  const [identityDocumentFileName, setIdentityDocumentFileName] = useState<string | null>(
+    initialApplication?.identityDocumentFileName || null
+  );
+  const [isUploadingId, setIsUploadingId] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [acknowledgesIdentityVerification, setAcknowledgesIdentityVerification] = useState<boolean>(true);
   const [acknowledgesBackgroundScreening, setAcknowledgesBackgroundScreening] = useState<boolean>(true);
 
@@ -185,6 +191,10 @@ export const ProviderApplicationForm: React.FC<ProviderApplicationFormProps> = (
     }
 
     if (step === 4) {
+      if (!identityDocumentFileName) {
+        setErrorMessage('Please upload a photo or scan of your identity document.');
+        return false;
+      }
       if (!acknowledgesIdentityVerification || !acknowledgesBackgroundScreening) {
         setErrorMessage('Please confirm acknowledgment of required identity verification and background screening.');
         return false;
@@ -218,7 +228,10 @@ export const ProviderApplicationForm: React.FC<ProviderApplicationFormProps> = (
 
   // Submit Application
   const handleSubmit = async () => {
-    if (!validateStep(5)) return;
+    if (!validateStep(5)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -256,11 +269,55 @@ export const ProviderApplicationForm: React.FC<ProviderApplicationFormProps> = (
         onSubmitted(json.data.application);
       } else {
         setErrorMessage(json.error?.message || 'Failed to submit application. Please try again.');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
       setErrorMessage('Network error during submission. Please check your connection.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleIdentityDocumentSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError('Please upload a JPG, PNG, WEBP, or PDF file.');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setUploadError('File is too large. Please upload something under 8MB.');
+      return;
+    }
+
+    setUploadError(null);
+    setIsUploadingId(true);
+    setIdentityDocumentFile(file);
+
+    try {
+      const formData = new FormData();
+      formData.append('identityDocument', file);
+
+      const res = await fetch('/api/v1/providers/application/upload-id', {
+        method: 'POST',
+        body: formData
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        setIdentityDocumentFileName(json.data.fileName);
+      } else {
+        setUploadError(json.error?.message || 'Upload failed. Please try again.');
+        setIdentityDocumentFile(null);
+      }
+    } catch (err) {
+      setUploadError('Network error while uploading. Please check your connection and try again.');
+      setIdentityDocumentFile(null);
+    } finally {
+      setIsUploadingId(false);
     }
   };
 
@@ -813,10 +870,54 @@ export const ProviderApplicationForm: React.FC<ProviderApplicationFormProps> = (
                 </select>
               </div>
 
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#17212B] block">
+                  Upload Your Identity Document
+                </label>
+                <p className="text-[11px] text-[#59636B]">
+                  A clear photo or scan of the document type selected above. JPG, PNG, or PDF, under 8MB.
+                </p>
+
+                <label
+                  htmlFor="identity-document-upload"
+                  className={`flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed cursor-pointer transition-colors text-center
+                    ${identityDocumentFileName ? 'border-[#123B5D] bg-[#F3F1EC]' : 'border-[#E3E2DE] bg-white hover:bg-[#FAF9F6]'}`}
+                >
+                  <input
+                    id="identity-document-upload"
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,.pdf"
+                    className="hidden"
+                    onChange={handleIdentityDocumentSelect}
+                    disabled={isUploadingId}
+                  />
+                  {isUploadingId ? (
+                    <span className="text-xs font-semibold text-[#59636B]">Uploading…</span>
+                  ) : identityDocumentFileName ? (
+                    <>
+                      <Check className="w-5 h-5 text-[#123B5D]" />
+                      <span className="text-xs font-semibold text-[#17212B]">
+                        {identityDocumentFile?.name || 'Document uploaded'}
+                      </span>
+                      <span className="text-[11px] text-[#59636B] underline">Click to replace</span>
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-5 h-5 text-[#59636B]" />
+                      <span className="text-xs font-semibold text-[#17212B]">Click to select a file</span>
+                    </>
+                  )}
+                </label>
+
+                {uploadError && (
+                  <p className="text-[11px] text-red-600 font-medium">{uploadError}</p>
+                )}
+              </div>
+
               <div className="p-4 rounded-xl bg-[#F3F1EC] border border-[#E3E2DE] space-y-2 text-xs text-[#59636B] leading-relaxed">
                 <h4 className="font-bold text-[#17212B]">Verification Procedure</h4>
                 <p>
-                  Upon initial review, you will be invited to complete secure digital identity verification. This ensures all Providers on Safespace are authentic, verified individuals.
+                  Our team reviews uploaded documents as part of your application review. You may be invited to complete an additional secure digital identity check to confirm authenticity.
                 </p>
               </div>
 
