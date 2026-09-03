@@ -39,7 +39,7 @@ import {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   // Identity document uploads: stored outside of /public so files are never
   // publicly served by URL guessing. Served only via an authenticated route.
