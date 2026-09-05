@@ -1,5 +1,6 @@
 import express from 'express';
 import { registerExampleRoutes } from './src/server/routes_rewritten_examples.js';
+import { registerRealAuthRoutes } from './src/server/realAuthRoutes.js';
 import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
