@@ -63,3 +63,13 @@ export function getSupabaseForToken(accessToken: string): SupabaseClient {
     global: { headers: { Authorization: `Bearer ${accessToken}` } }
   });
 }
+
+/**
+ * Plain anon-key client with no user token attached yet -- used only for
+ * the actions that happen *before* we have a session: sign-up, sign-in,
+ * OTP verification, resend. Every other client-owned action after that
+ * point should use getSupabaseForToken() instead.
+ */
+export const supabasePublic: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { autoRefreshToken: false, persistSession: false }
+});
