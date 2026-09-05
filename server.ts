@@ -1,4 +1,5 @@
 import express from 'express';
+import { registerExampleRoutes } from './src/server/routes_rewritten_examples.js';
 import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
@@ -63,7 +64,8 @@ async function startServer() {
   });
 
   app.use(express.json());
-
+           registerExampleRoutes(app);
+  
   // PWA Dynamic SVG Icon Endpoints
   const generatePwaIconSvg = (size: number, isMaskable = false) => `
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
