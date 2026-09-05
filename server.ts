@@ -63,7 +63,7 @@ async function startServer() {
       else cb(new Error('Only JPG, PNG, WEBP, or PDF files are allowed.'));
     }
   });
-
+   registerRealAuthRoutes(app);
   app.use(express.json());
            registerExampleRoutes(app);
   
