@@ -61,13 +61,20 @@ Warmth comes primarily through:
 
 ## 8. Protected Application Logic (Frontend Reset, NOT Product Reset)
 Protect and preserve all approved backend and application functionality:
-- Authentication & RBAC (Seeker, Provider, Admin, Safety Reviewer, Content Editor)
+- Authentication & RBAC — IN PROGRESS as of [today's date]. Real Supabase Auth
+  is wired for register/login/verify-otp/resend-otp/logout/profile via
+  src/server/realAuthRoutes.ts and src/server/authMiddleware.ts. DO NOT
+  reintroduce a global `activeUserId` variable, a `/switch-role` endpoint, or
+  any hardcoded password/OTP bypass. DO NOT regenerate server.ts, or anything
+  in src/server/, without explicit human review of the diff first.
 - Service-led matching engine (no provider browsing/marketplace)
 - Audio-only live sessions (no video)
 - Authoritative session timer & in-session extensions
 - Credit lifecycle (unused credit extinguished on normal completion, preserved on system fault)
 - 18+ eligibility self-declaration
 - R0–R3 safeguarding, incident case management, and crisis helplines
-- Flutterwave payment processing & double-entry ledger
+- Flutterwave payment processing & double-entry ledger — NOT YET BUILT.
+  Session/payment code currently simulates payment success via client-sent
+  flags. Treat this as an open P0, not existing protected logic.
 - External Sage gateway (`https://becomingwithsage.vercel.app/` without internal chatbot embedding)
 - PWA configuration & mobile-first responsiveness
