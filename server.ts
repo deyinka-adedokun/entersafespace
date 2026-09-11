@@ -1,6 +1,9 @@
 import express from 'express';
 import { registerExampleRoutes } from './src/server/routes_rewritten_examples.js';
 import { registerRealAuthRoutes } from './src/server/realAuthRoutes.js';
+import { registerProviderApplicationSubmit } from './src/server/providerApplicationSubmit.js';
+import { applySecurity } from './src/server/security.js';
+import { requireAuth, requireAdmin } from './src/server/authMiddleware.js';
 import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
@@ -63,9 +66,11 @@ async function startServer() {
       else cb(new Error('Only JPG, PNG, WEBP, or PDF files are allowed.'));
     }
   });
-     app.use(express.json());
+    app.use(express.json());
+  applySecurity(app);
   registerExampleRoutes(app);
   registerRealAuthRoutes(app);
+  registerProviderApplicationSubmit(app);
   
   // PWA Dynamic SVG Icon Endpoints
   const generatePwaIconSvg = (size: number, isMaskable = false) => `
@@ -696,10 +701,13 @@ async function startServer() {
   });
 
   // Session State & Authoritative Timer Heartbeat
-  app.get('/api/v1/sessions/:id', (req, res) => {
+    app.get('/api/v1/sessions/:id', requireAuth, (req, res) => {
     const session = sessions.find(s => s.id === req.params.id);
     if (!session) {
       return res.status(404).json({ success: false, error: { code: 'SESSION_NOT_FOUND', message: 'Session does not exist.' } });
+    }
+    if (session.seekerId !== req.user!.id && session.providerId !== req.user!.id) {
+      return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'You are not a participant in this session.' } });
     }
     const remainingSeconds = Math.max(0, session.allocatedSeconds - session.consumedSeconds);
     res.json({
@@ -712,10 +720,13 @@ async function startServer() {
     });
   });
 
-  app.post('/api/v1/sessions/:id/heartbeat', (req, res) => {
+    app.post('/api/v1/sessions/:id/heartbeat', requireAuth, (req, res) => {
     const session = sessions.find(s => s.id === req.params.id);
     if (!session) {
       return res.status(404).json({ success: false, error: { code: 'SESSION_NOT_FOUND', message: 'Session does not exist.' } });
+    }
+    if (session.seekerId !== req.user!.id && session.providerId !== req.user!.id) {
+      return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'You are not a participant in this session.' } });
     }
 
     if (session.status === 'ACTIVE') {
@@ -762,10 +773,13 @@ async function startServer() {
   });
 
   // End Session Manually
-  app.post('/api/v1/sessions/:id/end', (req, res) => {
+    app.post('/api/v1/sessions/:id/end', requireAuth, (req, res) => {
     const session = sessions.find(s => s.id === req.params.id);
     if (!session) {
       return res.status(404).json({ success: false, error: { code: 'SESSION_NOT_FOUND', message: 'Session does not exist.' } });
+    }
+    if (session.seekerId !== req.user!.id && session.providerId !== req.user!.id) {
+      return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'You are not a participant in this session.' } });
     }
 
     session.status = 'COMPLETED';
@@ -801,7 +815,7 @@ async function startServer() {
   });
 
   // Session Extension ("Continue Talking")
-  app.post('/api/v1/sessions/:id/extend', (req, res) => {
+    app.post('/api/v1/sessions/:id/extend', requireAuth, (req, res) => {
     const session = sessions.find(s => s.id === req.params.id);
     const { packageId, paymentMethod, simulate3DS, simulateFailure, authOtp, clientRequestId } = req.body;
 
@@ -812,7 +826,9 @@ async function startServer() {
         error: { code: 'SESSION_NOT_FOUND', message: 'Session does not exist.' }
       });
     }
-
+    if (session.seekerId !== req.user!.id) {
+      return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the seeker can extend this session.' } });
+    }
     // 2. Check if session has already ended (Test: extension after session has ended)
     if (session.status === 'COMPLETED' || session.status === 'CANCELLED' || session.status === 'EXPIRED' || session.status === 'ENDING') {
       return res.status(400).json({
@@ -955,10 +971,12 @@ async function startServer() {
   });
 
   // Post-Session Feedback & Rebooking
-  app.post('/api/v1/sessions/:id/feedback', (req, res) => {
+    app.post('/api/v1/sessions/:id/feedback', requireAuth, (req, res) => {
     const session = sessions.find(s => s.id === req.params.id);
+    if (session && session.seekerId !== req.user!.id) {
+      return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Only the seeker can leave feedback for this session.' } });
+    }
     const { rating, feltHeard, providerAgain, findSomeoneElse, professionalSupport, returnReason, comment } = req.body;
-
     const feedback: Feedback = {
       id: `fb-${Date.now()}`,
       sessionId: req.params.id,
@@ -1998,7 +2016,7 @@ async function startServer() {
   });
 
   // Action: Toggle User Account Status (ACTIVE / SUSPENDED) with Audit Log
-  app.post('/api/v1/admin/users/:id/status', (req, res) => {
+  app.post('/api/v1/admin/users/:id/status', requireAuth, requireAdmin, (req, res) => {
     const user = getCurrentUser();
     const { status, reason } = req.body;
     const targetUser = users.find(u => u.id === req.params.id);
@@ -2053,7 +2071,7 @@ async function startServer() {
   });
 
   // Action: Approve / Process Bank Payout with Audit Log
-  app.post('/api/v1/admin/payouts/:id/process', (req, res) => {
+  app.post('/api/v1/admin/payouts/:id/process', requireAuth, requireAdmin, (req, res) => {
     const payout = payouts.find(p => p.id === req.params.id);
     if (!payout) {
       return res.status(404).json({ success: false, error: { code: 'PAYOUT_NOT_FOUND', message: 'Payout record not found' } });
@@ -2077,7 +2095,7 @@ async function startServer() {
   });
 
   // Action: Assign Manual Listener Match with Audit Log
-  app.post('/api/v1/admin/matching/assign', (req, res) => {
+  app.post('/api/v1/admin/matching/assign', requireAuth, requireAdmin, (req, res) => {
     const { requestId, providerId } = req.body;
     const request = supportRequests.find(r => r.id === requestId);
     const provider = providers.find(p => p.id === providerId);
@@ -2101,7 +2119,7 @@ async function startServer() {
   });
 
   // Action: Generate Admin Promo Gift Voucher with Audit Log
-  app.post('/api/v1/admin/gifts/generate', (req, res) => {
+  app.post('/api/v1/admin/gifts/generate', requireAuth, requireAdmin, (req, res) => {
     const user = getCurrentUser();
     const { packageId, recipientEmail, recipientMessage } = req.body;
     const pkg = CANONICAL_PACKAGES.find(p => p.id === packageId) || CANONICAL_PACKAGES[1];
