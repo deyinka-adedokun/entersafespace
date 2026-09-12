@@ -197,4 +197,53 @@ export function registerRealAuthRoutes(app: Express) {
 
     res.json({ success: true, message: 'Profile updated successfully.', data: { user: data } });
   });
+    // -----------------------------------------------------------------------
+  // FORGOT PASSWORD. Always responds success, whether or not the email
+  // exists -- this prevents the endpoint being used to enumerate accounts.
+  // -----------------------------------------------------------------------
+  app.post('/api/v1/auth/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, error: { code: 'MISSING_EMAIL', message: 'Email is required.' } });
+    }
+
+    await supabasePublic.auth.resetPasswordForEmail(email);
+    // Deliberately ignore any error here (e.g. "user not found") and
+    // always return the same response.
+
+    res.json({
+      success: true,
+      message: 'If an account exists for that email, a reset code has been sent.'
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // RESET PASSWORD. Verifies the recovery token Supabase emailed, then
+  // sets the new password via the service-role admin client.
+  //
+  // NOTE: for the emailed code to work here, the Supabase Dashboard's
+  // "Reset Password" email template must include {{ .Token }} in its body
+  // (Authentication -> Email Templates -> Reset Password).
+  // -----------------------------------------------------------------------
+  app.post('/api/v1/auth/reset-password', async (req, res) => {
+    const { email, token, newPassword } = req.body;
+    if (!email || !token || !newPassword) {
+      return res.status(400).json({ success: false, error: { code: 'MISSING_FIELDS', message: 'Email, code and new password are required.' } });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, error: { code: 'WEAK_PASSWORD', message: 'Password must be at least 6 characters.' } });
+    }
+
+    const { data, error } = await supabasePublic.auth.verifyOtp({ email, token, type: 'recovery' });
+    if (error || !data.user) {
+      return res.status(400).json({ success: false, error: { code: 'INVALID_TOKEN', message: 'Invalid or expired reset code.' } });
+    }
+
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(data.user.id, { password: newPassword });
+    if (updateError) {
+      return res.status(500).json({ success: false, error: { code: 'RESET_FAILED', message: 'Could not update password. Please try again.' } });
+    }
+
+    res.json({ success: true, message: 'Password updated. You can now sign in.' });
+  });
 }
