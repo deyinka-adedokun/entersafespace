@@ -103,69 +103,6 @@ export const HeroSection: React.FC<LandingProps> = ({ onStartTalk, onTryIntro })
   );
 };
 
-/* ==========================================================================
-   03 — IMMEDIATE REASSURANCE
-   ========================================================================== */
-export const ReassuranceSection: React.FC = () => {
-  return (
-    <section className="py-12 sm:py-16 bg-[#F3F1EC] border-b border-[#E3E2DE]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Heading */}
-        <div className="max-w-2xl space-y-2 mb-10 text-left">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#17212B] tracking-tight">
-            Human support, when you need it.
-          </h2>
-          <p className="text-xs sm:text-sm text-[#59636B] leading-relaxed">
-            Safespace makes it simple to reach a real person for a private, audio-only conversation.
-          </p>
-        </div>
-
-        {/* 3 Principles with subtle dividers */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 divide-y md:divide-y-0 md:divide-x divide-[#E3E2DE]">
-          
-          <div className="pt-6 md:pt-0 md:pr-6 space-y-2 text-left">
-            <div className="text-xs font-bold uppercase tracking-wider text-[#123B5D]">
-              Real People
-            </div>
-            <p className="text-sm font-medium text-[#17212B]">
-              Verified human Providers.
-            </p>
-            <p className="text-xs text-[#59636B] leading-relaxed">
-              Carefully screened, compassionate listeners prepared to give you their undivided attention.
-            </p>
-          </div>
-
-          <div className="pt-6 md:pt-0 md:px-6 space-y-2 text-left">
-            <div className="text-xs font-bold uppercase tracking-wider text-[#123B5D]">
-              Private By Design
-            </div>
-            <p className="text-sm font-medium text-[#17212B]">
-              A discreet space to talk.
-            </p>
-            <p className="text-xs text-[#59636B] leading-relaxed">
-              No judgment, no video cameras, and no requirement to share identifying personal details.
-            </p>
-          </div>
-
-          <div className="pt-6 md:pt-0 md:pl-6 space-y-2 text-left">
-            <div className="text-xs font-bold uppercase tracking-wider text-[#123B5D]">
-              On-Demand
-            </div>
-            <p className="text-sm font-medium text-[#17212B]">
-              Support when you need someone to listen.
-            </p>
-            <p className="text-xs text-[#59636B] leading-relaxed">
-              Reach someone when thoughts are heavy, without waiting weeks for an appointment.
-            </p>
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-  );
-};
 
 /* ==========================================================================
    04 & 05 — HOW SAFESPACE WORKS & PHOTOGRAPHY STORY
@@ -239,7 +176,10 @@ export const HowItWorksSection: React.FC<{ onStartTalk: () => void }> = ({ onSta
               </div>
 
             </div>
-
+            <div className="flex items-center gap-2 text-[11px] text-[#59636B] pt-1">
+              <MicOff className="w-3.5 h-3.5 text-[#123B5D]" />
+              <span>Audio-only — so you don't have to be seen to be heard.</span>
+            </div>
             <div className="pt-2">
               <button
                 onClick={onStartTalk}
@@ -287,8 +227,7 @@ export const RecognitionSection: React.FC<{ onStartTalk: () => void }> = ({ onSt
   return (
     <section className="py-16 sm:py-24 bg-[#FAF9F6] border-b border-[#E3E2DE]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        
-        {/* Header */}
+
         <div className="max-w-2xl space-y-3 text-left">
           <h2 className="font-display font-normal text-3xl sm:text-4xl md:text-5xl text-[#17212B] leading-tight">
             You don't need to have the right words.
@@ -298,7 +237,6 @@ export const RecognitionSection: React.FC<{ onStartTalk: () => void }> = ({ onSt
           </p>
         </div>
 
-        {/* Intention Grid — Typographic, Spacious & Dignified */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 text-left">
           {intentions.map((text, idx) => (
             <div
@@ -306,7 +244,7 @@ export const RecognitionSection: React.FC<{ onStartTalk: () => void }> = ({ onSt
               onClick={onStartTalk}
               className="p-6 rounded-xl bg-white border border-[#E3E2DE] hover:border-[#123B5D] hover:bg-[#F3F1EC] transition-all cursor-pointer group space-y-3 shadow-2xs"
             >
-              <span className="font-display italic text-2xl text-[#123B5D]">“</span>
+              <span className="font-display italic text-2xl text-[#123B5D]">"</span>
               <p className="text-base sm:text-lg font-medium text-[#17212B] group-hover:text-[#123B5D] transition-colors leading-snug">
                 {text}
               </p>
@@ -318,46 +256,28 @@ export const RecognitionSection: React.FC<{ onStartTalk: () => void }> = ({ onSt
           ))}
         </div>
 
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 pt-10 border-t border-[#E3E2DE] text-left">
+          <div className="space-y-1">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#123B5D]">Real People</div>
+            <p className="text-xs text-[#59636B] leading-relaxed">Carefully screened, compassionate listeners prepared to give you their undivided attention.</p>
+          </div>
+          <div className="space-y-1">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#123B5D]">Private By Design</div>
+            <p className="text-xs text-[#59636B] leading-relaxed">No judgment, no video cameras, no requirement to share identifying personal details.</p>
+          </div>
+          <div className="space-y-1">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#123B5D]">On-Demand</div>
+            <p className="text-xs text-[#59636B] leading-relaxed">Reach someone when thoughts are heavy, without waiting weeks for an appointment.</p>
+          </div>
+        </div>
+
       </div>
     </section>
   );
 };
-
 /* ==========================================================================
    07 — THE 3-MINUTE INTRODUCTION
    ========================================================================== */
-export const IntroductionSection: React.FC<{ onTryIntro: () => void }> = ({ onTryIntro }) => {
-  return (
-    <section className="py-14 sm:py-20 bg-[#F3F1EC] border-b border-[#E3E2DE]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-        
-        <div className="max-w-xl mx-auto space-y-3">
-          <h2 className="font-display font-normal text-3xl sm:text-4xl text-[#17212B]">
-            Not sure if Safespace is for you?
-          </h2>
-          <p className="text-xs sm:text-sm text-[#59636B] leading-relaxed">
-            Start with a 3-minute introduction. You can decide what you want next.
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-          <button
-            onClick={onTryIntro}
-            className="w-full sm:w-auto px-7 py-3.5 bg-[#123B5D] hover:bg-[#0D2A42] text-white font-semibold text-sm rounded-lg transition-colors shadow-xs"
-          >
-            Try the 3-minute introduction
-          </button>
-        </div>
-
-        <p className="text-xs text-[#7E8890]">
-          Low commitment • No pressure • A simple human greeting
-        </p>
-
-      </div>
-    </section>
-  );
-};
-
 /* ==========================================================================
    08 — SESSION MODEL (TRANSPARENT SERVICE EXPLANATION)
    ========================================================================== */
@@ -372,17 +292,28 @@ export const SessionOptionsSection: React.FC<{ onStartTalk: () => void }> = ({ o
   return (
     <section className="py-16 sm:py-24 border-b border-[#E3E2DE]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-        
+
         <div className="max-w-2xl text-left space-y-2">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#17212B] tracking-tight">
-            Transparent conversation lengths.
+            Choose how you'd like to start.
           </h2>
           <p className="text-xs sm:text-sm text-[#59636B] leading-relaxed">
-            Choose what feels right for today. Sessions are private, audio-only, and billed clearly upfront.
+            Not sure yet? Try a free 3-minute introduction. Ready to talk properly? Pick a length below — private, audio-only, billed clearly upfront.
           </p>
         </div>
 
-        {/* 4 Packages in clean, restrained geometry */}
+        <button
+          onClick={onStartTalk}
+          className="w-full flex items-center justify-between gap-4 p-5 rounded-xl bg-[#F3F1EC] border border-[#E3E2DE] hover:border-[#123B5D] transition-colors text-left"
+        >
+          <div>
+            <div className="text-xs font-bold text-[#123B5D] uppercase tracking-wider">Free</div>
+            <div className="text-sm font-semibold text-[#17212B]">Try the 3-minute introduction</div>
+            <p className="text-xs text-[#59636B]">Low commitment • No pressure • A simple human greeting</p>
+          </div>
+          <ArrowRight className="w-4 h-4 text-[#123B5D] shrink-0" />
+        </button>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
           {packages.map((pkg, i) => (
             <div
@@ -402,31 +333,6 @@ export const SessionOptionsSection: React.FC<{ onStartTalk: () => void }> = ({ o
             </div>
           ))}
         </div>
-
-      </div>
-    </section>
-  );
-};
-
-/* ==========================================================================
-   09 — AUDIO-ONLY POSITIONING
-   ========================================================================== */
-export const AudioOnlySection: React.FC = () => {
-  return (
-    <section className="py-16 sm:py-20 bg-[#F3F1EC] border-b border-[#E3E2DE]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
-        
-        <div className="w-10 h-10 rounded-full bg-[#EAF0F5] border border-[#C5D6E4] text-[#123B5D] flex items-center justify-center mx-auto">
-          <MicOff className="w-5 h-5" />
-        </div>
-
-        <h2 className="font-display font-normal text-3xl sm:text-4xl text-[#17212B]">
-          Sometimes it's easier to talk when you don't have to be seen.
-        </h2>
-        
-        <p className="text-xs sm:text-sm text-[#59636B] leading-relaxed max-w-xl mx-auto">
-          Safespace conversations are audio-only, giving you room to focus on what you want to say.
-        </p>
 
       </div>
     </section>
