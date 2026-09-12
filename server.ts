@@ -364,40 +364,7 @@ async function startServer() {
     });
   });
 
-
-  
-    // Select the dedicated account for this role rather than mutating a single user
-    let targetUser = users.find(u => u.role === role);
-
-    if (!targetUser) {
-      if (['ADMIN', 'SAFETY_REVIEWER', 'CONTENT_EDITOR', 'SUPER_ADMIN'].includes(role)) {
-        targetUser = users.find(u => u.id === 'user-admin-1') || users.find(u => u.role === 'ADMIN');
-      } else if (role === 'PROVIDER') {
-        targetUser = users.find(u => u.id === 'user-prov-1') || users.find(u => u.role === 'PROVIDER');
-      } else {
-        targetUser = users.find(u => u.id === 'user-seeker-1') || users.find(u => u.role === 'SUPPORT_SEEKER');
-      }
-    }
-
-    if (targetUser) {
-      activeUserId = targetUser.id;
-    }
-
-    const user = getCurrentUser();
-    const providerProfile = user ? providers.find(p => p.userId === user.id) || null : null;
-
-    if (user) {
-      logAudit('ACCOUNT_SWITCHED', 'USER', user.id, { switchedToRole: role, displayName: user.displayName });
-    }
-
-    res.json({
-      success: true,
-      message: `Switched account to ${user?.displayName} (${user?.role})`,
-      data: { user, providerProfile }
-    });
-  });
-
-  // Session Packages (Configuration Driven)
+      // Session Packages (Configuration Driven)
   app.get('/api/v1/packages', (_req, res) => {
     const user = getCurrentUser();
     res.json({
