@@ -3,7 +3,7 @@ import { registerExampleRoutes } from './src/server/routes_rewritten_examples.js
 import { registerRealAuthRoutes } from './src/server/realAuthRoutes.js';
 import { registerProviderApplicationSubmit } from './src/server/providerApplicationSubmit.js';
 import { applySecurity } from './src/server/security.js';
-import { requireAuth, requireAdmin } from './src/server/authMiddleware.js';
+import { attachAuth, requireAuth, requireAdmin } from './src/server/authMiddleware.js';
 import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
@@ -343,217 +343,28 @@ async function startServer() {
     res.json({ success: true, data: { status: 'ok', app: 'Safespace', timestamp: new Date().toISOString() } });
   });
 
-  // Auth & Identity
-  app.get('/api/v1/auth/me', (_req, res) => {
-    const user = getCurrentUser();
-    if (!user) {
+   // Auth & Identity — Supabase-backed. attachAuth populates req.user only
+  // if a valid Bearer token was sent; it never rejects the request, so an
+  // anonymous visitor correctly gets { user: null }.
+  app.get('/api/v1/auth/me', attachAuth, (req, res) => {
+    if (!req.user) {
       return res.json({
         success: true,
         data: { user: null, providerProfile: null, preferredRebookProvider: null }
       });
     }
-    const provider = providers.find(p => p.userId === user.id);
+    const provider = providers.find(p => p.userId === req.user!.id);
     res.json({
       success: true,
       data: {
-        user,
+        user: req.user,
         providerProfile: provider || null,
         preferredRebookProvider: providers.find(p => p.id === preferredRebookProviderId) || null
       }
     });
   });
 
-  app.post('/api/v1/auth/register', (req, res) => {
-    const { email, password, displayName, phone, role } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ success: false, error: { code: 'MISSING_FIELDS', message: 'Email and password are required.' } });
-    }
-
-    const existingUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (existingUser) {
-      return res.status(400).json({ success: false, error: { code: 'EMAIL_IN_USE', message: 'An account with this email address already exists.' } });
-    }
-
-    const userId = `user-${Date.now()}`;
-    const newUser: User = {
-      id: userId,
-      email: email.trim().toLowerCase(),
-      phone: phone ? phone.trim() : undefined,
-      displayName: displayName ? displayName.trim() : email.split('@')[0],
-      role: (role as UserRole) || 'SUPPORT_SEEKER',
-      status: 'UNVERIFIED',
-      freeTrialUsed: false,
-      createdAt: new Date().toISOString()
-    };
-
-    users.push(newUser);
-    userPasswords[userId] = password;
-
-    // Generate 6-digit OTP
-    const otpCode = '123456'; // Default demo OTP code
-    userOtps[newUser.email] = {
-      code: otpCode,
-      expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes
-    };
-
-    logAudit('USER_REGISTERED', 'USER', userId, { role: newUser.role, status: newUser.status });
-
-    res.json({
-      success: true,
-      requiresOtp: true,
-      message: 'Registration successful! Verification OTP code sent to your email/phone.',
-      data: { email: newUser.email, user: newUser }
-    });
-  });
-
-  app.post('/api/v1/auth/verify-otp', (req, res) => {
-    const { email, otp } = req.body;
-    if (!email || !otp) {
-      return res.status(400).json({ success: false, error: { code: 'MISSING_OTP', message: 'Email and 6-digit OTP code are required.' } });
-    }
-
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (!user) {
-      return res.status(404).json({ success: false, error: { code: 'USER_NOT_FOUND', message: 'Account not found.' } });
-    }
-
-    const storedOtp = userOtps[user.email];
-    if (otp !== '123456' && (!storedOtp || storedOtp.code !== otp || Date.now() > storedOtp.expiresAt)) {
-      return res.status(400).json({ success: false, error: { code: 'INVALID_OTP', message: 'Invalid or expired OTP code. Use demo code 123456.' } });
-    }
-
-    // Mark active and delete OTP
-    user.status = 'ACTIVE';
-    delete userOtps[user.email];
-    activeUserId = user.id;
-
-    logAudit('OTP_VERIFIED', 'USER', user.id);
-
-    const provider = providers.find(p => p.userId === user.id);
-
-    res.json({
-      success: true,
-      message: 'Account verified successfully.',
-      data: { user, providerProfile: provider || null }
-    });
-  });
-
-  app.post('/api/v1/auth/resend-otp', (req, res) => {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ success: false, error: { code: 'MISSING_EMAIL', message: 'Email is required.' } });
-    }
-    const otpCode = '123456';
-    userOtps[email.toLowerCase()] = {
-      code: otpCode,
-      expiresAt: Date.now() + 10 * 60 * 1000
-    };
-    res.json({ success: true, message: 'New 6-digit OTP code sent. Use demo code 123456.' });
-  });
-
-  app.post('/api/v1/auth/login', (req, res) => {
-    const { email, password } = req.body;
-    if (!email) {
-      return res.status(400).json({ success: false, error: { code: 'MISSING_CREDENTIALS', message: 'Email is required.' } });
-    }
-
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (!user) {
-      return res.status(401).json({ success: false, error: { code: 'INVALID_CREDENTIALS', message: 'Invalid email or password.' } });
-    }
-
-    // Password verification (if provided)
-    const expectedPassword = userPasswords[user.id] || 'Password123!';
-    if (password && password !== expectedPassword && password !== 'Password123!') {
-      return res.status(401).json({ success: false, error: { code: 'INVALID_CREDENTIALS', message: 'Invalid email or password.' } });
-    }
-
-    if (user.status === 'SUSPENDED') {
-      return res.status(403).json({ success: false, error: { code: 'ACCOUNT_SUSPENDED', message: 'Your account is suspended. Please contact safety support.' } });
-    }
-
-    if (user.status === 'UNVERIFIED') {
-      userOtps[user.email] = { code: '123456', expiresAt: Date.now() + 10 * 60 * 1000 };
-      return res.json({
-        success: true,
-        requiresOtp: true,
-        message: 'Account requires email/phone OTP verification.',
-        data: { email: user.email }
-      });
-    }
-
-    activeUserId = user.id;
-    logAudit('USER_LOGIN', 'USER', user.id);
-
-    const provider = providers.find(p => p.userId === user.id);
-
-    res.json({
-      success: true,
-      message: 'Login successful.',
-      data: { user, providerProfile: provider || null }
-    });
-  });
-
-  app.post('/api/v1/auth/logout', (_req, res) => {
-    if (activeUserId) {
-      logAudit('USER_LOGOUT', 'USER', activeUserId);
-    }
-    activeUserId = null;
-    res.json({ success: true, message: 'Logged out successfully.' });
-  });
-
-  app.put('/api/v1/auth/profile', (req, res) => {
-    const user = getCurrentUser();
-    if (!user) {
-      return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Please sign in.' } });
-    }
-
-    const { displayName, phone, preferredLanguage, preferredProviderId } = req.body;
-    if (displayName) user.displayName = displayName.trim();
-    if (phone) user.phone = phone.trim();
-    if (preferredLanguage) user.preferredLanguage = preferredLanguage;
-    if (preferredProviderId !== undefined) preferredRebookProviderId = preferredProviderId;
-
-    logAudit('PROFILE_UPDATED', 'USER', user.id);
-
-    res.json({ success: true, message: 'Profile updated successfully.', data: { user } });
-  });
-
-  app.post('/api/v1/auth/switch-role', (req, res) => {
-    const { role } = req.body as { role: UserRole };
-
-    // Select the dedicated account for this role rather than mutating a single user
-    let targetUser = users.find(u => u.role === role);
-
-    if (!targetUser) {
-      if (['ADMIN', 'SAFETY_REVIEWER', 'CONTENT_EDITOR', 'SUPER_ADMIN'].includes(role)) {
-        targetUser = users.find(u => u.id === 'user-admin-1') || users.find(u => u.role === 'ADMIN');
-      } else if (role === 'PROVIDER') {
-        targetUser = users.find(u => u.id === 'user-prov-1') || users.find(u => u.role === 'PROVIDER');
-      } else {
-        targetUser = users.find(u => u.id === 'user-seeker-1') || users.find(u => u.role === 'SUPPORT_SEEKER');
-      }
-    }
-
-    if (targetUser) {
-      activeUserId = targetUser.id;
-    }
-
-    const user = getCurrentUser();
-    const providerProfile = user ? providers.find(p => p.userId === user.id) || null : null;
-
-    if (user) {
-      logAudit('ACCOUNT_SWITCHED', 'USER', user.id, { switchedToRole: role, displayName: user.displayName });
-    }
-
-    res.json({
-      success: true,
-      message: `Switched account to ${user?.displayName} (${user?.role})`,
-      data: { user, providerProfile }
-    });
-  });
-
-  // Session Packages (Configuration Driven)
+      // Session Packages (Configuration Driven)
   app.get('/api/v1/packages', (_req, res) => {
     const user = getCurrentUser();
     res.json({
@@ -655,10 +466,10 @@ async function startServer() {
   });
 
   // Sessions - Create Active Session
-  app.post('/api/v1/sessions/create', (req, res) => {
-    const user = getCurrentUser();
+    app.post('/api/v1/sessions/create', requireAuth, (req, res) => {
+    const user = req.user!;
     const { packageId, providerId, paymentMethod } = req.body;
-
+      
     const pkg = CANONICAL_PACKAGES.find(p => p.id === packageId);
     const provider = providers.find(p => p.id === providerId);
 
