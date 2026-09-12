@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Mail, Lock, User as UserIcon, Phone, AlertCircle, ArrowRight, RefreshCw, KeyRound, UserCheck } from 'lucide-react';
+import { Shield, Mail, Lock, User as UserIcon, Phone, AlertCircle, ArrowRight, RefreshCw, KeyRound, UserCheck, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { SafespaceLogo } from '../ui/SafespaceLogo';
 
 export const AuthModal: React.FC = () => {
-  const {
+    const {
     isAuthModalOpen,
     authModalMode,
     pendingEmail,
@@ -13,11 +13,17 @@ export const AuthModal: React.FC = () => {
     register,
     verifyOtp,
     resendOtp,
+    forgotPassword,
+    resetPassword,
     authError,
     clearAuthError,
   } = useAuth();
 
-  const [mode, setMode] = useState<'LOGIN' | 'REGISTER' | 'OTP'>(authModalMode);
+  const [mode, setMode] = useState<'LOGIN' | 'REGISTER' | 'OTP' | 'FORGOT' | 'RESET'>(authModalMode);
+  const [showPassword, setShowPassword] = useState(false);
+  const [resetToken, setResetToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [forgotStatus, setForgotStatus] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -71,6 +77,34 @@ export const AuthModal: React.FC = () => {
     }
   };
 
+    const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setForgotStatus(null);
+    const res = await forgotPassword(email);
+    setIsSubmitting(false);
+    if (res.success) {
+      setForgotStatus('If that email has an account, a reset code has been sent.');
+      setMode('RESET');
+    } else {
+      setForgotStatus(res.error || 'Something went wrong. Please try again.');
+    }
+  };
+
+  const handleResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const res = await resetPassword(email, resetToken, newPassword);
+    setIsSubmitting(false);
+    if (res.success) {
+      setForgotStatus('Password updated. Please sign in.');
+      setMode('LOGIN');
+      setPassword('');
+    } else {
+      setForgotStatus(res.error || 'Invalid or expired code.');
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#17212B]/50 backdrop-blur-xs p-4 animate-in fade-in duration-200">
       <div 
@@ -92,15 +126,19 @@ export const AuthModal: React.FC = () => {
             <span className="text-xs font-semibold tracking-wider text-white/80 uppercase">Safespace Account</span>
           </div>
 
-          <h2 className="text-xl font-bold tracking-tight text-white">
+                    <h2 className="text-xl font-bold tracking-tight text-white">
             {mode === 'LOGIN' && 'Welcome Back'}
             {mode === 'REGISTER' && 'Create Your Account'}
             {mode === 'OTP' && 'Verify Email or Phone'}
+            {mode === 'FORGOT' && 'Reset Your Password'}
+            {mode === 'RESET' && 'Choose a New Password'}
           </h2>
           <p className="text-white/80 text-xs mt-1">
             {mode === 'LOGIN' && 'Sign in to access support, active sessions, and preferences.'}
             {mode === 'REGISTER' && 'Protected identity for confidential human listening.'}
             {mode === 'OTP' && 'Enter the 6-digit verification code sent to your email.'}
+            {mode === 'FORGOT' && "We'll email you a code to reset your password."}
+            {mode === 'RESET' && 'Enter the code and your new password.'}
           </p>
         </div>
 
@@ -140,14 +178,31 @@ export const AuthModal: React.FC = () => {
                 <label className="block text-xs font-semibold text-[#17212B] mb-1">Password</label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-[#59636B] absolute left-3 top-3" />
-                  <input
-                    type="password"
+                              <input
+                    type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); clearAuthError(); }}
                     placeholder="••••••••••••"
-                    className="w-full pl-9 pr-3 py-2.5 bg-white border border-[#E3E2DE] rounded-lg text-sm text-[#17212B] focus:outline-none focus:ring-2 focus:ring-[#123B5D] transition-colors"
+                    className="w-full pl-9 pr-9 py-2.5 bg-white border border-[#E3E2DE] rounded-lg text-sm text-[#17212B] focus:outline-none focus:ring-2 focus:ring-[#123B5D] transition-colors"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(s => !s)}
+                    className="absolute right-3 top-2.5 text-[#59636B] hover:text-[#17212B]"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <div className="text-right mt-1">
+                  <button
+                    type="button"
+                    onClick={() => { setMode('FORGOT'); clearAuthError(); setForgotStatus(null); }}
+                    className="text-xs text-[#123B5D] hover:underline font-medium"
+                  >
+                    Forgot password?
+                  </button>
                 </div>
               </div>
 
@@ -188,17 +243,25 @@ export const AuthModal: React.FC = () => {
                 <label className="block text-xs font-semibold text-[#17212B] mb-1">Email Address</label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-[#59636B] absolute left-3 top-3" />
-                  <input
-                    type="email"
+                                   <input
+                    type={showPassword ? 'text' : 'password'}
                     required
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); clearAuthError(); }}
-                    placeholder="name@example.com"
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-[#E3E2DE] rounded-lg text-sm text-[#17212B] focus:outline-none focus:ring-2 focus:ring-[#123B5D] transition-colors"
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); clearAuthError(); }}
+                    placeholder="At least 6 characters"
+                    className="w-full pl-9 pr-9 py-2 bg-white border border-[#E3E2DE] rounded-lg text-sm text-[#17212B] focus:outline-none focus:ring-2 focus:ring-[#123B5D] transition-colors"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(s => !s)}
+                    className="absolute right-3 top-2 text-[#59636B] hover:text-[#17212B]"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs font-semibold text-[#17212B] mb-1">Password</label>
                 <div className="relative">
@@ -331,9 +394,92 @@ export const AuthModal: React.FC = () => {
                 </button>
               </div>
 
-              {resendStatus && (
+                            {resendStatus && (
                 <p className="text-[11px] text-center text-[#123B5D] font-medium mt-1">{resendStatus}</p>
               )}
+            </form>
+          )}
+
+          {/* MODE: FORGOT PASSWORD */}
+          {mode === 'FORGOT' && (
+            <form onSubmit={handleForgotSubmit} className="space-y-4">
+              <p className="text-xs text-[#59636B]">Enter your account email and we'll send you a reset code.</p>
+              <div>
+                <label className="block text-xs font-semibold text-[#17212B] mb-1">Email Address</label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-[#59636B] absolute left-3 top-3" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="e.g. seeker@safespace.ng"
+                    className="w-full pl-9 pr-3 py-2.5 bg-white border border-[#E3E2DE] rounded-lg text-sm text-[#17212B] focus:outline-none focus:ring-2 focus:ring-[#123B5D] transition-colors"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-2.5 bg-[#123B5D] hover:bg-[#0D2A42] text-white font-medium rounded-lg shadow-xs text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+              >
+                {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <span>Send Reset Code</span>}
+              </button>
+              {forgotStatus && <p className="text-[11px] text-center text-[#123B5D] font-medium">{forgotStatus}</p>}
+              <div className="text-center pt-2">
+                <button type="button" onClick={() => setMode('LOGIN')} className="text-xs text-[#59636B] hover:text-[#17212B]">
+                  Back to Sign In
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* MODE: RESET PASSWORD */}
+          {mode === 'RESET' && (
+            <form onSubmit={handleResetSubmit} className="space-y-4">
+              <p className="text-xs text-[#59636B]">Enter the code we sent to <strong>{email}</strong> and choose a new password.</p>
+              <div>
+                <label className="block text-xs font-semibold text-[#17212B] mb-1">Reset Code</label>
+                <input
+                  type="text"
+                  required
+                  value={resetToken}
+                  onChange={(e) => setResetToken(e.target.value)}
+                  placeholder="Code from your email"
+                  className="w-full text-center tracking-widest text-lg font-mono py-2.5 bg-white border border-[#E3E2DE] rounded-lg text-[#17212B] focus:outline-none focus:ring-2 focus:ring-[#123B5D] transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#17212B] mb-1">New Password</label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-[#59636B] absolute left-3 top-3" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    className="w-full pl-9 pr-9 py-2.5 bg-white border border-[#E3E2DE] rounded-lg text-sm text-[#17212B] focus:outline-none focus:ring-2 focus:ring-[#123B5D] transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(s => !s)}
+                    className="absolute right-3 top-2.5 text-[#59636B] hover:text-[#17212B]"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-2.5 bg-[#123B5D] hover:bg-[#0D2A42] text-white font-medium rounded-lg shadow-xs text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+              >
+                {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <span>Update Password</span>}
+              </button>
+              {forgotStatus && <p className="text-[11px] text-center text-[#123B5D] font-medium">{forgotStatus}</p>}
             </form>
           )}
 
