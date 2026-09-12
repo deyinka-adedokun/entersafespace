@@ -2,12 +2,9 @@ import React from 'react';
 import { User, ProviderProfile } from '../types';
 import {
   HeroSection,
-  ReassuranceSection,
   HowItWorksSection,
   RecognitionSection,
-  IntroductionSection,
   SessionOptionsSection,
-  AudioOnlySection,
   SafetySection,
   SageGatewaySection,
   ProviderSection,
@@ -45,23 +42,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
         onOpenHowItWorks={onOpenHowItWorks}
       />
 
-      {/* 03 — Immediate Reassurance */}
-      <ReassuranceSection />
-
+     
       {/* 04 & 05 — How Safespace Works & Authentic Photography Story */}
       <HowItWorksSection onStartTalk={onStartTalk} />
 
       {/* 06 — What You Can Come For (Emotional Recognition) */}
       <RecognitionSection onStartTalk={onStartTalk} />
 
-      {/* 07 — The 3-Minute Introduction */}
-      <IntroductionSection onTryIntro={onStartTalk} />
-
       {/* 08 — Session Model (Transparent conversation options) */}
       <SessionOptionsSection onStartTalk={onStartTalk} />
-
-      {/* 09 — Audio-Only Positioning */}
-      <AudioOnlySection />
 
       {/* 10 — Safety & Trust */}
       <SafetySection onOpenSafety={onOpenSafety || onStartTalk} />
