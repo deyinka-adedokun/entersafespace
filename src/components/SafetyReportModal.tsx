@@ -46,31 +46,31 @@ export const SafetyReportModal: React.FC<SafetyReportModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl border border-stone-200 relative space-y-5">
+    <div className="fixed inset-0 z-50 bg-[#17212B]/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="bg-white w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl border border-[#E3E2DE] relative space-y-5">
         
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center transition-colors"
+          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#F3F1EC] hover:bg-[#E3E2DE] text-[#59636B] flex items-center justify-center transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
 
         {submitted ? (
           <div className="text-center space-y-4 py-4">
-            <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto">
+            <div className="w-14 h-14 rounded-full bg-[#123B5D]/10 text-[#123B5D] flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h3 className="font-serif text-xl font-bold text-stone-900">
+            <h3 className="font-display text-xl font-bold text-[#17212B]">
               Report Submitted & Safety Actions Applied
             </h3>
-            <p className="text-xs text-stone-500 leading-relaxed max-w-md mx-auto">
+            <p className="text-xs text-[#59636B] leading-relaxed max-w-md mx-auto">
               Thank you for keeping Safespace safe. Our Trust & Safety team reviews every flag immediately. If you chose to block this listener, you will never be matched with them again.
             </p>
             <button
               onClick={onClose}
-              className="px-6 py-2.5 bg-emerald-900 text-white rounded-xl font-bold text-xs"
+              className="px-6 py-2.5 bg-[#123B5D] text-white rounded-xl font-bold text-xs"
             >
               Close Window
             </button>
@@ -82,10 +82,10 @@ export const SafetyReportModal: React.FC<SafetyReportModalProps> = ({
                 <ShieldAlert className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-serif text-xl font-bold text-stone-900">
+                <h3 className="font-display text-xl font-bold text-[#17212B]">
                   Trust & Safety Incident Report
                 </h3>
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-[#59636B]">
                   Report misconduct or inappropriate behavior by {providerName}.
                 </p>
               </div>
@@ -93,13 +93,13 @@ export const SafetyReportModal: React.FC<SafetyReportModalProps> = ({
 
             {/* Incident Category */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-stone-800 uppercase tracking-wider block">
+              <label className="text-xs font-bold text-[#17212B] uppercase tracking-wider block">
                 Category
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-800 font-semibold focus:ring-2 focus:ring-emerald-800 outline-hidden"
+                className="w-full px-3.5 py-2.5 bg-[#FAF9F6] border border-[#E3E2DE] rounded-xl text-xs text-[#17212B] font-semibold focus:ring-2 focus:ring-[#123B5D] outline-hidden"
               >
                 <option value="THREAT_OF_VIOLENCE">Threat of Violence or Verbal Abuse</option>
                 <option value="SEXUAL_ASSAULT">Sexual Assault or Boundary Violation</option>
@@ -116,7 +116,7 @@ export const SafetyReportModal: React.FC<SafetyReportModalProps> = ({
 
             {/* Note */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-800 uppercase tracking-wider block">
+              <label className="text-xs font-bold text-[#17212B] uppercase tracking-wider block">
                 Details
               </label>
               <textarea
@@ -125,21 +125,21 @@ export const SafetyReportModal: React.FC<SafetyReportModalProps> = ({
                 placeholder="Briefly describe what happened..."
                 rows={3}
                 required
-                className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-800 focus:ring-2 focus:ring-emerald-700 outline-none"
+                className="w-full p-3 bg-[#FAF9F6] border border-[#E3E2DE] rounded-xl text-xs text-[#17212B] focus:ring-2 focus:ring-[#123B5D] outline-none"
               />
             </div>
 
             {/* Block Checkbox */}
-            <label className="flex items-start gap-3 p-3 bg-stone-50 border border-stone-200 rounded-xl cursor-pointer">
+            <label className="flex items-start gap-3 p-3 bg-[#FAF9F6] border border-[#E3E2DE] rounded-xl cursor-pointer">
               <input
                 type="checkbox"
                 checked={blockUser}
                 onChange={(e) => setBlockUser(e.target.checked)}
-                className="mt-0.5 accent-emerald-800"
+                className="mt-0.5 accent-[#123B5D]"
               />
               <div className="text-xs">
-                <div className="font-bold text-stone-900">Block and never match with this listener again</div>
-                <div className="text-stone-500 text-[11px]">The Matching Engine will permanently exclude them from your pool.</div>
+                <div className="font-bold text-[#17212B]">Block and never match with this listener again</div>
+                <div className="text-[#59636B] text-[11px]">The Matching Engine will permanently exclude them from your pool.</div>
               </div>
             </label>
 
