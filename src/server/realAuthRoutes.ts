@@ -26,6 +26,10 @@ export function registerRealAuthRoutes(app: Express) {
   // SUPPORT_SEEKER regardless of what's sent, so nobody can register
   // themselves as ADMIN by adding a field to the request.
   // -----------------------------------------------------------------------
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!email || !EMAIL_RE.test(String(email).trim())) {
+  return res.status(400).json({ success: false, error: { code: 'INVALID_EMAIL', message: 'Please provide a valid email address.' } });
+}
   app.post('/api/v1/auth/register', async (req, res) => {
     const { email, password, displayName, phone } = req.body;
     if (!email || !password) {
