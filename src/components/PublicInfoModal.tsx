@@ -79,8 +79,8 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-3 md:p-6 overflow-y-auto">
-      <div className="bg-white w-full max-w-4xl rounded-2xl md:rounded-3xl shadow-xl border border-stone-200 my-auto overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 bg-[#17212B]/60 backdrop-blur-xs flex items-center justify-center p-3 md:p-6 overflow-y-auto">
+      <div className="bg-white w-full max-w-4xl rounded-2xl md:rounded-3xl shadow-xl border border-[#E3E2DE] my-auto overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Modal Header */}
         <div className="px-6 py-4 bg-[#123B5D] text-white flex items-center justify-between border-b border-[#0D2A42]">
@@ -102,22 +102,22 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
         </div>
 
         {/* Modal Content with Sidebar Navigation */}
-        <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-stone-50">
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#FAF9F6]">
           
           {/* Topic Navigation Sidebar */}
-          <div className="w-full md:w-64 bg-white border-r border-stone-200 p-3 space-y-1 overflow-y-auto text-xs shrink-0 max-h-48 md:max-h-none">
+          <div className="w-full md:w-64 bg-white border-r border-[#E3E2DE] p-3 space-y-1 overflow-y-auto text-xs shrink-0 max-h-48 md:max-h-none">
             
-            <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">About & How it Works</div>
+            <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#59636B]">About & How it Works</div>
             
             <button
               onClick={() => setActiveTopic('HOW_IT_WORKS')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'HOW_IT_WORKS'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
-              <HelpCircle className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+              <HelpCircle className="w-3.5 h-3.5 text-[#123B5D] shrink-0" />
               <span>How it Works & FAQs</span>
             </button>
 
@@ -125,25 +125,25 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
               onClick={() => setActiveTopic('ABOUT')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'ABOUT'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
-              <Building className="w-3.5 h-3.5 text-stone-600 shrink-0" />
+              <Building className="w-3.5 h-3.5 text-[#59636B] shrink-0" />
               <span>About Safespace</span>
             </button>
 
-            <div className="px-3 py-1.5 pt-2 text-[10px] font-bold uppercase tracking-wider text-stone-400">Privacy & Protection</div>
+            <div className="px-3 py-1.5 pt-2 text-[10px] font-bold uppercase tracking-wider text-[#59636B]">Privacy & Protection</div>
             
             <button
               onClick={() => setActiveTopic('PRIVACY_BY_DESIGN')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'PRIVACY_BY_DESIGN'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
-              <Lock className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+              <Lock className="w-3.5 h-3.5 text-[#123B5D] shrink-0" />
               <span>Privacy & Protection</span>
             </button>
 
@@ -151,11 +151,11 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
               onClick={() => setActiveTopic('PRIVACY_POLICY')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'PRIVACY_POLICY'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
-              <FileText className="w-3.5 h-3.5 text-stone-600 shrink-0" />
+              <FileText className="w-3.5 h-3.5 text-[#59636B] shrink-0" />
               <span>Privacy Policy</span>
             </button>
 
@@ -163,25 +163,25 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
               onClick={() => setActiveTopic('COOKIE_POLICY')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'COOKIE_POLICY'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
               <Cookie className="w-3.5 h-3.5 text-amber-700 shrink-0" />
               <span>Cookie Policy</span>
             </button>
 
-            <div className="px-3 py-1.5 pt-2 text-[10px] font-bold uppercase tracking-wider text-stone-400">Safety & Community</div>
+            <div className="px-3 py-1.5 pt-2 text-[10px] font-bold uppercase tracking-wider text-[#59636B]">Safety & Community</div>
 
             <button
               onClick={() => setActiveTopic('SAFETY')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'SAFETY'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+              <ShieldCheck className="w-3.5 h-3.5 text-[#123B5D] shrink-0" />
               <span>Safety Guidelines</span>
             </button>
 
@@ -189,8 +189,8 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
               onClick={() => setActiveTopic('SAFEGUARDING')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'SAFEGUARDING'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
               <ShieldAlert className="w-3.5 h-3.5 text-amber-700 shrink-0" />
@@ -201,11 +201,11 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
               onClick={() => setActiveTopic('COMMUNITY_STANDARDS')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'COMMUNITY_STANDARDS'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
-              <HeartHandshake className="w-3.5 h-3.5 text-stone-600 shrink-0" />
+              <HeartHandshake className="w-3.5 h-3.5 text-[#59636B] shrink-0" />
               <span>Community Code of Conduct</span>
             </button>
 
@@ -214,24 +214,24 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'REPORT_CONCERN'
                   ? 'bg-rose-100 text-rose-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
               <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
               <span>Report a Concern</span>
             </button>
 
-            <div className="px-3 py-1.5 pt-2 text-[10px] font-bold uppercase tracking-wider text-stone-400">Listeners & Company</div>
+            <div className="px-3 py-1.5 pt-2 text-[10px] font-bold uppercase tracking-wider text-[#59636B]">Listeners & Company</div>
 
             <button
               onClick={() => setActiveTopic('PROVIDER_STANDARDS')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'PROVIDER_STANDARDS'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
-              <Users className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
+              <Users className="w-3.5 h-3.5 text-[#123B5D] shrink-0" />
               <span>Listener Standards</span>
             </button>
 
@@ -239,11 +239,11 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
               onClick={() => setActiveTopic('EARNINGS')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'EARNINGS'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
-              <DollarSign className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+              <DollarSign className="w-3.5 h-3.5 text-[#123B5D] shrink-0" />
               <span>Listener Earnings & Pay</span>
             </button>
 
@@ -251,11 +251,11 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
               onClick={() => setActiveTopic('TERMS_OF_SERVICE')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'TERMS_OF_SERVICE'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
-              <FileText className="w-3.5 h-3.5 text-stone-600 shrink-0" />
+              <FileText className="w-3.5 h-3.5 text-[#59636B] shrink-0" />
               <span>Terms of Use</span>
             </button>
 
@@ -263,11 +263,11 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
               onClick={() => setActiveTopic('CONTACT')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'CONTACT'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
-              <Mail className="w-3.5 h-3.5 text-stone-600 shrink-0" />
+              <Mail className="w-3.5 h-3.5 text-[#59636B] shrink-0" />
               <span>Contact Us</span>
             </button>
 
@@ -275,11 +275,11 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
               onClick={() => setActiveTopic('CAREERS')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'CAREERS'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
-              <Briefcase className="w-3.5 h-3.5 text-stone-600 shrink-0" />
+              <Briefcase className="w-3.5 h-3.5 text-[#59636B] shrink-0" />
               <span>Careers</span>
             </button>
 
@@ -287,11 +287,11 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
               onClick={() => setActiveTopic('PARTNERSHIPS')}
               className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 activeTopic === 'PARTNERSHIPS'
-                  ? 'bg-emerald-100 text-emerald-950 font-bold'
-                  : 'text-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#123B5D]/10 text-[#0D2A42] font-bold'
+                  : 'text-[#59636B] hover:bg-[#F3F1EC]'
               }`}
             >
-              <Handshake className="w-3.5 h-3.5 text-stone-600 shrink-0" />
+              <Handshake className="w-3.5 h-3.5 text-[#59636B] shrink-0" />
               <span>Partnerships</span>
             </button>
 
@@ -324,61 +324,61 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
           </div>
 
           {/* Active Topic Content Panel */}
-          <div className="flex-1 p-6 overflow-y-auto space-y-6 text-stone-800 text-sm">
+          <div className="flex-1 p-6 overflow-y-auto space-y-6 text-[#17212B] text-sm">
             
             {/* HOW IT WORKS */}
             {(activeTopic === 'HOW_IT_WORKS' || activeTopic === 'CODE_OF_CONDUCT') && (
               <div className="space-y-5">
-                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
-                  <h3 className="font-serif font-bold text-emerald-950 text-base flex items-center gap-2">
-                    <Heart className="w-5 h-5 text-emerald-700" />
+                <div className="p-4 rounded-2xl bg-[#F3F1EC] border border-[#123B5D]/20">
+                  <h3 className="font-display font-bold text-[#0D2A42] text-base flex items-center gap-2">
+                    <Heart className="w-5 h-5 text-[#123B5D]" />
                     How Safespace Works
                   </h3>
-                  <p className="text-xs text-emerald-900 mt-1 leading-relaxed">
+                  <p className="text-xs text-[#123B5D] mt-1 leading-relaxed">
                     Safespace connects you with empathetic, trained everyday listeners who offer a calm, non-judgmental ear whenever you need someone to talk to.
                   </p>
                 </div>
 
-                <div className="space-y-4 text-xs text-stone-700">
+                <div className="space-y-4 text-xs text-[#59636B]">
                   <div className="flex gap-3 items-start">
-                    <span className="w-6 h-6 rounded-full bg-emerald-800 text-white font-bold flex items-center justify-center shrink-0 text-xs">1</span>
+                    <span className="w-6 h-6 rounded-full bg-[#123B5D] text-white font-bold flex items-center justify-center shrink-0 text-xs">1</span>
                     <div>
-                      <h4 className="font-bold text-stone-900 text-sm">Choose How You Want to Talk</h4>
-                      <p className="mt-0.5 leading-relaxed text-stone-600">Select what topic you'd like to discuss (stress, relationship, workplace, general chat) and your preferred language.</p>
+                      <h4 className="font-bold text-[#17212B] text-sm">Choose How You Want to Talk</h4>
+                      <p className="mt-0.5 leading-relaxed text-[#59636B]">Select what topic you'd like to discuss (stress, relationship, workplace, general chat) and your preferred language.</p>
                     </div>
                   </div>
 
                   <div className="flex gap-3 items-start">
-                    <span className="w-6 h-6 rounded-full bg-emerald-800 text-white font-bold flex items-center justify-center shrink-0 text-xs">2</span>
+                    <span className="w-6 h-6 rounded-full bg-[#123B5D] text-white font-bold flex items-center justify-center shrink-0 text-xs">2</span>
                     <div>
-                      <h4 className="font-bold text-stone-900 text-sm">Get Matched with a Listener</h4>
-                      <p className="mt-0.5 leading-relaxed text-stone-600">Our system matches you with a verified, friendly peer listener who is online and ready to listen.</p>
+                      <h4 className="font-bold text-[#17212B] text-sm">Get Matched with a Listener</h4>
+                      <p className="mt-0.5 leading-relaxed text-[#59636B]">Our system matches you with a verified, friendly peer listener who is online and ready to listen.</p>
                     </div>
                   </div>
 
                   <div className="flex gap-3 items-start">
-                    <span className="w-6 h-6 rounded-full bg-emerald-800 text-white font-bold flex items-center justify-center shrink-0 text-xs">3</span>
+                    <span className="w-6 h-6 rounded-full bg-[#123B5D] text-white font-bold flex items-center justify-center shrink-0 text-xs">3</span>
                     <div>
-                      <h4 className="font-bold text-stone-900 text-sm">Private Voice Call</h4>
-                      <p className="mt-0.5 leading-relaxed text-stone-600">Speak freely over a secure voice call. Your real phone number and identity remain completely hidden.</p>
+                      <h4 className="font-bold text-[#17212B] text-sm">Private Voice Call</h4>
+                      <p className="mt-0.5 leading-relaxed text-[#59636B]">Speak freely over a secure voice call. Your real phone number and identity remain completely hidden.</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-stone-200 space-y-3">
-                  <h4 className="font-bold text-stone-900 text-sm">Frequently Asked Questions</h4>
+                <div className="pt-3 border-t border-[#E3E2DE] space-y-3">
+                  <h4 className="font-bold text-[#17212B] text-sm">Frequently Asked Questions</h4>
                   <div className="space-y-2 text-xs">
-                    <div className="p-3 bg-white rounded-xl border border-stone-200">
-                      <p className="font-bold text-stone-900">Is my phone number private?</p>
-                      <p className="text-stone-600 mt-1">Yes! Neither you nor the listener ever see each other's phone numbers or personal contact details.</p>
+                    <div className="p-3 bg-white rounded-xl border border-[#E3E2DE]">
+                      <p className="font-bold text-[#17212B]">Is my phone number private?</p>
+                      <p className="text-[#59636B] mt-1">Yes! Neither you nor the listener ever see each other's phone numbers or personal contact details.</p>
                     </div>
-                    <div className="p-3 bg-white rounded-xl border border-stone-200">
-                      <p className="font-bold text-stone-900">Are conversations recorded?</p>
-                      <p className="text-stone-600 mt-1">No. Safespace does not record audio calls. Your privacy is paramount.</p>
+                    <div className="p-3 bg-white rounded-xl border border-[#E3E2DE]">
+                      <p className="font-bold text-[#17212B]">Are conversations recorded?</p>
+                      <p className="text-[#59636B] mt-1">No. Safespace does not record audio calls. Your privacy is paramount.</p>
                     </div>
-                    <div className="p-3 bg-white rounded-xl border border-stone-200">
-                      <p className="font-bold text-stone-900">Is this clinical therapy?</p>
-                      <p className="text-stone-600 mt-1">No. Safespace provides empathetic peer listening and companionship, not medical or clinical therapy. If you need urgent crisis help, tap Emergency Contacts.</p>
+                    <div className="p-3 bg-white rounded-xl border border-[#E3E2DE]">
+                      <p className="font-bold text-[#17212B]">Is this clinical therapy?</p>
+                      <p className="text-[#59636B] mt-1">No. Safespace provides empathetic peer listening and companionship, not medical or clinical therapy. If you need urgent crisis help, tap Emergency Contacts.</p>
                     </div>
                   </div>
                 </div>
@@ -388,34 +388,34 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* PRIVACY BY DESIGN */}
             {activeTopic === 'PRIVACY_BY_DESIGN' && (
               <div className="space-y-6">
-                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
-                  <div className="flex items-center gap-2 text-emerald-950 font-bold text-base">
-                    <Lock className="w-5 h-5 text-emerald-700" />
+                <div className="p-4 rounded-2xl bg-[#F3F1EC] border border-[#123B5D]/20">
+                  <div className="flex items-center gap-2 text-[#0D2A42] font-bold text-base">
+                    <Lock className="w-5 h-5 text-[#123B5D]" />
                     <h3>Your Privacy Protection Promise</h3>
                   </div>
-                  <p className="text-xs text-emerald-900 mt-1 leading-relaxed">
+                  <p className="text-xs text-[#123B5D] mt-1 leading-relaxed">
                     Safespace is built to protect your identity and emotional privacy at all times.
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <section className="space-y-1.5">
-                    <h4 className="font-bold text-stone-900 text-sm flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                    <h4 className="font-bold text-[#17212B] text-sm flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#123B5D]" />
                       1. Simple, Minimal Account Info
                     </h4>
-                    <p className="text-xs text-stone-600 leading-relaxed pl-6">
+                    <p className="text-xs text-[#59636B] leading-relaxed pl-6">
                       We only ask for a simple display name and phone number or email so you can log in safely.
                     </p>
                   </section>
 
                   <section className="space-y-1.5">
-                    <h4 className="font-bold text-stone-900 text-sm flex items-center gap-2 text-stone-900">
-                      <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                    <h4 className="font-bold text-[#17212B] text-sm flex items-center gap-2 text-[#17212B]">
+                      <ShieldCheck className="w-4 h-4 text-[#123B5D]" />
                       2. What We DO NOT Do
                     </h4>
-                    <div className="bg-white p-3.5 rounded-xl border border-stone-200 text-xs text-stone-700 space-y-1.5 pl-4">
-                      <p className="font-bold text-emerald-900">🔒 Our Safety Safeguards:</p>
+                    <div className="bg-white p-3.5 rounded-xl border border-[#E3E2DE] text-xs text-[#59636B] space-y-1.5 pl-4">
+                      <p className="font-bold text-[#123B5D]">🔒 Our Safety Safeguards:</p>
                       <p>• <strong>NO Audio Recording:</strong> We do NOT record or save your calls.</p>
                       <p>• <strong>NO Contact Sharing:</strong> Listeners never receive your real phone number or email address.</p>
                       <p>• <strong>NO Selling Your Data:</strong> Your personal information is never sold to advertisers.</p>
@@ -423,8 +423,8 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
                   </section>
 
                   <section className="space-y-1.5">
-                    <h4 className="font-bold text-stone-900 text-sm">3. Safe & Encrypted Calls</h4>
-                    <p className="text-xs text-stone-600 leading-relaxed">
+                    <h4 className="font-bold text-[#17212B] text-sm">3. Safe & Encrypted Calls</h4>
+                    <p className="text-xs text-[#59636B] leading-relaxed">
                       All call connections pass through secure, encrypted data channels.
                     </p>
                   </section>
@@ -435,19 +435,19 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* PRIVACY POLICY */}
             {activeTopic === 'PRIVACY_POLICY' && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-stone-900">Privacy Policy</h3>
-                <p className="text-xs text-stone-500">Updated August 2026</p>
-                <div className="space-y-3 text-xs text-stone-700 leading-relaxed">
+                <h3 className="font-display text-lg font-bold text-[#17212B]">Privacy Policy</h3>
+                <p className="text-xs text-[#59636B]">Updated August 2026</p>
+                <div className="space-y-3 text-xs text-[#59636B] leading-relaxed">
                   <p>
                     Safespace is committed to protecting your privacy. We process personal details fairly and only keep what is necessary for connecting you with listeners and confirming your package purchases.
                   </p>
-                  <h4 className="font-bold text-stone-900 text-sm pt-2">How We Handle Your Information</h4>
+                  <h4 className="font-bold text-[#17212B] text-sm pt-2">How We Handle Your Information</h4>
                   <p>
                     Information like payment status is securely handled via Paystack. Your name and phone number are kept private and never shared with listeners or external companies.
                   </p>
-                  <h4 className="font-bold text-stone-900 text-sm pt-2">Contact Us About Privacy</h4>
+                  <h4 className="font-bold text-[#17212B] text-sm pt-2">Contact Us About Privacy</h4>
                   <p>
-                    If you have questions about your account data or wish to request data deletion, contact our support team at <code className="bg-stone-100 px-1.5 py-0.5 rounded text-emerald-900">support@safespace.ng</code>.
+                    If you have questions about your account data or wish to request data deletion, contact our support team at <code className="bg-[#F3F1EC] px-1.5 py-0.5 rounded text-[#123B5D]">support@safespace.ng</code>.
                   </p>
                 </div>
               </div>
@@ -456,8 +456,8 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* COOKIE POLICY */}
             {activeTopic === 'COOKIE_POLICY' && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-stone-900">Cookie & Storage Information</h3>
-                <p className="text-xs text-stone-600 leading-relaxed">
+                <h3 className="font-display text-lg font-bold text-[#17212B]">Cookie & Storage Information</h3>
+                <p className="text-xs text-[#59636B] leading-relaxed">
                   Safespace uses minimal functional storage on your device simply to keep you logged in and save your notification preferences. We do not use tracking cookies for advertising.
                 </p>
               </div>
@@ -466,8 +466,8 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* SAFETY */}
             {activeTopic === 'SAFETY' && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-stone-900">Safety & Trust</h3>
-                <p className="text-xs text-stone-600 leading-relaxed">
+                <h3 className="font-display text-lg font-bold text-[#17212B]">Safety & Trust</h3>
+                <p className="text-xs text-[#59636B] leading-relaxed">
                   Your safety and emotional comfort are our highest priority. Every listener is verified before joining Safespace and agrees to strictly follow our gentle listening guidelines.
                 </p>
                 {onOpenEmergency && (
@@ -476,9 +476,9 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
                       onClose();
                       onOpenEmergency();
                     }}
-                    className="mt-2 px-4 py-2.5 rounded-xl bg-emerald-900 text-white font-medium text-xs flex items-center gap-2 hover:bg-emerald-950"
+                    className="mt-2 px-4 py-2.5 rounded-xl bg-[#123B5D] text-white font-medium text-xs flex items-center gap-2 hover:bg-[#0D2A42]"
                   >
-                    <PhoneCall className="w-4 h-4 text-amber-300" /> View Crisis Helplines & Emergency Numbers
+                    <PhoneCall className="w-4 h-4 text-[#FAF9F6]" /> View Crisis Helplines & Emergency Numbers
                   </button>
                 )}
               </div>
@@ -487,8 +487,8 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* SAFEGUARDING */}
             {activeTopic === 'SAFEGUARDING' && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-stone-900">Emergency & Crisis Helplines</h3>
-                <p className="text-xs text-stone-600 leading-relaxed">
+                <h3 className="font-display text-lg font-bold text-[#17212B]">Emergency & Crisis Helplines</h3>
+                <p className="text-xs text-[#59636B] leading-relaxed">
                   Safespace provides friendly peer listening. If you or someone you know is in immediate physical danger or needs medical attention, please reach out to these emergency services immediately:
                 </p>
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs space-y-2">
@@ -503,11 +503,11 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* COMMUNITY STANDARDS */}
             {activeTopic === 'COMMUNITY_STANDARDS' && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-stone-900">Community Guidelines</h3>
-                <p className="text-xs text-stone-600 leading-relaxed">
+                <h3 className="font-display text-lg font-bold text-[#17212B]">Community Guidelines</h3>
+                <p className="text-xs text-[#59636B] leading-relaxed">
                   To keep Safespace peaceful and helpful for everyone, all users and listeners agree to:
                 </p>
-                <ul className="list-disc pl-5 text-xs text-stone-700 space-y-1.5">
+                <ul className="list-disc pl-5 text-xs text-[#59636B] space-y-1.5">
                   <li>Treat each other with kindness, respect, and empathy.</li>
                   <li>Avoid foul, abusive, or harmful language.</li>
                   <li>Keep all call discussions confidential.</li>
@@ -519,8 +519,8 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* REPORT CONCERN */}
             {activeTopic === 'REPORT_CONCERN' && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-rose-950">Report a Concern</h3>
-                <p className="text-xs text-stone-600 leading-relaxed">
+                <h3 className="font-display text-lg font-bold text-rose-950">Report a Concern</h3>
+                <p className="text-xs text-[#59636B] leading-relaxed">
                   If you ever feel uncomfortable or experience disrespectful behavior during a conversation, please report it right away. Our team reviews all reports promptly.
                 </p>
                 {onOpenReportConcern && (
@@ -540,8 +540,8 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* TERMS OF SERVICE */}
             {activeTopic === 'TERMS_OF_SERVICE' && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-stone-900">Terms of Use</h3>
-                <p className="text-xs text-stone-600 leading-relaxed">
+                <h3 className="font-display text-lg font-bold text-[#17212B]">Terms of Use</h3>
+                <p className="text-xs text-[#59636B] leading-relaxed">
                   By using Safespace, you agree that our platform offers friendly peer conversation and companion listening. Safespace is not a substitute for medical treatment or psychiatric care.
                 </p>
               </div>
@@ -550,8 +550,8 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* PROVIDER STANDARDS */}
             {activeTopic === 'PROVIDER_STANDARDS' && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-stone-900">Listener Standards</h3>
-                <p className="text-xs text-stone-600 leading-relaxed">
+                <h3 className="font-display text-lg font-bold text-[#17212B]">Listener Standards</h3>
+                <p className="text-xs text-[#59636B] leading-relaxed">
                   Listeners on Safespace undergo identity checks and basic training in gentle, patient listening. They are here to offer care and conversation without judgment.
                 </p>
               </div>
@@ -560,8 +560,8 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* EARNINGS */}
             {activeTopic === 'EARNINGS' && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-stone-900">Listener Earnings & Payouts</h3>
-                <p className="text-xs text-stone-600 leading-relaxed">
+                <h3 className="font-display text-lg font-bold text-[#17212B]">Listener Earnings & Payouts</h3>
+                <p className="text-xs text-[#59636B] leading-relaxed">
                   Listeners earn 40% of session package fees for every conversation they complete. Earnings accumulate in your listener wallet and can be requested directly to your Nigerian bank account once you reach ₦5,000.
                 </p>
               </div>
@@ -570,8 +570,8 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* ABOUT */}
             {activeTopic === 'ABOUT' && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-stone-900">About Safespace</h3>
-                <p className="text-xs text-stone-600 leading-relaxed">
+                <h3 className="font-display text-lg font-bold text-[#17212B]">About Safespace</h3>
+                <p className="text-xs text-[#59636B] leading-relaxed">
                   Safespace was created to give everyday people across Nigeria and Africa a warm, private place to express themselves, feel heard, and find emotional relief through human connection.
                 </p>
               </div>
@@ -580,14 +580,14 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* CONTACT */}
             {activeTopic === 'CONTACT' && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-stone-900">Contact Us</h3>
-                <p className="text-xs text-stone-600 leading-relaxed">
+                <h3 className="font-display text-lg font-bold text-[#17212B]">Contact Us</h3>
+                <p className="text-xs text-[#59636B] leading-relaxed">
                   We are here to help! If you need support with your account or have feedback for our team:
                 </p>
-                <div className="p-4 bg-white rounded-xl border border-stone-200 text-xs space-y-2">
-                  <p>📧 Email: <strong className="text-stone-900">help@safespace.ng</strong></p>
-                  <p>📍 Location: <span className="text-stone-700">Lagos, Nigeria</span></p>
-                  <p>🕒 Response Time: <span className="text-stone-700">Within 24 hours</span></p>
+                <div className="p-4 bg-white rounded-xl border border-[#E3E2DE] text-xs space-y-2">
+                  <p>📧 Email: <strong className="text-[#17212B]">help@safespace.ng</strong></p>
+                  <p>📍 Location: <span className="text-[#59636B]">Lagos, Nigeria</span></p>
+                  <p>🕒 Response Time: <span className="text-[#59636B]">Within 24 hours</span></p>
                 </div>
               </div>
             )}
@@ -595,9 +595,9 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* CAREERS */}
             {activeTopic === 'CAREERS' && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-stone-900">Careers at Safespace</h3>
-                <p className="text-xs text-stone-600 leading-relaxed">
-                  Interested in joining our team or becoming an accredited peer listener? Switch to the "Become a Listener" tab to apply as a peer listener or send your resume to <strong className="text-stone-900">careers@safespace.ng</strong>.
+                <h3 className="font-display text-lg font-bold text-[#17212B]">Careers at Safespace</h3>
+                <p className="text-xs text-[#59636B] leading-relaxed">
+                  Interested in joining our team or becoming an accredited peer listener? Switch to the "Become a Listener" tab to apply as a peer listener or send your resume to <strong className="text-[#17212B]">careers@safespace.ng</strong>.
                 </p>
               </div>
             )}
@@ -605,9 +605,9 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             {/* PARTNERSHIPS */}
             {activeTopic === 'PARTNERSHIPS' && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-stone-900">Community Partnerships</h3>
-                <p className="text-xs text-stone-600 leading-relaxed">
-                  Safespace collaborates with wellness organizations, universities, and mental health advocacy groups across Nigeria. To partner with us, email <strong className="text-stone-900">partnerships@safespace.ng</strong>.
+                <h3 className="font-display text-lg font-bold text-[#17212B]">Community Partnerships</h3>
+                <p className="text-xs text-[#59636B] leading-relaxed">
+                  Safespace collaborates with wellness organizations, universities, and mental health advocacy groups across Nigeria. To partner with us, email <strong className="text-[#17212B]">partnerships@safespace.ng</strong>.
                 </p>
               </div>
             )}
@@ -626,8 +626,8 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
         </div>
 
         {/* Modal Footer Bar */}
-        <div className="p-4 bg-white border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <div className="text-stone-500 text-[11px]">
+        <div className="p-4 bg-white border-t border-[#E3E2DE] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="text-[#59636B] text-[11px]">
             Safespace • Confidential Human Emotional Support
           </div>
           <div className="flex items-center gap-2">
@@ -637,14 +637,14 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
                   onClose();
                   onStartTalk();
                 }}
-                className="px-4 py-2 rounded-xl bg-emerald-900 text-amber-50 font-bold hover:bg-emerald-950 flex items-center gap-1.5 shadow-xs"
+                className="px-4 py-2 rounded-xl bg-[#123B5D] text-[#FAF9F6] font-bold hover:bg-[#0D2A42] flex items-center gap-1.5 shadow-xs"
               >
                 Talk to Someone <ArrowRight className="w-3.5 h-3.5" />
               </button>
             )}
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-stone-200 text-stone-700 font-medium hover:bg-stone-50"
+              className="px-4 py-2 rounded-xl border border-[#E3E2DE] text-[#59636B] font-medium hover:bg-[#FAF9F6]"
             >
               Close
             </button>
@@ -655,4 +655,3 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
     </div>
   );
 };
-
