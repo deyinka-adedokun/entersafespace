@@ -54,7 +54,19 @@ export const AuthModal: React.FC = () => {
     // Reviewer, etc. are granted through their own approval workflows, not
     // self-selected at signup. The backend also ignores this field even if
     // it were sent, but it shouldn't be presented as a choice here at all.
-    await register({ email, password, displayName, phone });
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^(\+234|0)[789][01]\d{8}$/; // Nigerian mobile format
+
+if (!EMAIL_RE.test(email.trim())) {
+  clearAuthError();
+  setAuthError('Please enter a valid email address.');
+  return;
+}
+if (phone && !PHONE_RE.test(phone.trim())) {
+  setAuthError('Please enter a valid Nigerian phone number, e.g. 08012345678.');
+  return;
+}
+      await register({ email, password, displayName, phone });
     setIsSubmitting(false);
   };
 
@@ -239,11 +251,25 @@ export const AuthModal: React.FC = () => {
           {/* MODE: REGISTER */}
           {mode === 'REGISTER' && (
             <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
-              <div>
+                            <div>
                 <label className="block text-xs font-semibold text-[#17212B] mb-1">Email Address</label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-[#59636B] absolute left-3 top-3" />
-                                   <input
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => { setEmail(e.target.value); clearAuthError(); }}
+                    placeholder="e.g. seeker@safespace.ng"
+                    className="w-full pl-9 pr-3 py-2 bg-white border border-[#E3E2DE] rounded-lg text-sm text-[#17212B] focus:outline-none focus:ring-2 focus:ring-[#123B5D] transition-colors"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#17212B] mb-1">Password</label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-[#59636B] absolute left-3 top-3" />
+                  <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     minLength={6}
@@ -262,22 +288,6 @@ export const AuthModal: React.FC = () => {
                   </button>
                 </div>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#17212B] mb-1">Password</label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-[#59636B] absolute left-3 top-3" />
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    value={password}
-                    onChange={(e) => { setPassword(e.target.value); clearAuthError(); }}
-                    placeholder="At least 6 characters"
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-[#E3E2DE] rounded-lg text-sm text-[#17212B] focus:outline-none focus:ring-2 focus:ring-[#123B5D] transition-colors"
-                  />
-                </div>
-              </div>
-
               <div>
                 <label className="block text-xs font-semibold text-[#17212B] mb-1">Display / Alias Name</label>
                 <div className="relative">
