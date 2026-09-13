@@ -956,11 +956,8 @@ async function startServer() {
   // =========================================================================
   
   // Get current user's provider application status
-  app.get('/api/v1/providers/application/status', (_req, res) => {
-    const user = getCurrentUser();
-    if (!user) {
-      return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Please sign in.' } });
-    }
+  app.get('/api/v1/providers/application/status', requireAuth, (req, res) => {
+    const user = req.user!;
 
     const application = providerApplications.find(a => a.userId === user.id) || null;
     const isApprovedProvider = user.role === 'PROVIDER' || user.role === 'SUPER_ADMIN';
@@ -978,11 +975,8 @@ async function startServer() {
   });
 
   // Save / Update application progress
-  app.post('/api/v1/providers/application/save', (req, res) => {
-    const user = getCurrentUser();
-    if (!user) {
-      return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Please sign in.' } });
-    }
+  app.post('/api/v1/providers/application/save', requireAuth, (req, res) => {
+    const user = req.user!;
 
     const payload = req.body;
     let application = providerApplications.find(a => a.userId === user.id);
@@ -1034,11 +1028,8 @@ async function startServer() {
   });
 
   // Submit completed application
-  app.post('/api/v1/providers/application/upload-id', (req, res) => {
-    const user = getCurrentUser();
-    if (!user) {
-      return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Please sign in.' } });
-    }
+  app.post('/api/v1/providers/application/upload-id', requireAuth, (req, res) => {
+    const user = req.user!;
 
     upload.single('identityDocument')(req, res, (err: unknown) => {
       if (err) {
@@ -1096,11 +1087,8 @@ async function startServer() {
     });
   });
 
-  app.post('/api/v1/providers/application/submit', (req, res) => {
-    const user = getCurrentUser();
-    if (!user) {
-      return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Please sign in.' } });
-    }
+  app.post('/api/v1/providers/application/submit', requireAuth, (req, res) => {
+    const user = req.user!;
 
     let application = providerApplications.find(a => a.userId === user.id);
     const payload = req.body;
@@ -1160,11 +1148,11 @@ async function startServer() {
   });
 
   // Stage Advancement Simulator / Reviewer Workflow (Backend-Authoritative)
-  app.post('/api/v1/providers/application/advance-stage', (req, res) => {
-    const user = getCurrentUser();
+  app.post('/api/v1/providers/application/advance-stage', requireAuth, (req, res) => {
+    const user = req.user!;
     
     // RBAC Security Boundary: Ordinary seekers/applicants cannot advance their own application stages.
-    const isAuthorizedReviewer = user && ['SUPER_ADMIN', 'SAFETY_REVIEWER', 'PROVIDER_OPS'].includes(user.role);
+    const isAuthorizedReviewer = ['SUPER_ADMIN', 'SAFETY_REVIEWER', 'PROVIDER_OPS'].includes(user.role);
     
     if (!isAuthorizedReviewer) {
       return res.status(403).json({
@@ -1265,9 +1253,11 @@ async function startServer() {
   });
 
   // Provider Portal API
-  app.get('/api/v1/providers/me', (_req, res) => {
-    const user = getCurrentUser();
-    let provider = providers.find(p => p.userId === user.id) || providers[0];
+  app.get('/api/v1/providers/me', requireAuth, (req, res) => {
+    const provider = providers.find(p => p.userId === req.user!.id);
+    if (!provider) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_A_PROVIDER', message: 'No provider profile found for this account.' } });
+    }
     const earnings = providerEarnings.filter(e => e.providerId === provider.id);
     const totalEarned = earnings.reduce((sum, e) => sum + e.providerAmountNGN, 0);
     const availableBalance = earnings.filter(e => e.status === 'AVAILABLE').reduce((sum, e) => sum + e.providerAmountNGN, 0);
@@ -1286,9 +1276,11 @@ async function startServer() {
     });
   });
 
-  app.post('/api/v1/providers/profile', (req, res) => {
-    const user = getCurrentUser();
-    let provider = providers.find(p => p.userId === user.id) || providers[0];
+  app.post('/api/v1/providers/profile', requireAuth, (req, res) => {
+    const provider = providers.find(p => p.userId === req.user!.id);
+    if (!provider) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_A_PROVIDER', message: 'No provider profile found for this account.' } });
+    }
     const { displayName, bio, languages, gender, listeningAreas, preferredSessionTypes, maxSessionMinutes } = req.body;
 
     if (displayName) provider.displayName = String(displayName).trim();
@@ -1307,9 +1299,11 @@ async function startServer() {
     res.json({ success: true, data: { provider } });
   });
 
-  app.get('/api/v1/providers/incoming-requests', (_req, res) => {
-    const user = getCurrentUser();
-    let provider = providers.find(p => p.userId === user.id) || providers[0];
+  app.get('/api/v1/providers/incoming-requests', requireAuth, (req, res) => {
+    const provider = providers.find(p => p.userId === req.user!.id);
+    if (!provider) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_A_PROVIDER', message: 'No provider profile found for this account.' } });
+    }
 
     if (provider.availabilityStatus !== 'AVAILABLE') {
       return res.json({ success: true, data: { requests: [] } });
@@ -1338,19 +1332,23 @@ async function startServer() {
     res.json({ success: true, data: { requests: pendingRequests } });
   });
 
-  app.post('/api/v1/providers/availability', (req, res) => {
-    const user = getCurrentUser();
+  app.post('/api/v1/providers/availability', requireAuth, (req, res) => {
     const { status } = req.body;
-    let provider = providers.find(p => p.userId === user.id) || providers[0];
+    const provider = providers.find(p => p.userId === req.user!.id);
+    if (!provider) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_A_PROVIDER', message: 'No provider profile found for this account.' } });
+    }
     provider.availabilityStatus = status;
 
     res.json({ success: true, data: { provider } });
   });
 
-  app.post('/api/v1/providers/max-duration', (req, res) => {
-    const user = getCurrentUser();
+  app.post('/api/v1/providers/max-duration', requireAuth, (req, res) => {
     const { maxMinutes } = req.body;
-    let provider = providers.find(p => p.userId === user.id) || providers[0];
+    const provider = providers.find(p => p.userId === req.user!.id);
+    if (!provider) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_A_PROVIDER', message: 'No provider profile found for this account.' } });
+    }
     provider.maxSessionMinutes = maxMinutes;
 
     res.json({ success: true, data: { provider } });
