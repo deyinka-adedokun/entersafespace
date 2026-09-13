@@ -144,39 +144,39 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6 animate-in fade-in duration-300">
       
       {/* Top Banner */}
-      <div className="bg-gradient-to-br from-emerald-900 via-emerald-950 to-stone-900 text-amber-50 rounded-3xl p-6 sm:p-8 shadow-lg relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#123B5D] via-[#0D2A42] to-[#17212B] text-[#FAF9F6] rounded-3xl p-6 sm:p-8 shadow-lg relative overflow-hidden">
         <div className="relative z-10 space-y-2 text-left">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-800/90 text-amber-200 text-xs font-semibold border border-emerald-700/50">
-            <GiftIcon className="w-3.5 h-3.5 text-amber-300" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#123B5D]/90 text-[#FAF9F6] text-xs font-semibold border border-[#123B5D]/50">
+            <GiftIcon className="w-3.5 h-3.5 text-[#FAF9F6]" />
             <span>Safespace Care & Support</span>
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">
             Gift a Conversation
           </h1>
-          <p className="text-xs sm:text-sm text-emerald-200 max-w-lg leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#123B5D]/20 max-w-lg leading-relaxed">
             Send a pre-paid, confidential listening session to someone you care about with warm, respectful messages.
           </p>
         </div>
       </div>
 
       {/* Primary Navigation Tabs */}
-      <div className="flex bg-stone-100 p-1.5 rounded-2xl border border-stone-200 text-xs font-semibold">
+      <div className="flex bg-[#F3F1EC] p-1.5 rounded-2xl border border-[#E3E2DE] text-xs font-semibold">
         <button
           onClick={() => setActiveTab('create')}
           className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 ${
-            activeTab === 'create' ? 'bg-white text-emerald-950 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
+            activeTab === 'create' ? 'bg-white text-[#0D2A42] font-bold shadow-xs' : 'text-[#59636B] hover:text-[#17212B]'
           }`}
         >
-          <GiftIcon className="w-4 h-4 text-emerald-800" />
+          <GiftIcon className="w-4 h-4 text-[#123B5D]" />
           <span>Send a Gift</span>
         </button>
         <button
           onClick={() => setActiveTab('redeem')}
           className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 ${
-            activeTab === 'redeem' ? 'bg-white text-emerald-950 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
+            activeTab === 'redeem' ? 'bg-white text-[#0D2A42] font-bold shadow-xs' : 'text-[#59636B] hover:text-[#17212B]'
           }`}
         >
-          <Sparkles className="w-4 h-4 text-emerald-800" />
+          <Sparkles className="w-4 h-4 text-[#123B5D]" />
           <span>Redeem & Recipient View</span>
         </button>
       </div>
@@ -184,31 +184,31 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
       {activeTab === 'create' && (
         <>
           {createdGift ? (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-md text-center space-y-5 animate-in zoom-in-95 duration-200">
-              <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E3E2DE] shadow-md text-center space-y-5 animate-in zoom-in-95 duration-200">
+              <div className="w-14 h-14 rounded-full bg-[#123B5D]/10 text-[#123B5D] flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
 
               <div className="space-y-1">
-                <h2 className="font-serif text-2xl font-bold text-stone-900">
+                <h2 className="font-display text-2xl font-bold text-[#17212B]">
                   Gift Created & Delivered!
                 </h2>
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-[#59636B]">
                   You have gifted a <strong>{createdGift.packageName}</strong> ({createdGift.durationMinutes} minutes).
                 </p>
               </div>
 
-              <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200 max-w-md mx-auto space-y-3 text-left">
+              <div className="bg-[#FAF9F6] p-4 rounded-2xl border border-[#E3E2DE] max-w-md mx-auto space-y-3 text-left">
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-stone-400">Gift Voucher Code</div>
-                  <div className="font-mono text-lg font-bold text-emerald-950 flex items-center justify-between bg-white p-2.5 rounded-xl border border-stone-200 mt-1">
+                  <div className="text-[10px] uppercase font-bold text-[#59636B]">Gift Voucher Code</div>
+                  <div className="font-mono text-lg font-bold text-[#0D2A42] flex items-center justify-between bg-white p-2.5 rounded-xl border border-[#E3E2DE] mt-1">
                     <span>{createdGift.giftCode}</span>
                     <button 
                       onClick={() => {
                         navigator.clipboard.writeText(createdGift.giftCode);
                         alert('Gift code copied!');
                       }}
-                      className="p-1.5 text-stone-500 hover:text-emerald-900"
+                      className="p-1.5 text-[#59636B] hover:text-[#123B5D]"
                     >
                       <Copy className="w-4 h-4" />
                     </button>
@@ -216,15 +216,15 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
                 </div>
 
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-stone-400">Secure Shareable Gift Link</div>
-                  <div className="text-xs font-mono text-stone-700 bg-white p-2 rounded-xl border border-stone-200 mt-1 truncate">
+                  <div className="text-[10px] uppercase font-bold text-[#59636B]">Secure Shareable Gift Link</div>
+                  <div className="text-xs font-mono text-[#59636B] bg-white p-2 rounded-xl border border-[#E3E2DE] mt-1 truncate">
                     {window.location.origin}/gift/{createdGift.giftCode}
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-stone-400">Personal Message Delivered</div>
-                  <p className="text-xs text-stone-700 italic mt-0.5 bg-white p-2.5 rounded-xl border border-stone-200">
+                  <div className="text-[10px] uppercase font-bold text-[#59636B]">Personal Message Delivered</div>
+                  <p className="text-xs text-[#59636B] italic mt-0.5 bg-white p-2.5 rounded-xl border border-[#E3E2DE]">
                     "{createdGift.recipientMessage}"
                   </p>
                 </div>
@@ -236,24 +236,24 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
                     setClaimCodeInput(createdGift.giftCode);
                     setActiveTab('redeem');
                   }}
-                  className="px-5 py-2.5 bg-emerald-900 text-amber-50 rounded-xl text-xs font-semibold hover:bg-emerald-950"
+                  className="px-5 py-2.5 bg-[#123B5D] text-[#FAF9F6] rounded-xl text-xs font-semibold hover:bg-[#0D2A42]"
                 >
                   Test Recipient Redemption View
                 </button>
                 <button
                   onClick={() => setCreatedGift(null)}
-                  className="px-5 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold"
+                  className="px-5 py-2.5 bg-[#F3F1EC] hover:bg-[#E3E2DE] text-[#17212B] rounded-xl text-xs font-semibold"
                 >
                   Send Another Gift
                 </button>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSendGift} className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-xs space-y-6 text-left">
+            <form onSubmit={handleSendGift} className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E3E2DE] shadow-xs space-y-6 text-left">
               
               {/* Step 1: Package Selection */}
               <div className="space-y-3">
-                <label className="text-xs font-bold text-stone-800 uppercase tracking-wider block">
+                <label className="text-xs font-bold text-[#17212B] uppercase tracking-wider block">
                   1. Choose Conversation Package
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -263,18 +263,18 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
                       onClick={() => setSelectedPkgId(pkg.id)}
                       className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
                         selectedPkgId === pkg.id
-                          ? 'bg-emerald-50 border-emerald-800 ring-2 ring-emerald-800/20 shadow-xs'
-                          : 'bg-stone-50/50 hover:bg-stone-100 border-stone-200'
+                          ? 'bg-[#F3F1EC] border-[#123B5D] ring-2 ring-[#123B5D]/20 shadow-xs'
+                          : 'bg-[#FAF9F6] hover:bg-[#F3F1EC] border-[#E3E2DE]'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-serif font-bold text-stone-900 text-sm">{pkg.name}</span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900">
+                        <span className="font-display font-bold text-[#17212B] text-sm">{pkg.name}</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#123B5D]/10 text-[#123B5D]">
                           {pkg.durationMinutes} min
                         </span>
                       </div>
-                      <div className="font-bold text-emerald-950 text-sm mt-1">₦{pkg.priceNGN.toLocaleString()}</div>
-                      <p className="text-[11px] text-stone-500 mt-0.5 line-clamp-1">{pkg.description}</p>
+                      <div className="font-bold text-[#0D2A42] text-sm mt-1">₦{pkg.priceNGN.toLocaleString()}</div>
+                      <p className="text-[11px] text-[#59636B] mt-0.5 line-clamp-1">{pkg.description}</p>
                     </div>
                   ))}
                 </div>
@@ -282,7 +282,7 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
 
               {/* Step 2: Delivery Channel */}
               <div className="space-y-3">
-                <label className="text-xs font-bold text-stone-800 uppercase tracking-wider block">
+                <label className="text-xs font-bold text-[#17212B] uppercase tracking-wider block">
                   2. Select Delivery Channel
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -290,64 +290,64 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
                     type="button"
                     onClick={() => setDeliveryChannel('EMAIL')}
                     className={`p-3 rounded-xl border text-center text-xs font-semibold flex flex-col items-center gap-1 transition-all ${
-                      deliveryChannel === 'EMAIL' ? 'border-emerald-800 bg-emerald-50 text-emerald-950 font-bold' : 'border-stone-200 text-stone-600 bg-stone-50'
+                      deliveryChannel === 'EMAIL' ? 'border-[#123B5D] bg-[#F3F1EC] text-[#0D2A42] font-bold' : 'border-[#E3E2DE] text-[#59636B] bg-[#FAF9F6]'
                     }`}
                   >
-                    <Mail className="w-4 h-4 text-emerald-700" />
+                    <Mail className="w-4 h-4 text-[#123B5D]" />
                     <span>Email</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setDeliveryChannel('PHONE')}
                     className={`p-3 rounded-xl border text-center text-xs font-semibold flex flex-col items-center gap-1 transition-all ${
-                      deliveryChannel === 'PHONE' ? 'border-emerald-800 bg-emerald-50 text-emerald-950 font-bold' : 'border-stone-200 text-stone-600 bg-stone-50'
+                      deliveryChannel === 'PHONE' ? 'border-[#123B5D] bg-[#F3F1EC] text-[#0D2A42] font-bold' : 'border-[#E3E2DE] text-[#59636B] bg-[#FAF9F6]'
                     }`}
                   >
-                    <Phone className="w-4 h-4 text-emerald-700" />
+                    <Phone className="w-4 h-4 text-[#123B5D]" />
                     <span>SMS / Phone</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setDeliveryChannel('SECURE_LINK')}
                     className={`p-3 rounded-xl border text-center text-xs font-semibold flex flex-col items-center gap-1 transition-all ${
-                      deliveryChannel === 'SECURE_LINK' ? 'border-emerald-800 bg-emerald-50 text-emerald-950 font-bold' : 'border-stone-200 text-stone-600 bg-stone-50'
+                      deliveryChannel === 'SECURE_LINK' ? 'border-[#123B5D] bg-[#F3F1EC] text-[#0D2A42] font-bold' : 'border-[#E3E2DE] text-[#59636B] bg-[#FAF9F6]'
                     }`}
                   >
-                    <Link2 className="w-4 h-4 text-emerald-700" />
+                    <Link2 className="w-4 h-4 text-[#123B5D]" />
                     <span>Secure Link</span>
                   </button>
                 </div>
 
                 {deliveryChannel === 'EMAIL' && (
                   <div>
-                    <label className="text-[11px] font-medium text-stone-600 mb-1 block">Recipient Email Address</label>
+                    <label className="text-[11px] font-medium text-[#59636B] mb-1 block">Recipient Email Address</label>
                     <input
                       type="email"
                       required
                       value={recipientEmail}
                       onChange={(e) => setRecipientEmail(e.target.value)}
                       placeholder="friend@example.com"
-                      className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-800 focus:ring-2 focus:ring-emerald-800 outline-hidden"
+                      className="w-full px-3.5 py-2.5 bg-[#FAF9F6] border border-[#E3E2DE] rounded-xl text-xs text-[#17212B] focus:ring-2 focus:ring-[#123B5D] outline-hidden"
                     />
                   </div>
                 )}
 
                 {deliveryChannel === 'PHONE' && (
                   <div>
-                    <label className="text-[11px] font-medium text-stone-600 mb-1 block">Recipient Phone Number</label>
+                    <label className="text-[11px] font-medium text-[#59636B] mb-1 block">Recipient Phone Number</label>
                     <input
                       type="tel"
                       required
                       value={recipientPhone}
                       onChange={(e) => setRecipientPhone(e.target.value)}
                       placeholder="+1 555 000 0000"
-                      className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-800 focus:ring-2 focus:ring-emerald-800 outline-hidden"
+                      className="w-full px-3.5 py-2.5 bg-[#FAF9F6] border border-[#E3E2DE] rounded-xl text-xs text-[#17212B] focus:ring-2 focus:ring-[#123B5D] outline-hidden"
                     />
                   </div>
                 )}
 
                 {deliveryChannel === 'SECURE_LINK' && (
-                  <p className="text-xs text-stone-500 bg-stone-50 p-3 rounded-xl border border-stone-200">
+                  <p className="text-xs text-[#59636B] bg-[#FAF9F6] p-3 rounded-xl border border-[#E3E2DE]">
                     A private shareable gift link will be generated after payment. You can send it directly over WhatsApp, Telegram, or message.
                   </p>
                 )}
@@ -355,12 +355,12 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
 
               {/* Step 3: Warm Emotional Copy Presets */}
               <div className="space-y-2">
-                <label className="text-xs font-bold text-stone-800 uppercase tracking-wider block">
+                <label className="text-xs font-bold text-[#17212B] uppercase tracking-wider block">
                   3. Personal Message
                 </label>
                 
                 <div className="space-y-1.5">
-                  <div className="text-[11px] text-stone-500">Choose a thoughtful message template or write your own:</div>
+                  <div className="text-[11px] text-[#59636B]">Choose a thoughtful message template or write your own:</div>
                   <div className="flex flex-wrap gap-1.5">
                     {MESSAGE_PRESETS.map((preset, idx) => (
                       <button
@@ -368,7 +368,7 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
                         type="button"
                         onClick={() => setRecipientMessage(preset)}
                         className={`text-[10px] text-left px-2.5 py-1.5 rounded-lg border transition-all ${
-                          recipientMessage === preset ? 'bg-emerald-100 border-emerald-300 font-medium text-emerald-950' : 'bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100'
+                          recipientMessage === preset ? 'bg-[#123B5D]/10 border-[#123B5D]/30 font-medium text-[#0D2A42]' : 'bg-[#FAF9F6] border-[#E3E2DE] text-[#59636B] hover:bg-[#F3F1EC]'
                         }`}
                       >
                         "{preset.slice(0, 36)}..."
@@ -381,14 +381,14 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
                   value={recipientMessage}
                   onChange={(e) => setRecipientMessage(e.target.value)}
                   rows={3}
-                  className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-800 focus:ring-2 focus:ring-emerald-800 outline-hidden leading-relaxed"
+                  className="w-full p-3 bg-[#FAF9F6] border border-[#E3E2DE] rounded-xl text-xs text-[#17212B] focus:ring-2 focus:ring-[#123B5D] outline-hidden leading-relaxed"
                 />
               </div>
 
               {/* Testing Controls */}
-              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-1 text-xs">
-                <div className="font-bold text-stone-500 text-[10px] uppercase">Testing Options</div>
-                <label className="flex items-center gap-2 cursor-pointer text-stone-700">
+              <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E3E2DE] space-y-1 text-xs">
+                <div className="font-bold text-[#59636B] text-[10px] uppercase">Testing Options</div>
+                <label className="flex items-center gap-2 cursor-pointer text-[#59636B]">
                   <input
                     type="checkbox"
                     checked={simulatePaymentFailure}
@@ -411,22 +411,22 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3.5 bg-emerald-900 hover:bg-emerald-950 text-amber-50 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3.5 bg-[#123B5D] hover:bg-[#0D2A42] text-[#FAF9F6] rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-amber-200" />
+                      <RefreshCw className="w-4 h-4 animate-spin text-[#FAF9F6]" />
                       <span>Authorizing Payment...</span>
                     </>
                   ) : (
                     <>
-                      <Send className="w-4 h-4 text-amber-200" />
+                      <Send className="w-4 h-4 text-[#FAF9F6]" />
                       <span>Pay & Create Gift (₦{selectedPkg.priceNGN.toLocaleString()})</span>
                     </>
                   )}
                 </button>
 
-                <div className="p-2.5 bg-amber-50/80 rounded-xl border border-amber-200/80 text-[11px] text-amber-950 flex items-center gap-2">
+                <div className="p-2.5 bg-[#FAF9F6]/80 rounded-xl border border-amber-200/80 text-[11px] text-amber-950 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-amber-800 shrink-0" />
                   <span>
                     <strong>Privacy Guarantee:</strong> Purchaser financial information, receipt details, and card numbers are strictly hidden from the gift recipient.
@@ -440,12 +440,12 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
       )}
 
       {activeTab === 'redeem' && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-xs space-y-6 text-left">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E3E2DE] shadow-xs space-y-6 text-left">
           <div className="space-y-1">
-            <h2 className="font-serif text-xl font-bold text-stone-900">
+            <h2 className="font-display text-xl font-bold text-[#17212B]">
               Redeem a Gift & Recipient Privacy Check
             </h2>
-            <p className="text-xs text-stone-500">
+            <p className="text-xs text-[#59636B]">
               Enter a gift voucher code to inspect the recipient-facing view or claim your pre-paid session.
             </p>
           </div>
@@ -456,20 +456,20 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
               value={claimCodeInput}
               onChange={(e) => setClaimCodeInput(e.target.value)}
               placeholder="e.g. SAFE-GIFT-8821"
-              className="flex-1 px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 font-mono font-bold tracking-wider uppercase focus:ring-2 focus:ring-emerald-800 outline-hidden"
+              className="flex-1 px-4 py-3 bg-[#FAF9F6] border border-[#E3E2DE] rounded-xl text-xs text-[#17212B] font-mono font-bold tracking-wider uppercase focus:ring-2 focus:ring-[#123B5D] outline-hidden"
             />
             <button
               onClick={handleLookupGift}
               disabled={isLookingUp}
-              className="px-4 py-3 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0"
+              className="px-4 py-3 bg-[#F3F1EC] hover:bg-[#E3E2DE] text-[#17212B] rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0"
             >
-              <Eye className="w-4 h-4 text-stone-600" />
+              <Eye className="w-4 h-4 text-[#59636B]" />
               <span>Inspect</span>
             </button>
             <button
               onClick={handleClaimGift}
               disabled={isRedeeming}
-              className="px-5 py-3 bg-emerald-900 hover:bg-emerald-950 text-amber-50 rounded-xl text-xs font-bold transition-colors shrink-0"
+              className="px-5 py-3 bg-[#123B5D] hover:bg-[#0D2A42] text-[#FAF9F6] rounded-xl text-xs font-bold transition-colors shrink-0"
             >
               Redeem
             </button>
@@ -477,36 +477,36 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
 
           {claimStatus && (
             <div className={`p-3.5 rounded-xl text-xs font-medium flex items-center gap-2 ${
-              claimStatus.type === 'success' ? 'bg-emerald-50 text-emerald-900 border border-emerald-200' : 'bg-rose-50 text-rose-900 border border-rose-200'
+              claimStatus.type === 'success' ? 'bg-[#F3F1EC] text-[#123B5D] border border-[#123B5D]/20' : 'bg-rose-50 text-rose-900 border border-rose-200'
             }`}>
-              {claimStatus.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-700 shrink-0" />}
+              {claimStatus.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-[#123B5D] shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-700 shrink-0" />}
               <span>{claimStatus.text}</span>
             </div>
           )}
 
           {/* Recipient Privacy Card Preview */}
           {lookupResult && (
-            <div className="bg-stone-50 rounded-2xl p-5 border border-stone-200 space-y-4 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between border-b border-stone-200 pb-2">
-                <span className="text-[11px] font-bold uppercase text-stone-400">Recipient View (Privacy Shield Active)</span>
+            <div className="bg-[#FAF9F6] rounded-2xl p-5 border border-[#E3E2DE] space-y-4 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between border-b border-[#E3E2DE] pb-2">
+                <span className="text-[11px] font-bold uppercase text-[#59636B]">Recipient View (Privacy Shield Active)</span>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  lookupResult.status === 'CLAIMED' ? 'bg-stone-200 text-stone-700' : 'bg-emerald-100 text-emerald-900'
+                  lookupResult.status === 'CLAIMED' ? 'bg-[#E3E2DE] text-[#59636B]' : 'bg-[#123B5D]/10 text-[#123B5D]'
                 }`}>
                   {lookupResult.status}
                 </span>
               </div>
 
               <div className="space-y-2">
-                <div className="text-xs text-stone-600">
+                <div className="text-xs text-[#59636B]">
                   You have been gifted an <strong>{lookupResult.packageName}</strong> ({lookupResult.durationMinutes} mins) session by <strong>{lookupResult.purchaserName}</strong>.
                 </div>
 
-                <div className="p-3 bg-white rounded-xl border border-stone-200 text-xs italic text-stone-800">
+                <div className="p-3 bg-white rounded-xl border border-[#E3E2DE] text-xs italic text-[#17212B]">
                   "{lookupResult.recipientMessage}"
                 </div>
 
-                <div className="p-2.5 bg-emerald-50/70 border border-emerald-200 rounded-xl text-[11px] text-emerald-950 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-800 shrink-0" />
+                <div className="p-2.5 bg-[#F3F1EC] border border-[#123B5D]/20 rounded-xl text-[11px] text-[#0D2A42] flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#123B5D] shrink-0" />
                   <span>
                     <strong>Privacy Verified:</strong> No purchaser financial info, payment card, or payment receipts are exposed to the recipient.
                   </span>
@@ -517,7 +517,7 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
                 <button
                   onClick={handleClaimGift}
                   disabled={isRedeeming}
-                  className="w-full py-3 bg-emerald-900 hover:bg-emerald-950 text-amber-50 rounded-xl text-xs font-bold transition-all shadow-xs"
+                  className="w-full py-3 bg-[#123B5D] hover:bg-[#0D2A42] text-[#FAF9F6] rounded-xl text-xs font-bold transition-all shadow-xs"
                 >
                   Redeem This Gift Voucher
                 </button>
