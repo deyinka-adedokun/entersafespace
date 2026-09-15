@@ -6,7 +6,7 @@ async function loadUserPayload(accessToken: string) {
   const scoped = getSupabaseForToken(accessToken);
   const { data: profile } = await scoped
     .from('profiles')
-    .select('id, email, phone, display_name, role, status')
+    .select('id, email, phone, display_name, role, status, free_trial_used, preferred_language, preferred_provider_id, saved_payment_method, created_at')
     .single();
 
   const { data: providerProfile } = await scoped
@@ -15,9 +15,22 @@ async function loadUserPayload(accessToken: string) {
     .eq('user_id', profile?.id)
     .maybeSingle();
 
-  return { user: profile || null, providerProfile: providerProfile || null };
-}
+  const user = profile ? {
+    id: profile.id,
+    email: profile.email,
+    phone: profile.phone || undefined,
+    displayName: profile.display_name,
+    role: profile.role,
+    status: profile.status,
+    freeTrialUsed: Boolean(profile.free_trial_used),
+    preferredLanguage: profile.preferred_language || undefined,
+    preferredProviderId: profile.preferred_provider_id || undefined,
+    savedPaymentMethod: profile.saved_payment_method || undefined,
+    createdAt: profile.created_at
+  } : null;
 
+  return { user, providerProfile: providerProfile || null };
+}
 export function registerRealAuthRoutes(app: Express) {
   // -----------------------------------------------------------------------
   // REGISTER. Real Supabase Auth signup instead of an in-memory array with
