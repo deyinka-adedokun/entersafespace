@@ -283,7 +283,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         providerProfile,
-        isAuthenticated: !!user,
+        isAuthenticated: !!user && user.status !== 'SUSPENDED',
         isLoading,
         authError,
         isAuthModalOpen,
