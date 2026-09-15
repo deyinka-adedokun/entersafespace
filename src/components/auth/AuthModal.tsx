@@ -57,15 +57,17 @@ export const AuthModal: React.FC = () => {
     const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^(\+234|0)[789][01]\d{8}$/; // Nigerian mobile format
 
-if (!EMAIL_RE.test(email.trim())) {
-  clearAuthError();
-  setAuthError('Please enter a valid email address.');
-  return;
-}
-if (phone && !PHONE_RE.test(phone.trim())) {
-  setAuthError('Please enter a valid Nigerian phone number, e.g. 08012345678.');
-  return;
-}
+    if (!EMAIL_RE.test(email.trim())) {
+      clearAuthError();
+      setAuthError('Please enter a valid email address.');
+      setIsSubmitting(false);
+      return;
+    }
+    if (phone && !PHONE_RE.test(phone.trim())) {
+      setAuthError('Please enter a valid Nigerian phone number, e.g. 08012345678.');
+      setIsSubmitting(false);
+      return;
+    }
       await register({ email, password, displayName, phone });
     setIsSubmitting(false);
   };
