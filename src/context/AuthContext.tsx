@@ -283,7 +283,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         providerProfile,
-        isAuthenticated: !!user && user.status === 'ACTIVE',
+        isAuthenticated: !!user,
         isLoading,
         authError,
         isAuthModalOpen,
