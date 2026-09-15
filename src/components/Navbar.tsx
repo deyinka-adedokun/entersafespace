@@ -132,6 +132,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <div className="px-3 py-2 border-b border-[#E3E2DE] mb-1">
                     <p className="text-xs font-bold text-[#17212B] truncate">{activeUser?.displayName}</p>
                     <p className="text-[11px] text-[#59636B] truncate">{activeUser?.email}</p>
+                    <span className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#123B5D]/10 text-[#123B5D]">
+                      {activeUser?.role === 'PROVIDER' ? 'Listener' : activeUser?.role === 'SUPPORT_SEEKER' ? 'Seeker' : activeUser?.role}
+                    </span>
                   </div>
                   <button
                     onClick={() => {
