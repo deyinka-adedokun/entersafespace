@@ -71,7 +71,7 @@ interface RoleConfig {
 const ROLE_PERMISSIONS: Record<AdminRole, RoleConfig> = {
   SUPER_ADMIN: {
     label: 'Super Admin',
-    badgeBg: 'bg-stone-900 text-amber-300',
+    badgeBg: 'bg-[#17212B] text-[#FAF9F6]',
     badgeText: 'FULL SYSTEM CLEARANCE',
     description: 'Unrestricted governance across all operational, financial, safeguarding, and administrative modules.',
     allowedTabs: [
@@ -92,7 +92,7 @@ const ROLE_PERMISSIONS: Record<AdminRole, RoleConfig> = {
   },
   FINANCE: {
     label: 'Finance & Revenue',
-    badgeBg: 'bg-emerald-100 text-emerald-900 border-emerald-200',
+    badgeBg: 'bg-[#123B5D]/10 text-[#123B5D] border-[#123B5D]/20',
     badgeText: 'FINANCIAL LEDGER CLEARANCE',
     description: 'Manages payment ledgers, listener earnings (40% split), payout bank transfers, gift vouchers, and financial audits.',
     allowedTabs: [
@@ -297,16 +297,16 @@ export const SafespaceControlCentreView: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6 animate-in fade-in duration-300">
       
       {/* Top Banner Header & Role Selector */}
-      <div className="bg-stone-900 text-stone-100 rounded-3xl p-6 shadow-xl border border-stone-800 space-y-6">
+      <div className="bg-[#17212B] text-[#F3F1EC] rounded-3xl p-6 shadow-xl border border-[#17212B] space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-6 h-6 text-amber-400" />
-              <h1 className="font-serif text-2xl md:text-3xl font-bold tracking-tight text-amber-50">
+              <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-[#FAF9F6]">
                 Safespace Control Centre
               </h1>
             </div>
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-[#59636B]">
               Role-Based Administrative Operations, Safeguarding Triage, Financial Governance & Audit Trail
             </p>
           </div>
@@ -314,15 +314,15 @@ export const SafespaceControlCentreView: React.FC = () => {
           {/* Active Role Selector Dropdown */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <div className="text-right hidden sm:block">
-              <div className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">Active Admin Role</div>
-              <div className="text-xs font-bold text-amber-300">{ROLE_PERMISSIONS[activeRole].label}</div>
+              <div className="text-[10px] uppercase font-bold text-[#59636B] tracking-wider">Active Admin Role</div>
+              <div className="text-xs font-bold text-[#FAF9F6]">{ROLE_PERMISSIONS[activeRole].label}</div>
             </div>
 
             <div className="relative">
               <select
                 value={activeRole}
                 onChange={(e) => setActiveRole(e.target.value as AdminRole)}
-                className="bg-stone-800 text-stone-100 text-xs font-bold px-4 py-2.5 rounded-2xl border border-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
+                className="bg-[#17212B] text-[#F3F1EC] text-xs font-bold px-4 py-2.5 rounded-2xl border border-[#59636B] focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
               >
                 <option value="SUPER_ADMIN">👑 Super Admin (Full Clearance)</option>
                 <option value="SUPPORT_OPS">🎧 Support Operations</option>
@@ -335,7 +335,7 @@ export const SafespaceControlCentreView: React.FC = () => {
 
             <button
               onClick={() => setShowMatrixModal(true)}
-              className="px-3.5 py-2.5 rounded-2xl bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white text-xs font-medium border border-stone-700 transition flex items-center gap-1.5"
+              className="px-3.5 py-2.5 rounded-2xl bg-[#17212B] hover:bg-[#59636B] text-[#E3E2DE] hover:text-white text-xs font-medium border border-[#59636B] transition flex items-center gap-1.5"
             >
               <Sliders className="w-3.5 h-3.5 text-amber-400" />
               <span>RBAC Matrix</span>
@@ -344,35 +344,35 @@ export const SafespaceControlCentreView: React.FC = () => {
         </div>
 
         {/* Role Capability Indicator Banner */}
-        <div className="pt-4 border-t border-stone-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-stone-300">
+        <div className="pt-4 border-t border-[#17212B]/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-[#E3E2DE]">
             <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${ROLE_PERMISSIONS[activeRole].badgeBg}`}>
               {ROLE_PERMISSIONS[activeRole].badgeText}
             </span>
-            <span className="text-stone-400">{ROLE_PERMISSIONS[activeRole].description}</span>
+            <span className="text-[#59636B]">{ROLE_PERMISSIONS[activeRole].description}</span>
           </div>
 
-          <div className="flex items-center gap-3 text-stone-400 text-[11px]">
+          <div className="flex items-center gap-3 text-[#59636B] text-[11px]">
             <span>{ROLE_PERMISSIONS[activeRole].allowedTabs.length} / 15 Tabs Authorized</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-emerald-400 font-mono">AUDIT RECORDING ACTIVE</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#123B5D] animate-pulse"></span>
+            <span className="text-[#123B5D] font-mono">AUDIT RECORDING ACTIVE</span>
           </div>
         </div>
       </div>
 
       {/* Action Success Alert Toast */}
       {actionSuccessMsg && (
-        <div className="p-4 rounded-2xl bg-emerald-900 text-emerald-100 border border-emerald-700 flex items-center justify-between shadow-lg animate-in fade-in">
+        <div className="p-4 rounded-2xl bg-[#123B5D] text-[#123B5D]/10 border border-[#123B5D] flex items-center justify-between shadow-lg animate-in fade-in">
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-[#123B5D] shrink-0" />
             <span className="text-xs font-semibold">{actionSuccessMsg}</span>
           </div>
-          <span className="text-[10px] font-mono text-emerald-300 uppercase font-bold">Audit Entry Generated</span>
+          <span className="text-[10px] font-mono text-[#123B5D]/30 uppercase font-bold">Audit Entry Generated</span>
         </div>
       )}
 
       {/* 15 Feature Tabs Navigation Bar */}
-      <div className="bg-white rounded-2xl p-2 border border-stone-200 shadow-xs overflow-x-auto scrollbar-none">
+      <div className="bg-white rounded-2xl p-2 border border-[#E3E2DE] shadow-xs overflow-x-auto scrollbar-none">
         <div className="flex items-center gap-1 min-w-max">
           {(Object.keys(TAB_CONFIG) as ControlCentreTab[]).map((tabKey) => {
             const tabInfo = TAB_CONFIG[tabKey];
@@ -386,16 +386,16 @@ export const SafespaceControlCentreView: React.FC = () => {
                 onClick={() => setActiveTab(tabKey)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 relative ${
                   isActive
-                    ? 'bg-emerald-900 text-amber-50 shadow-md'
+                    ? 'bg-[#123B5D] text-[#FAF9F6] shadow-md'
                     : isAllowed
-                    ? 'text-stone-700 hover:bg-stone-100'
-                    : 'text-stone-300 hover:text-stone-400 hover:bg-stone-50 opacity-60'
+                    ? 'text-[#59636B] hover:bg-[#F3F1EC]'
+                    : 'text-[#E3E2DE] hover:text-[#59636B] hover:bg-[#FAF9F6] opacity-60'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-400' : isAllowed ? 'text-stone-600' : 'text-stone-300'}`} />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-400' : isAllowed ? 'text-[#59636B]' : 'text-[#E3E2DE]'}`} />
                 <span>{tabInfo.label}</span>
                 {!isAllowed && (
-                  <Lock className="w-3 h-3 text-stone-400 ml-0.5" />
+                  <Lock className="w-3 h-3 text-[#59636B] ml-0.5" />
                 )}
               </button>
             );
@@ -406,7 +406,7 @@ export const SafespaceControlCentreView: React.FC = () => {
       {/* Main Content Area */}
       {!isCurrentTabAllowed ? (
         /* RBAC ACCESS RESTRICTED SCREEN */
-        <div className="bg-stone-900 text-stone-100 rounded-3xl p-12 text-center border border-stone-800 shadow-xl space-y-6 max-w-3xl mx-auto my-8 animate-in zoom-in-95">
+        <div className="bg-[#17212B] text-[#F3F1EC] rounded-3xl p-12 text-center border border-[#17212B] shadow-xl space-y-6 max-w-3xl mx-auto my-8 animate-in zoom-in-95">
           <div className="w-16 h-16 rounded-full bg-rose-950/80 border border-rose-800 flex items-center justify-center mx-auto text-rose-400">
             <Lock className="w-8 h-8" />
           </div>
@@ -415,17 +415,17 @@ export const SafespaceControlCentreView: React.FC = () => {
             <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-rose-900/60 text-rose-300 border border-rose-700 uppercase tracking-wider">
               Access Restricted by RBAC Policy
             </span>
-            <h2 className="font-serif text-2xl font-bold text-amber-50">
+            <h2 className="font-display text-2xl font-bold text-[#FAF9F6]">
               {TAB_CONFIG[activeTab].label} View Restricted
             </h2>
-            <p className="text-xs text-stone-400 max-w-lg mx-auto leading-relaxed">
-              Your active role <span className="text-amber-300 font-bold">{ROLE_PERMISSIONS[activeRole].label}</span> does not have authorization to view or manage {TAB_CONFIG[activeTab].label.toLowerCase()}.
+            <p className="text-xs text-[#59636B] max-w-lg mx-auto leading-relaxed">
+              Your active role <span className="text-[#FAF9F6] font-bold">{ROLE_PERMISSIONS[activeRole].label}</span> does not have authorization to view or manage {TAB_CONFIG[activeTab].label.toLowerCase()}.
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-stone-800/80 border border-stone-700 text-left max-w-md mx-auto space-y-2 text-xs">
-            <div className="font-bold text-stone-200">Security Governance Policy:</div>
-            <p className="text-stone-400 leading-normal text-[11px]">
+          <div className="p-4 rounded-2xl bg-[#17212B]/80 border border-[#59636B] text-left max-w-md mx-auto space-y-2 text-xs">
+            <div className="font-bold text-[#E3E2DE]">Security Governance Policy:</div>
+            <p className="text-[#59636B] leading-normal text-[11px]">
               {activeRole === 'FINANCE' && activeTab === 'SAFEGUARDING' && (
                 "Finance personnel are strictly isolated from sensitive safeguarding case files and seeker crisis disclosures to preserve Privacy-by-Design and confidentiality."
               )}
@@ -444,21 +444,21 @@ export const SafespaceControlCentreView: React.FC = () => {
           <div className="flex items-center justify-center gap-3 pt-2">
             <button
               onClick={() => setActiveRole('SUPER_ADMIN')}
-              className="px-5 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-bold transition shadow-md"
+              className="px-5 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-[#17212B] text-xs font-bold transition shadow-md"
             >
               Switch to Super Admin Role
             </button>
             <button
               onClick={() => setActiveTab(ROLE_PERMISSIONS[activeRole].allowedTabs[0] || 'ANALYTICS')}
-              className="px-5 py-2.5 rounded-2xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-medium border border-stone-700 transition"
+              className="px-5 py-2.5 rounded-2xl bg-[#17212B] hover:bg-[#59636B] text-[#E3E2DE] text-xs font-medium border border-[#59636B] transition"
             >
               Return to Permitted Tab
             </button>
           </div>
         </div>
       ) : loading || !data ? (
-        <div className="p-12 text-center text-stone-500 font-medium bg-white rounded-3xl border border-stone-200 shadow-xs">
-          <RefreshCw className="w-6 h-6 animate-spin mx-auto text-emerald-800 mb-2" />
+        <div className="p-12 text-center text-[#59636B] font-medium bg-white rounded-3xl border border-[#E3E2DE] shadow-xs">
+          <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#123B5D] mb-2" />
           Loading Safespace Control Centre Datasets...
         </div>
       ) : (
@@ -468,72 +468,72 @@ export const SafespaceControlCentreView: React.FC = () => {
           {activeTab === 'ANALYTICS' && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-2xs space-y-1">
-                  <div className="text-[10px] uppercase font-bold text-stone-400">Total Revenue (GMV)</div>
-                  <div className="font-serif text-2xl font-bold text-emerald-950">
+                <div className="bg-white p-5 rounded-2xl border border-[#E3E2DE] shadow-2xs space-y-1">
+                  <div className="text-[10px] uppercase font-bold text-[#59636B]">Total Revenue (GMV)</div>
+                  <div className="font-display text-2xl font-bold text-[#0D2A42]">
                     ₦{(data.metrics?.totalRevenueNGN || 0).toLocaleString()}
                   </div>
-                  <div className="text-[10px] text-stone-400">100% Gross Session Value</div>
+                  <div className="text-[10px] text-[#59636B]">100% Gross Session Value</div>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-2xs space-y-1">
-                  <div className="text-[10px] uppercase font-bold text-stone-400">Platform Share (60%)</div>
-                  <div className="font-serif text-2xl font-bold text-stone-900">
+                <div className="bg-white p-5 rounded-2xl border border-[#E3E2DE] shadow-2xs space-y-1">
+                  <div className="text-[10px] uppercase font-bold text-[#59636B]">Platform Share (60%)</div>
+                  <div className="font-display text-2xl font-bold text-[#17212B]">
                     ₦{(data.metrics?.platformMarginNGN || 0).toLocaleString()}
                   </div>
-                  <div className="text-[10px] text-emerald-700 font-semibold">Safespace Margin</div>
+                  <div className="text-[10px] text-[#123B5D] font-semibold">Safespace Margin</div>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-2xs space-y-1">
-                  <div className="text-[10px] uppercase font-bold text-stone-400">Listener Earnings (40%)</div>
-                  <div className="font-serif text-2xl font-bold text-amber-900">
+                <div className="bg-white p-5 rounded-2xl border border-[#E3E2DE] shadow-2xs space-y-1">
+                  <div className="text-[10px] uppercase font-bold text-[#59636B]">Listener Earnings (40%)</div>
+                  <div className="font-display text-2xl font-bold text-amber-900">
                     ₦{(data.metrics?.totalPayoutsNGN || 0).toLocaleString()}
                   </div>
                   <div className="text-[10px] text-amber-700 font-semibold">Peer Listener Pool Share</div>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-2xs space-y-1">
-                  <div className="text-[10px] uppercase font-bold text-stone-400">Completed Sessions</div>
-                  <div className="font-serif text-2xl font-bold text-stone-900">
+                <div className="bg-white p-5 rounded-2xl border border-[#E3E2DE] shadow-2xs space-y-1">
+                  <div className="text-[10px] uppercase font-bold text-[#59636B]">Completed Sessions</div>
+                  <div className="font-display text-2xl font-bold text-[#17212B]">
                     {data.metrics?.completedSessions || 0}
                   </div>
-                  <div className="text-[10px] text-stone-400">Out of {data.sessions?.length || 0} initiated</div>
+                  <div className="text-[10px] text-[#59636B]">Out of {data.sessions?.length || 0} initiated</div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
-                  <h3 className="font-serif text-lg font-bold text-stone-900">Platform Operational Performance</h3>
+                <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
+                  <h3 className="font-display text-lg font-bold text-[#17212B]">Platform Operational Performance</h3>
                   <div className="space-y-3 text-xs">
-                    <div className="flex justify-between p-3 rounded-xl bg-stone-50 border border-stone-200">
-                      <span className="text-stone-600 font-medium">Registered Seekers</span>
-                      <span className="font-bold text-stone-900">{data.users?.length || 0} Accounts</span>
+                    <div className="flex justify-between p-3 rounded-xl bg-[#FAF9F6] border border-[#E3E2DE]">
+                      <span className="text-[#59636B] font-medium">Registered Seekers</span>
+                      <span className="font-bold text-[#17212B]">{data.users?.length || 0} Accounts</span>
                     </div>
-                    <div className="flex justify-between p-3 rounded-xl bg-stone-50 border border-stone-200">
-                      <span className="text-stone-600 font-medium">Verified Listeners</span>
-                      <span className="font-bold text-emerald-800">{data.providers?.filter((p: any) => p.verified)?.length || 0} Verified</span>
+                    <div className="flex justify-between p-3 rounded-xl bg-[#FAF9F6] border border-[#E3E2DE]">
+                      <span className="text-[#59636B] font-medium">Verified Listeners</span>
+                      <span className="font-bold text-[#123B5D]">{data.providers?.filter((p: any) => p.verified)?.length || 0} Verified</span>
                     </div>
-                    <div className="flex justify-between p-3 rounded-xl bg-stone-50 border border-stone-200">
-                      <span className="text-stone-600 font-medium">Active Free Trials Claimed</span>
+                    <div className="flex justify-between p-3 rounded-xl bg-[#FAF9F6] border border-[#E3E2DE]">
+                      <span className="text-[#59636B] font-medium">Active Free Trials Claimed</span>
                       <span className="font-bold text-blue-700">{data.users?.filter((u: any) => u.freeTrialUsed)?.length || 0} Claimed</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
-                  <h3 className="font-serif text-lg font-bold text-stone-900">Trust & Safety Overview</h3>
+                <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
+                  <h3 className="font-display text-lg font-bold text-[#17212B]">Trust & Safety Overview</h3>
                   <div className="space-y-3 text-xs">
                     <div className="flex justify-between p-3 rounded-xl bg-rose-50 border border-rose-200">
                       <span className="text-rose-800 font-medium">Pending Safety Incidents</span>
                       <span className="font-bold text-rose-900">{data.metrics?.pendingSafetyReports || 0} Flagged</span>
                     </div>
-                    <div className="flex justify-between p-3 rounded-xl bg-stone-50 border border-stone-200">
-                      <span className="text-stone-600 font-medium">Safeguarding Cases Triage</span>
-                      <span className="font-bold text-stone-900">{data.safeguardingCases?.length || 0} Active Cases</span>
+                    <div className="flex justify-between p-3 rounded-xl bg-[#FAF9F6] border border-[#E3E2DE]">
+                      <span className="text-[#59636B] font-medium">Safeguarding Cases Triage</span>
+                      <span className="font-bold text-[#17212B]">{data.safeguardingCases?.length || 0} Active Cases</span>
                     </div>
-                    <div className="flex justify-between p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-                      <span className="text-emerald-800 font-medium">Human-in-the-Loop Audit Trail</span>
-                      <span className="font-bold text-emerald-900">{data.auditLogs?.length || 0} Events Logged</span>
+                    <div className="flex justify-between p-3 rounded-xl bg-[#F3F1EC] border border-[#123B5D]/20">
+                      <span className="text-[#123B5D] font-medium">Human-in-the-Loop Audit Trail</span>
+                      <span className="font-bold text-[#123B5D]">{data.auditLogs?.length || 0} Events Logged</span>
                     </div>
                   </div>
                 </div>
@@ -543,19 +543,19 @@ export const SafespaceControlCentreView: React.FC = () => {
 
           {/* TAB 2: SESSIONS */}
           {activeTab === 'SESSIONS' && (
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+            <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-stone-900">Sessions Control Stream</h3>
-                  <p className="text-xs text-stone-500">Live WebRTC session statuses, time allocation, seeker/listener linkage</p>
+                  <h3 className="font-display text-lg font-bold text-[#17212B]">Sessions Control Stream</h3>
+                  <p className="text-xs text-[#59636B]">Live WebRTC session statuses, time allocation, seeker/listener linkage</p>
                 </div>
-                <div className="text-xs font-mono text-stone-400">Total: {data.sessions?.length || 0} Sessions</div>
+                <div className="text-xs font-mono text-[#59636B]">Total: {data.sessions?.length || 0} Sessions</div>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-stone-200 text-stone-400 uppercase text-[10px] font-semibold">
+                    <tr className="border-b border-[#E3E2DE] text-[#59636B] uppercase text-[10px] font-semibold">
                       <th className="py-3 px-3">Session ID</th>
                       <th className="py-3 px-3">Seeker</th>
                       <th className="py-3 px-3">Listener</th>
@@ -564,24 +564,24 @@ export const SafespaceControlCentreView: React.FC = () => {
                       <th className="py-3 px-3">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100 text-stone-700">
+                  <tbody className="divide-y divide-[#F3F1EC] text-[#59636B]">
                     {data.sessions?.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-8 text-center text-stone-400">No sessions recorded yet.</td>
+                        <td colSpan={6} className="py-8 text-center text-[#59636B]">No sessions recorded yet.</td>
                       </tr>
                     ) : (
                       data.sessions?.map((s: any) => (
-                        <tr key={s.id} className="hover:bg-stone-50">
-                          <td className="py-3 px-3 font-mono text-[11px] text-stone-500">{s.id}</td>
-                          <td className="py-3 px-3 font-bold text-stone-900">{s.seekerDisplayName || s.seekerId}</td>
-                          <td className="py-3 px-3 font-medium text-stone-800">{s.providerDisplayName || s.providerId}</td>
-                          <td className="py-3 px-3 text-stone-600">{s.packageName || 'Standard'}</td>
+                        <tr key={s.id} className="hover:bg-[#FAF9F6]">
+                          <td className="py-3 px-3 font-mono text-[11px] text-[#59636B]">{s.id}</td>
+                          <td className="py-3 px-3 font-bold text-[#17212B]">{s.seekerDisplayName || s.seekerId}</td>
+                          <td className="py-3 px-3 font-medium text-[#17212B]">{s.providerDisplayName || s.providerId}</td>
+                          <td className="py-3 px-3 text-[#59636B]">{s.packageName || 'Standard'}</td>
                           <td className="py-3 px-3 font-mono">{Math.floor(s.allocatedSeconds / 60)} mins</td>
                           <td className="py-3 px-3">
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              s.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' :
+                              s.status === 'ACTIVE' ? 'bg-[#123B5D]/10 text-[#123B5D]' :
                               s.status === 'COMPLETED' ? 'bg-blue-100 text-blue-800' :
-                              'bg-stone-100 text-stone-700'
+                              'bg-[#F3F1EC] text-[#59636B]'
                             }`}>
                               {s.status}
                             </span>
@@ -597,20 +597,20 @@ export const SafespaceControlCentreView: React.FC = () => {
 
           {/* TAB 3: USERS */}
           {activeTab === 'USERS' && (
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+            <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-stone-900">User Account Roster</h3>
-                  <p className="text-xs text-stone-500">Manage support seekers, roles, account statuses and trial flags</p>
+                  <h3 className="font-display text-lg font-bold text-[#17212B]">User Account Roster</h3>
+                  <p className="text-xs text-[#59636B]">Manage support seekers, roles, account statuses and trial flags</p>
                 </div>
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-2.5" />
+                  <Search className="w-3.5 h-3.5 text-[#59636B] absolute left-3 top-2.5" />
                   <input
                     type="text"
                     placeholder="Search users..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-8 pr-3 py-1.5 rounded-xl border border-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-stone-400"
+                    className="pl-8 pr-3 py-1.5 rounded-xl border border-[#E3E2DE] text-xs focus:outline-none focus:ring-1 focus:ring-[#59636B]"
                   />
                 </div>
               </div>
@@ -618,7 +618,7 @@ export const SafespaceControlCentreView: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-stone-200 text-stone-400 uppercase text-[10px] font-semibold">
+                    <tr className="border-b border-[#E3E2DE] text-[#59636B] uppercase text-[10px] font-semibold">
                       <th className="py-3 px-3">User ID</th>
                       <th className="py-3 px-3">Display Name</th>
                       <th className="py-3 px-3">Email</th>
@@ -628,23 +628,23 @@ export const SafespaceControlCentreView: React.FC = () => {
                       <th className="py-3 px-3 text-right">Administrative Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100 text-stone-700">
+                  <tbody className="divide-y divide-[#F3F1EC] text-[#59636B]">
                     {data.users?.filter((u: any) => 
                       u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                       u.email?.toLowerCase().includes(searchTerm.toLowerCase())
                     ).map((u: any) => (
-                      <tr key={u.id} className="hover:bg-stone-50">
-                        <td className="py-3 px-3 font-mono text-[11px] text-stone-500">{u.id}</td>
-                        <td className="py-3 px-3 font-bold text-stone-900">{u.displayName}</td>
-                        <td className="py-3 px-3 text-stone-600">{u.email}</td>
+                      <tr key={u.id} className="hover:bg-[#FAF9F6]">
+                        <td className="py-3 px-3 font-mono text-[11px] text-[#59636B]">{u.id}</td>
+                        <td className="py-3 px-3 font-bold text-[#17212B]">{u.displayName}</td>
+                        <td className="py-3 px-3 text-[#59636B]">{u.email}</td>
                         <td className="py-3 px-3">
-                          <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-800 text-[10px] font-mono font-bold">
+                          <span className="px-2 py-0.5 rounded-md bg-[#F3F1EC] text-[#17212B] text-[10px] font-mono font-bold">
                             {u.role}
                           </span>
                         </td>
                         <td className="py-3 px-3">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            u.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                            u.status === 'ACTIVE' ? 'bg-[#123B5D]/10 text-[#123B5D]' : 'bg-rose-100 text-rose-800'
                           }`}>
                             {u.status}
                           </span>
@@ -658,7 +658,7 @@ export const SafespaceControlCentreView: React.FC = () => {
                             className={`px-3 py-1 rounded-xl text-[10px] font-bold transition ${
                               u.status === 'ACTIVE'
                                 ? 'bg-rose-100 hover:bg-rose-200 text-rose-800'
-                                : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800'
+                                : 'bg-[#123B5D]/10 hover:bg-[#123B5D]/20 text-[#123B5D]'
                             }`}
                           >
                             {u.status === 'ACTIVE' ? 'Suspend Account' : 'Reactivate Account'}
@@ -677,11 +677,11 @@ export const SafespaceControlCentreView: React.FC = () => {
             <div className="space-y-6">
               
               {/* Vetting & Onboarding Pipeline Queue */}
-              <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+              <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h3 className="font-serif text-lg font-bold text-stone-900">Provider Applications & Vetting Pipeline</h3>
-                    <p className="text-xs text-stone-500">
+                    <h3 className="font-display text-lg font-bold text-[#17212B]">Provider Applications & Vetting Pipeline</h3>
+                    <p className="text-xs text-[#59636B]">
                       Backend-authoritative applicant screening, verification, assessments, training, and final approval
                     </p>
                   </div>
@@ -691,61 +691,61 @@ export const SafespaceControlCentreView: React.FC = () => {
                 </div>
 
                 {(!data.providerApplications || data.providerApplications.length === 0) ? (
-                  <div className="p-8 text-center text-xs text-stone-400 border border-dashed border-stone-200 rounded-xl">
+                  <div className="p-8 text-center text-xs text-[#59636B] border border-dashed border-[#E3E2DE] rounded-xl">
                     No pending provider applications in the vetting pipeline.
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {data.providerApplications.map((app: any) => (
-                      <div key={app.id} className="p-5 rounded-2xl border border-stone-200 bg-[#FAF9F6] space-y-4">
+                      <div key={app.id} className="p-5 rounded-2xl border border-[#E3E2DE] bg-[#FAF9F6] space-y-4">
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-sm text-[#17212B]">{app.displayName}</span>
-                              <span className="text-xs text-stone-500">({app.email})</span>
+                              <span className="text-xs text-[#59636B]">({app.email})</span>
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                app.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' :
+                                app.status === 'APPROVED' ? 'bg-[#123B5D]/10 text-[#123B5D]' :
                                 app.status === 'TRAINING' ? 'bg-purple-100 text-purple-800' :
                                 app.status === 'INTERVIEW' ? 'bg-blue-100 text-blue-800' :
                                 app.status === 'SCREENING' ? 'bg-amber-100 text-amber-800' :
-                                'bg-stone-100 text-stone-800'
+                                'bg-[#F3F1EC] text-[#17212B]'
                               }`}>
                                 Stage: {app.status}
                               </span>
                             </div>
-                            <p className="text-xs text-stone-600 leading-relaxed max-w-2xl">
+                            <p className="text-xs text-[#59636B] leading-relaxed max-w-2xl">
                               {app.bioIntroduction || 'No bio submitted.'}
                             </p>
-                            <div className="flex flex-wrap items-center gap-3 text-[11px] text-stone-500 pt-1">
-                              <span>Languages: <strong className="text-stone-800">{app.languagesSpoken?.join(', ')}</strong></span>
+                            <div className="flex flex-wrap items-center gap-3 text-[11px] text-[#59636B] pt-1">
+                              <span>Languages: <strong className="text-[#17212B]">{app.languagesSpoken?.join(', ')}</strong></span>
                               <span>•</span>
-                              <span>Max Duration: <strong className="text-stone-800">{app.maxDurationCapability} mins</strong></span>
+                              <span>Max Duration: <strong className="text-[#17212B]">{app.maxDurationCapability} mins</strong></span>
                               <span>•</span>
-                              <span>Age Declaration: <strong className="text-stone-800">{app.ageConfirmed ? '18+ Verified' : 'Unconfirmed'}</strong></span>
+                              <span>Age Declaration: <strong className="text-[#17212B]">{app.ageConfirmed ? '18+ Verified' : 'Unconfirmed'}</strong></span>
                             </div>
                           </div>
 
                           <div className="text-right shrink-0">
-                            <span className="text-[10px] text-stone-400 block">Submitted</span>
-                            <span className="text-xs font-mono text-stone-700">
+                            <span className="text-[10px] text-[#59636B] block">Submitted</span>
+                            <span className="text-xs font-mono text-[#59636B]">
                               {new Date(app.submittedAt || app.createdAt).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
 
                         {/* Stage Progression Checklist & Operational Controls */}
-                        <div className="p-3.5 rounded-xl bg-white border border-stone-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div className="p-3.5 rounded-xl bg-white border border-[#E3E2DE]/80 flex flex-wrap items-center justify-between gap-3 text-xs">
                           <div className="flex flex-wrap items-center gap-2 text-[11px]">
-                            <span className={`px-2 py-0.5 rounded font-medium ${app.identityVerificationStatus === 'VERIFIED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-stone-100 text-stone-600'}`}>
+                            <span className={`px-2 py-0.5 rounded font-medium ${app.identityVerificationStatus === 'VERIFIED' ? 'bg-[#F3F1EC] text-[#123B5D] border border-[#123B5D]/20' : 'bg-[#F3F1EC] text-[#59636B]'}`}>
                               ID: {app.identityVerificationStatus}
                             </span>
-                            <span className={`px-2 py-0.5 rounded font-medium ${app.backgroundScreeningStatus === 'PASSED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-stone-100 text-stone-600'}`}>
+                            <span className={`px-2 py-0.5 rounded font-medium ${app.backgroundScreeningStatus === 'PASSED' ? 'bg-[#F3F1EC] text-[#123B5D] border border-[#123B5D]/20' : 'bg-[#F3F1EC] text-[#59636B]'}`}>
                               Screening: {app.backgroundScreeningStatus}
                             </span>
-                            <span className={`px-2 py-0.5 rounded font-medium ${app.assessmentStatus === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-stone-100 text-stone-600'}`}>
+                            <span className={`px-2 py-0.5 rounded font-medium ${app.assessmentStatus === 'COMPLETED' ? 'bg-[#F3F1EC] text-[#123B5D] border border-[#123B5D]/20' : 'bg-[#F3F1EC] text-[#59636B]'}`}>
                               Interview: {app.assessmentStatus}
                             </span>
-                            <span className={`px-2 py-0.5 rounded font-medium ${app.safeguardingTrainingStatus === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-stone-100 text-stone-600'}`}>
+                            <span className={`px-2 py-0.5 rounded font-medium ${app.safeguardingTrainingStatus === 'COMPLETED' ? 'bg-[#F3F1EC] text-[#123B5D] border border-[#123B5D]/20' : 'bg-[#F3F1EC] text-[#59636B]'}`}>
                               Safeguarding: {app.safeguardingTrainingStatus}
                             </span>
                           </div>
@@ -755,7 +755,7 @@ export const SafespaceControlCentreView: React.FC = () => {
                             {app.identityVerificationStatus !== 'VERIFIED' && (
                               <button
                                 onClick={() => handleAdvanceApplicationStage(app.id, 'VERIFY_IDENTITY')}
-                                className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 text-[10px] font-bold transition cursor-pointer"
+                                className="px-2.5 py-1 rounded-lg bg-[#F3F1EC] hover:bg-[#E3E2DE] text-[#17212B] text-[10px] font-bold transition cursor-pointer"
                               >
                                 Verify ID
                               </button>
@@ -805,55 +805,55 @@ export const SafespaceControlCentreView: React.FC = () => {
               </div>
 
               {/* Verified Active Providers Roster */}
-              <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+              <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h3 className="font-serif text-lg font-bold text-stone-900">Verified Active Peer Listeners</h3>
-                    <p className="text-xs text-stone-500">Live operational listening roster, quality ratings, and verification states</p>
+                    <h3 className="font-display text-lg font-bold text-[#17212B]">Verified Active Peer Listeners</h3>
+                    <p className="text-xs text-[#59636B]">Live operational listening roster, quality ratings, and verification states</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {data.providers?.map((p: any) => (
-                    <div key={p.id} className="p-4 rounded-2xl border border-stone-200 bg-stone-50/50 flex flex-col justify-between space-y-3">
+                    <div key={p.id} className="p-4 rounded-2xl border border-[#E3E2DE] bg-[#FAF9F6] flex flex-col justify-between space-y-3">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <img src={p.avatarUrl} alt={p.displayName} className="w-12 h-12 rounded-full object-cover border border-stone-200" />
+                          <img src={p.avatarUrl} alt={p.displayName} className="w-12 h-12 rounded-full object-cover border border-[#E3E2DE]" />
                           <div>
-                            <div className="font-bold text-sm text-stone-900">{p.displayName}</div>
-                            <div className="text-[11px] text-stone-500">{p.bio?.slice(0, 70)}...</div>
+                            <div className="font-bold text-sm text-[#17212B]">{p.displayName}</div>
+                            <div className="text-[11px] text-[#59636B]">{p.bio?.slice(0, 70)}...</div>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-[10px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md">
                                 ★ {p.rating || 5.0} ({p.ratingCount || 0} reviews)
                               </span>
-                              <span className="text-[10px] text-stone-500">Quality: {p.qualityScore}%</span>
+                              <span className="text-[10px] text-[#59636B]">Quality: {p.qualityScore}%</span>
                             </div>
                           </div>
                         </div>
 
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                          p.verificationStatus === 'VERIFIED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
+                          p.verificationStatus === 'VERIFIED' ? 'bg-[#123B5D]/10 text-[#123B5D]' : 'bg-amber-100 text-amber-900'
                         }`}>
                           {p.verificationStatus}
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between pt-2 border-t border-stone-200 text-xs">
-                        <div className="text-[11px] text-stone-500">
-                          Completed: <span className="font-bold text-stone-800">{p.sessionsCompleted || 0} sessions</span>
+                      <div className="flex items-center justify-between pt-2 border-t border-[#E3E2DE] text-xs">
+                        <div className="text-[11px] text-[#59636B]">
+                          Completed: <span className="font-bold text-[#17212B]">{p.sessionsCompleted || 0} sessions</span>
                         </div>
                         <div className="flex gap-2">
                           {p.verificationStatus !== 'VERIFIED' ? (
                             <button
                               onClick={() => handleVerifyProvider(p.id, 'VERIFIED')}
-                              className="px-3 py-1 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-amber-50 text-[10px] font-bold transition shadow-xs"
+                              className="px-3 py-1 rounded-xl bg-[#123B5D] hover:bg-[#123B5D] text-[#FAF9F6] text-[10px] font-bold transition shadow-xs"
                             >
                               Approve Listener
                             </button>
                           ) : (
                             <button
                               onClick={() => handleVerifyProvider(p.id, 'UNDER_REVIEW')}
-                              className="px-3 py-1 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-800 text-[10px] font-bold transition"
+                              className="px-3 py-1 rounded-xl bg-[#E3E2DE] hover:bg-[#E3E2DE] text-[#17212B] text-[10px] font-bold transition"
                             >
                               Flag for Re-review
                             </button>
@@ -869,11 +869,11 @@ export const SafespaceControlCentreView: React.FC = () => {
 
           {/* TAB 5: MATCHING */}
           {activeTab === 'MATCHING' && (
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+            <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-stone-900">Matching Engine Operations</h3>
-                  <p className="text-xs text-stone-500">Active support requests queue & manual matching controls</p>
+                  <h3 className="font-display text-lg font-bold text-[#17212B]">Matching Engine Operations</h3>
+                  <p className="text-xs text-[#59636B]">Active support requests queue & manual matching controls</p>
                 </div>
                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-200">
                   Auto-Match Engine Active
@@ -883,7 +883,7 @@ export const SafespaceControlCentreView: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-stone-200 text-stone-400 uppercase text-[10px] font-semibold">
+                    <tr className="border-b border-[#E3E2DE] text-[#59636B] uppercase text-[10px] font-semibold">
                       <th className="py-3 px-3">Request ID</th>
                       <th className="py-3 px-3">Seeker ID</th>
                       <th className="py-3 px-3">Support Reason</th>
@@ -892,17 +892,17 @@ export const SafespaceControlCentreView: React.FC = () => {
                       <th className="py-3 px-3 text-right">Manual Match</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100 text-stone-700">
+                  <tbody className="divide-y divide-[#F3F1EC] text-[#59636B]">
                     {data.supportRequests?.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-8 text-center text-stone-400">No pending support requests in queue.</td>
+                        <td colSpan={6} className="py-8 text-center text-[#59636B]">No pending support requests in queue.</td>
                       </tr>
                     ) : (
                       data.supportRequests?.map((r: any) => (
-                        <tr key={r.id} className="hover:bg-stone-50">
-                          <td className="py-3 px-3 font-mono text-[11px] text-stone-500">{r.id}</td>
-                          <td className="py-3 px-3 font-bold text-stone-900">{r.seekerId}</td>
-                          <td className="py-3 px-3 text-stone-700">{r.supportReason || 'General active listening'}</td>
+                        <tr key={r.id} className="hover:bg-[#FAF9F6]">
+                          <td className="py-3 px-3 font-mono text-[11px] text-[#59636B]">{r.id}</td>
+                          <td className="py-3 px-3 font-bold text-[#17212B]">{r.seekerId}</td>
+                          <td className="py-3 px-3 text-[#59636B]">{r.supportReason || 'General active listening'}</td>
                           <td className="py-3 px-3 capitalize">{r.genderPreference || 'No preference'}</td>
                           <td className="py-3 px-3">
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900">
@@ -923,7 +923,7 @@ export const SafespaceControlCentreView: React.FC = () => {
                                     .then(j => triggerSuccessAlert(j.message));
                                 }
                               }}
-                              className="px-3 py-1 rounded-xl bg-stone-900 hover:bg-stone-800 text-amber-300 text-[10px] font-bold transition"
+                              className="px-3 py-1 rounded-xl bg-[#17212B] hover:bg-[#17212B] text-[#FAF9F6] text-[10px] font-bold transition"
                             >
                               Assign Listener
                             </button>
@@ -939,18 +939,18 @@ export const SafespaceControlCentreView: React.FC = () => {
 
           {/* TAB 6: PAYMENTS */}
           {activeTab === 'PAYMENTS' && (
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+            <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-stone-900">Payment Ledger & Transactions</h3>
-                  <p className="text-xs text-stone-500">Gross sales, package purchases, session extension payments</p>
+                  <h3 className="font-display text-lg font-bold text-[#17212B]">Payment Ledger & Transactions</h3>
+                  <p className="text-xs text-[#59636B]">Gross sales, package purchases, session extension payments</p>
                 </div>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-stone-200 text-stone-400 uppercase text-[10px] font-semibold">
+                    <tr className="border-b border-[#E3E2DE] text-[#59636B] uppercase text-[10px] font-semibold">
                       <th className="py-3 px-3">Earning Record</th>
                       <th className="py-3 px-3">Session</th>
                       <th className="py-3 px-3">Package</th>
@@ -960,17 +960,17 @@ export const SafespaceControlCentreView: React.FC = () => {
                       <th className="py-3 px-3">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100 text-stone-700">
+                  <tbody className="divide-y divide-[#F3F1EC] text-[#59636B]">
                     {data.providerEarnings?.map((e: any) => (
-                      <tr key={e.id} className="hover:bg-stone-50">
-                        <td className="py-3 px-3 font-mono text-[11px] text-stone-500">{e.id}</td>
-                        <td className="py-3 px-3 text-stone-800 font-mono">{e.sessionId}</td>
-                        <td className="py-3 px-3 font-bold text-stone-900">{e.packageName}</td>
-                        <td className="py-3 px-3 font-mono font-bold text-emerald-950">₦{e.grossSessionValueNGN.toLocaleString()}</td>
-                        <td className="py-3 px-3 font-mono text-stone-600">₦{(e.grossSessionValueNGN * 0.6).toLocaleString()}</td>
+                      <tr key={e.id} className="hover:bg-[#FAF9F6]">
+                        <td className="py-3 px-3 font-mono text-[11px] text-[#59636B]">{e.id}</td>
+                        <td className="py-3 px-3 text-[#17212B] font-mono">{e.sessionId}</td>
+                        <td className="py-3 px-3 font-bold text-[#17212B]">{e.packageName}</td>
+                        <td className="py-3 px-3 font-mono font-bold text-[#0D2A42]">₦{e.grossSessionValueNGN.toLocaleString()}</td>
+                        <td className="py-3 px-3 font-mono text-[#59636B]">₦{(e.grossSessionValueNGN * 0.6).toLocaleString()}</td>
                         <td className="py-3 px-3 font-mono text-amber-800 font-bold">₦{e.providerAmountNGN.toLocaleString()}</td>
                         <td className="py-3 px-3">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#123B5D]/10 text-[#123B5D]">
                             {e.status}
                           </span>
                         </td>
@@ -984,37 +984,37 @@ export const SafespaceControlCentreView: React.FC = () => {
 
           {/* TAB 7: EARNINGS */}
           {activeTab === 'EARNINGS' && (
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+            <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-stone-900">Listener Earnings Pool</h3>
-                  <p className="text-xs text-stone-500">Transparent 40% listener revenue allocation breakdown</p>
+                  <h3 className="font-display text-lg font-bold text-[#17212B]">Listener Earnings Pool</h3>
+                  <p className="text-xs text-[#59636B]">Transparent 40% listener revenue allocation breakdown</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
                   <div className="text-[10px] uppercase font-bold text-amber-800">Total Available Earnings</div>
-                  <div className="font-serif text-2xl font-bold text-amber-950 mt-1">
+                  <div className="font-display text-2xl font-bold text-amber-950 mt-1">
                     ₦{data.providerEarnings?.filter((e: any) => e.status === 'AVAILABLE').reduce((s: number, e: any) => s + e.providerAmountNGN, 0).toLocaleString() || 0}
                   </div>
                   <div className="text-[10px] text-amber-700 mt-1">Ready for payout processing</div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200">
-                  <div className="text-[10px] uppercase font-bold text-stone-500">Pending Escrow Earnings</div>
-                  <div className="font-serif text-2xl font-bold text-stone-900 mt-1">
+                <div className="p-4 rounded-2xl bg-[#FAF9F6] border border-[#E3E2DE]">
+                  <div className="text-[10px] uppercase font-bold text-[#59636B]">Pending Escrow Earnings</div>
+                  <div className="font-display text-2xl font-bold text-[#17212B] mt-1">
                     ₦{data.providerEarnings?.filter((e: any) => e.status === 'PENDING').reduce((s: number, e: any) => s + e.providerAmountNGN, 0).toLocaleString() || 0}
                   </div>
-                  <div className="text-[10px] text-stone-500 mt-1">Pending session completion confirmation</div>
+                  <div className="text-[10px] text-[#59636B] mt-1">Pending session completion confirmation</div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
-                  <div className="text-[10px] uppercase font-bold text-emerald-800">Total Paid Out to Date</div>
-                  <div className="font-serif text-2xl font-bold text-emerald-950 mt-1">
+                <div className="p-4 rounded-2xl bg-[#F3F1EC] border border-[#123B5D]/20">
+                  <div className="text-[10px] uppercase font-bold text-[#123B5D]">Total Paid Out to Date</div>
+                  <div className="font-display text-2xl font-bold text-[#0D2A42] mt-1">
                     ₦{data.payouts?.filter((p: any) => p.status === 'PAID').reduce((s: number, p: any) => s + p.amountNGN, 0).toLocaleString() || 0}
                   </div>
-                  <div className="text-[10px] text-emerald-700 mt-1">Disbursed via bank transfer</div>
+                  <div className="text-[10px] text-[#123B5D] mt-1">Disbursed via bank transfer</div>
                 </div>
               </div>
             </div>
@@ -1022,18 +1022,18 @@ export const SafespaceControlCentreView: React.FC = () => {
 
           {/* TAB 8: PAYOUTS */}
           {activeTab === 'PAYOUTS' && (
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+            <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-stone-900">Listener Bank Payouts</h3>
-                  <p className="text-xs text-stone-500">Approve and disburse listener earnings directly to bank accounts</p>
+                  <h3 className="font-display text-lg font-bold text-[#17212B]">Listener Bank Payouts</h3>
+                  <p className="text-xs text-[#59636B]">Approve and disburse listener earnings directly to bank accounts</p>
                 </div>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-stone-200 text-stone-400 uppercase text-[10px] font-semibold">
+                    <tr className="border-b border-[#E3E2DE] text-[#59636B] uppercase text-[10px] font-semibold">
                       <th className="py-3 px-3">Payout ID</th>
                       <th className="py-3 px-3">Listener ID</th>
                       <th className="py-3 px-3">Bank</th>
@@ -1043,17 +1043,17 @@ export const SafespaceControlCentreView: React.FC = () => {
                       <th className="py-3 px-3 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100 text-stone-700">
+                  <tbody className="divide-y divide-[#F3F1EC] text-[#59636B]">
                     {data.payouts?.map((p: any) => (
-                      <tr key={p.id} className="hover:bg-stone-50">
-                        <td className="py-3 px-3 font-mono text-[11px] text-stone-500">{p.id}</td>
-                        <td className="py-3 px-3 font-bold text-stone-900">{p.providerId}</td>
-                        <td className="py-3 px-3 text-stone-800 font-medium">{p.bankName}</td>
-                        <td className="py-3 px-3 font-mono text-stone-600">{p.accountNumberMasked}</td>
-                        <td className="py-3 px-3 font-serif font-bold text-emerald-900 text-sm">₦{p.amountNGN.toLocaleString()}</td>
+                      <tr key={p.id} className="hover:bg-[#FAF9F6]">
+                        <td className="py-3 px-3 font-mono text-[11px] text-[#59636B]">{p.id}</td>
+                        <td className="py-3 px-3 font-bold text-[#17212B]">{p.providerId}</td>
+                        <td className="py-3 px-3 text-[#17212B] font-medium">{p.bankName}</td>
+                        <td className="py-3 px-3 font-mono text-[#59636B]">{p.accountNumberMasked}</td>
+                        <td className="py-3 px-3 font-display font-bold text-[#123B5D] text-sm">₦{p.amountNGN.toLocaleString()}</td>
                         <td className="py-3 px-3">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            p.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
+                            p.status === 'PAID' ? 'bg-[#123B5D]/10 text-[#123B5D]' : 'bg-amber-100 text-amber-900'
                           }`}>
                             {p.status}
                           </span>
@@ -1062,12 +1062,12 @@ export const SafespaceControlCentreView: React.FC = () => {
                           {p.status !== 'PAID' ? (
                             <button
                               onClick={() => handleProcessPayout(p.id)}
-                              className="px-3 py-1 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-amber-50 text-[10px] font-bold transition"
+                              className="px-3 py-1 rounded-xl bg-[#123B5D] hover:bg-[#123B5D] text-[#FAF9F6] text-[10px] font-bold transition"
                             >
                               Process Bank Payout
                             </button>
                           ) : (
-                            <span className="text-[10px] text-stone-400 font-medium">Processed</span>
+                            <span className="text-[10px] text-[#59636B] font-medium">Processed</span>
                           )}
                         </td>
                       </tr>
@@ -1080,15 +1080,15 @@ export const SafespaceControlCentreView: React.FC = () => {
 
           {/* TAB 9: GIFTS */}
           {activeTab === 'GIFTS' && (
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+            <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-stone-900">Gift Vouchers & Grants</h3>
-                  <p className="text-xs text-stone-500">Issued conversation gift vouchers and promotional credit grants</p>
+                  <h3 className="font-display text-lg font-bold text-[#17212B]">Gift Vouchers & Grants</h3>
+                  <p className="text-xs text-[#59636B]">Issued conversation gift vouchers and promotional credit grants</p>
                 </div>
                 <button
                   onClick={handleGenerateGiftCode}
-                  className="px-4 py-2 rounded-2xl bg-emerald-900 hover:bg-emerald-800 text-amber-50 text-xs font-bold transition shadow-xs flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-2xl bg-[#123B5D] hover:bg-[#123B5D] text-[#FAF9F6] text-xs font-bold transition shadow-xs flex items-center gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Generate Admin Voucher</span>
@@ -1098,7 +1098,7 @@ export const SafespaceControlCentreView: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-stone-200 text-stone-400 uppercase text-[10px] font-semibold">
+                    <tr className="border-b border-[#E3E2DE] text-[#59636B] uppercase text-[10px] font-semibold">
                       <th className="py-3 px-3">Gift Code</th>
                       <th className="py-3 px-3">Purchaser / Grantor</th>
                       <th className="py-3 px-3">Package</th>
@@ -1106,13 +1106,13 @@ export const SafespaceControlCentreView: React.FC = () => {
                       <th className="py-3 px-3">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100 text-stone-700">
+                  <tbody className="divide-y divide-[#F3F1EC] text-[#59636B]">
                     {data.gifts?.map((g: any) => (
-                      <tr key={g.id} className="hover:bg-stone-50">
-                        <td className="py-3 px-3 font-mono font-bold text-emerald-900 text-xs">{g.giftCode}</td>
-                        <td className="py-3 px-3 font-medium text-stone-800">{g.purchaserName}</td>
-                        <td className="py-3 px-3 font-bold text-stone-900">{g.packageName}</td>
-                        <td className="py-3 px-3 text-stone-600">{g.recipientEmail || 'N/A'}</td>
+                      <tr key={g.id} className="hover:bg-[#FAF9F6]">
+                        <td className="py-3 px-3 font-mono font-bold text-[#123B5D] text-xs">{g.giftCode}</td>
+                        <td className="py-3 px-3 font-medium text-[#17212B]">{g.purchaserName}</td>
+                        <td className="py-3 px-3 font-bold text-[#17212B]">{g.packageName}</td>
+                        <td className="py-3 px-3 text-[#59636B]">{g.recipientEmail || 'N/A'}</td>
                         <td className="py-3 px-3">
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
                             {g.status}
@@ -1128,25 +1128,25 @@ export const SafespaceControlCentreView: React.FC = () => {
 
           {/* TAB 10: FEEDBACK */}
           {activeTab === 'FEEDBACK' && (
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+            <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-stone-900">Post-Session Feedback Stream</h3>
-                  <p className="text-xs text-stone-500">Ratings, active listening satisfaction scores, seeker feedback</p>
+                  <h3 className="font-display text-lg font-bold text-[#17212B]">Post-Session Feedback Stream</h3>
+                  <p className="text-xs text-[#59636B]">Ratings, active listening satisfaction scores, seeker feedback</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 space-y-1">
                   <div className="text-[10px] uppercase font-bold text-amber-800">Average Listener Felt-Heard Rate</div>
-                  <div className="font-serif text-3xl font-bold text-amber-950">98.4%</div>
+                  <div className="font-display text-3xl font-bold text-amber-950">98.4%</div>
                   <div className="text-[10px] text-amber-700">Seekers reported feeling genuinely listened to</div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-1">
-                  <div className="text-[10px] uppercase font-bold text-stone-500">Listener Rebooking Preference</div>
-                  <div className="font-serif text-3xl font-bold text-stone-900">94.2%</div>
-                  <div className="text-[10px] text-stone-500">Seekers requested to talk with the same listener again</div>
+                <div className="p-4 rounded-2xl bg-[#FAF9F6] border border-[#E3E2DE] space-y-1">
+                  <div className="text-[10px] uppercase font-bold text-[#59636B]">Listener Rebooking Preference</div>
+                  <div className="font-display text-3xl font-bold text-[#17212B]">94.2%</div>
+                  <div className="text-[10px] text-[#59636B]">Seekers requested to talk with the same listener again</div>
                 </div>
               </div>
             </div>
@@ -1154,18 +1154,18 @@ export const SafespaceControlCentreView: React.FC = () => {
 
           {/* TAB 11: REPORTS */}
           {activeTab === 'REPORTS' && (
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+            <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-stone-900">Safety Incident Reports</h3>
-                  <p className="text-xs text-stone-500">Flags submitted by users or automatically triggered by safety algorithms</p>
+                  <h3 className="font-display text-lg font-bold text-[#17212B]">Safety Incident Reports</h3>
+                  <p className="text-xs text-[#59636B]">Flags submitted by users or automatically triggered by safety algorithms</p>
                 </div>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-stone-200 text-stone-400 uppercase text-[10px] font-semibold">
+                    <tr className="border-b border-[#E3E2DE] text-[#59636B] uppercase text-[10px] font-semibold">
                       <th className="py-3 px-3">Report ID</th>
                       <th className="py-3 px-3">Reporter</th>
                       <th className="py-3 px-3">Category</th>
@@ -1173,13 +1173,13 @@ export const SafespaceControlCentreView: React.FC = () => {
                       <th className="py-3 px-3">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100 text-stone-700">
+                  <tbody className="divide-y divide-[#F3F1EC] text-[#59636B]">
                     {data.safetyReports?.map((r: any) => (
-                      <tr key={r.id} className="hover:bg-stone-50">
-                        <td className="py-3 px-3 font-mono text-[11px] text-stone-500">{r.id}</td>
-                        <td className="py-3 px-3 font-bold text-stone-900">{r.reporterId}</td>
+                      <tr key={r.id} className="hover:bg-[#FAF9F6]">
+                        <td className="py-3 px-3 font-mono text-[11px] text-[#59636B]">{r.id}</td>
+                        <td className="py-3 px-3 font-bold text-[#17212B]">{r.reporterId}</td>
                         <td className="py-3 px-3 font-bold text-rose-800">{r.category}</td>
-                        <td className="py-3 px-3 text-stone-600 max-w-xs truncate">{r.details}</td>
+                        <td className="py-3 px-3 text-[#59636B] max-w-xs truncate">{r.details}</td>
                         <td className="py-3 px-3">
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
                             {r.status}
@@ -1205,45 +1205,45 @@ export const SafespaceControlCentreView: React.FC = () => {
 
           {/* TAB 14: SETTINGS */}
           {activeTab === 'SETTINGS' && (
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-6">
+            <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-6">
               <div>
-                <h3 className="font-serif text-lg font-bold text-stone-900">Safespace System Settings</h3>
-                <p className="text-xs text-stone-500">Configure fee split percentages, free trials, and platform governance</p>
+                <h3 className="font-display text-lg font-bold text-[#17212B]">Safespace System Settings</h3>
+                <p className="text-xs text-[#59636B]">Configure fee split percentages, free trials, and platform governance</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-stone-700">Platform Revenue Fee Share (%)</label>
+                  <label className="text-xs font-bold text-[#59636B]">Platform Revenue Fee Share (%)</label>
                   <input
                     type="number"
                     defaultValue={data.settings?.platformFeePercent || 60}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-stone-400 font-bold text-stone-900"
+                    className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs focus:outline-none focus:ring-1 focus:ring-[#59636B] font-bold text-[#17212B]"
                     onChange={(e) => handleSaveSettings({ platformFeePercent: Number(e.target.value) })}
                   />
-                  <p className="text-[11px] text-stone-400">Default 60% platform operating margin.</p>
+                  <p className="text-[11px] text-[#59636B]">Default 60% platform operating margin.</p>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-stone-700">Listener Earnings Share (%)</label>
+                  <label className="text-xs font-bold text-[#59636B]">Listener Earnings Share (%)</label>
                   <input
                     type="number"
                     defaultValue={data.settings?.providerSharePercent || 40}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-stone-400 font-bold text-stone-900"
+                    className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs focus:outline-none focus:ring-1 focus:ring-[#59636B] font-bold text-[#17212B]"
                     onChange={(e) => handleSaveSettings({ providerSharePercent: Number(e.target.value) })}
                   />
-                  <p className="text-[11px] text-stone-400">Default 40% peer listener compensation pool.</p>
+                  <p className="text-[11px] text-[#59636B]">Default 40% peer listener compensation pool.</p>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-stone-200 flex items-center justify-between">
+              <div className="pt-4 border-t border-[#E3E2DE] flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-stone-900">Free Trial Onboarding</div>
-                  <div className="text-[11px] text-stone-500">Allow 3-minute free trial session for new seeker signups</div>
+                  <div className="text-xs font-bold text-[#17212B]">Free Trial Onboarding</div>
+                  <div className="text-[11px] text-[#59636B]">Allow 3-minute free trial session for new seeker signups</div>
                 </div>
                 <button
                   onClick={() => handleSaveSettings({ freeTrialEnabled: !data.settings?.freeTrialEnabled })}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
-                    data.settings?.freeTrialEnabled ? 'bg-emerald-800 text-amber-50' : 'bg-stone-200 text-stone-700'
+                    data.settings?.freeTrialEnabled ? 'bg-[#123B5D] text-[#FAF9F6]' : 'bg-[#E3E2DE] text-[#59636B]'
                   }`}
                 >
                   {data.settings?.freeTrialEnabled ? 'Enabled' : 'Disabled'}
@@ -1254,13 +1254,13 @@ export const SafespaceControlCentreView: React.FC = () => {
 
           {/* TAB 15: AUDIT LOGS */}
           {activeTab === 'AUDIT_LOGS' && (
-            <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+            <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE] shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-stone-900">Immutable Administrative Audit Log</h3>
-                  <p className="text-xs text-stone-500">Complete record of sensitive administrative actions across the platform</p>
+                  <h3 className="font-display text-lg font-bold text-[#17212B]">Immutable Administrative Audit Log</h3>
+                  <p className="text-xs text-[#59636B]">Complete record of sensitive administrative actions across the platform</p>
                 </div>
-                <span className="text-xs font-mono text-emerald-800 font-bold">
+                <span className="text-xs font-mono text-[#123B5D] font-bold">
                   {data.auditLogs?.length || 0} Records Recorded
                 </span>
               </div>
@@ -1268,7 +1268,7 @@ export const SafespaceControlCentreView: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-stone-200 text-stone-400 uppercase text-[10px] font-semibold">
+                    <tr className="border-b border-[#E3E2DE] text-[#59636B] uppercase text-[10px] font-semibold">
                       <th className="py-3 px-3">Log ID</th>
                       <th className="py-3 px-3">Actor</th>
                       <th className="py-3 px-3">Action</th>
@@ -1276,14 +1276,14 @@ export const SafespaceControlCentreView: React.FC = () => {
                       <th className="py-3 px-3">Timestamp</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100 text-stone-700 font-mono">
+                  <tbody className="divide-y divide-[#F3F1EC] text-[#59636B] font-mono">
                     {data.auditLogs?.map((log: any) => (
-                      <tr key={log.id} className="hover:bg-stone-50">
-                        <td className="py-3 px-3 text-[11px] text-stone-500">{log.id}</td>
-                        <td className="py-3 px-3 font-bold text-stone-900">{log.actorName}</td>
-                        <td className="py-3 px-3 text-emerald-900 font-bold">{log.action}</td>
-                        <td className="py-3 px-3 text-stone-600">{log.resource}:{log.resourceId}</td>
-                        <td className="py-3 px-3 text-stone-400">{new Date(log.timestamp).toLocaleString()}</td>
+                      <tr key={log.id} className="hover:bg-[#FAF9F6]">
+                        <td className="py-3 px-3 text-[11px] text-[#59636B]">{log.id}</td>
+                        <td className="py-3 px-3 font-bold text-[#17212B]">{log.actorName}</td>
+                        <td className="py-3 px-3 text-[#123B5D] font-bold">{log.action}</td>
+                        <td className="py-3 px-3 text-[#59636B]">{log.resource}:{log.resourceId}</td>
+                        <td className="py-3 px-3 text-[#59636B]">{new Date(log.timestamp).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1297,16 +1297,16 @@ export const SafespaceControlCentreView: React.FC = () => {
 
       {/* RBAC Security Permission Matrix Modal */}
       {showMatrixModal && (
-        <div className="fixed inset-0 bg-stone-950/70 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-stone-200 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-stone-200 pb-4">
+        <div className="fixed inset-0 bg-[#17212B]/70 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-[#E3E2DE] shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-[#E3E2DE] pb-4">
               <div>
-                <h2 className="font-serif text-xl font-bold text-stone-900">Safespace RBAC Security Matrix</h2>
-                <p className="text-xs text-stone-500">Role-Based Access Control permissions across administrative modules</p>
+                <h2 className="font-display text-xl font-bold text-[#17212B]">Safespace RBAC Security Matrix</h2>
+                <p className="text-xs text-[#59636B]">Role-Based Access Control permissions across administrative modules</p>
               </div>
               <button
                 onClick={() => setShowMatrixModal(false)}
-                className="p-2 rounded-full hover:bg-stone-100 text-stone-500"
+                className="p-2 rounded-full hover:bg-[#F3F1EC] text-[#59636B]"
               >
                 <XCircle className="w-5 h-5" />
               </button>
@@ -1315,7 +1315,7 @@ export const SafespaceControlCentreView: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-stone-200 text-stone-400 uppercase text-[10px] font-semibold">
+                  <tr className="border-b border-[#E3E2DE] text-[#59636B] uppercase text-[10px] font-semibold">
                     <th className="py-2 px-3">Role</th>
                     <th className="py-2 px-3">Sessions</th>
                     <th className="py-2 px-3">Users</th>
@@ -1325,10 +1325,10 @@ export const SafespaceControlCentreView: React.FC = () => {
                     <th className="py-2 px-3">CMS</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-100 text-stone-700">
+                <tbody className="divide-y divide-[#F3F1EC] text-[#59636B]">
                   {Object.entries(ROLE_PERMISSIONS).map(([roleKey, roleCfg]) => (
-                    <tr key={roleKey} className="hover:bg-stone-50">
-                      <td className="py-3 px-3 font-bold text-stone-900 flex items-center gap-2">
+                    <tr key={roleKey} className="hover:bg-[#FAF9F6]">
+                      <td className="py-3 px-3 font-bold text-[#17212B] flex items-center gap-2">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] ${roleCfg.badgeBg}`}>
                           {roleCfg.label}
                         </span>
