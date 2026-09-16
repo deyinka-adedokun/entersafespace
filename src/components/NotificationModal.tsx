@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   Bell, 
@@ -34,12 +35,12 @@ const TYPE_CONFIG: Record<SafespaceNotificationType, { label: string; icon: Reac
   MATCH_FOUND: { label: 'Match Found', icon: Zap, color: 'text-amber-500 bg-amber-50 border-amber-200' },
   SESSION_REMINDER: { label: 'Session Reminder', icon: Clock, color: 'text-blue-600 bg-blue-50 border-blue-200' },
   SESSION_ENDING: { label: 'Session Ending', icon: PhoneCall, color: 'text-orange-600 bg-orange-50 border-orange-200' },
-  PAYMENT_SUCCESS: { label: 'Payment Success', icon: CreditCard, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
+  PAYMENT_SUCCESS: { label: 'Payment Success', icon: CreditCard, color: 'text-[#123B5D] bg-[#F3F1EC] border-[#123B5D]/20' },
   PAYMENT_FAILED: { label: 'Payment Failed', icon: AlertTriangle, color: 'text-rose-600 bg-rose-50 border-rose-200' },
   GIFT_RECEIVED: { label: 'Gift Voucher', icon: GiftIcon, color: 'text-purple-600 bg-purple-50 border-purple-200' },
   PROVIDER_REQUEST: { label: 'Provider Request', icon: Headphones, color: 'text-teal-600 bg-teal-50 border-teal-200' },
   PROVIDER_SESSION: { label: 'Provider Session', icon: PhoneCall, color: 'text-indigo-600 bg-indigo-50 border-indigo-200' },
-  PAYOUT: { label: 'Bank Payout', icon: Landmark, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
+  PAYOUT: { label: 'Bank Payout', icon: Landmark, color: 'text-[#123B5D] bg-[#F3F1EC] border-[#123B5D]/20' },
   SAFETY_ALERT: { label: 'Safety Alert', icon: ShieldAlert, color: 'text-rose-700 bg-rose-50 border-rose-200' }
 };
 
@@ -67,45 +68,45 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
     : notifications;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-2xl w-full border border-stone-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#17212B]/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white rounded-3xl max-w-2xl w-full border border-[#E3E2DE] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
         
         {/* Modal Header */}
-        <div className="p-5 bg-stone-900 text-amber-50 flex items-center justify-between border-b border-stone-800">
+        <div className="p-5 bg-[#17212B] text-[#FAF9F6] flex items-center justify-between border-b border-[#17212B]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-amber-400/20 text-[#FAF9F6] border border-amber-400/30 flex items-center justify-center">
               <Bell className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-serif text-lg font-bold">Notifications & Preferences</h2>
+                <h2 className="font-display text-lg font-bold">Notifications & Preferences</h2>
                 {unreadCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-stone-950">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-[#17212B]">
                     {unreadCount} New
                   </span>
                 )}
               </div>
-              <p className="text-xs text-stone-400">PWA Web Push, Rate-Limited Anti-Spam & Event Center</p>
+              <p className="text-xs text-[#59636B]">PWA Web Push, Rate-Limited Anti-Spam & Event Center</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-stone-400 hover:text-white hover:bg-stone-800 transition"
+            className="p-2 rounded-xl text-[#59636B] hover:text-white hover:bg-[#17212B] transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center justify-between px-5 py-2.5 bg-stone-50 border-b border-stone-200 text-xs font-bold">
+        <div className="flex items-center justify-between px-5 py-2.5 bg-[#FAF9F6] border-b border-[#E3E2DE] text-xs font-bold">
           <div className="flex items-center gap-1">
             <button
               onClick={() => setActiveTab('NOTIFICATIONS')}
               className={`px-3.5 py-2 rounded-xl transition ${
                 activeTab === 'NOTIFICATIONS' 
-                  ? 'bg-emerald-900 text-amber-50 shadow-xs' 
-                  : 'text-stone-600 hover:bg-stone-200/60'
+                  ? 'bg-[#123B5D] text-[#FAF9F6] shadow-xs' 
+                  : 'text-[#59636B] hover:bg-[#E3E2DE]/60'
               }`}
             >
               Notifications ({notifications.length})
@@ -114,8 +115,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
               onClick={() => setActiveTab('PREFERENCES')}
               className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${
                 activeTab === 'PREFERENCES' 
-                  ? 'bg-emerald-900 text-amber-50 shadow-xs' 
-                  : 'text-stone-600 hover:bg-stone-200/60'
+                  ? 'bg-[#123B5D] text-[#FAF9F6] shadow-xs' 
+                  : 'text-[#59636B] hover:bg-[#E3E2DE]/60'
               }`}
             >
               <Settings className="w-3.5 h-3.5 text-amber-400" />
@@ -125,8 +126,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
               onClick={() => setActiveTab('TEST_EVENTS')}
               className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${
                 activeTab === 'TEST_EVENTS' 
-                  ? 'bg-emerald-900 text-amber-50 shadow-xs' 
-                  : 'text-stone-600 hover:bg-stone-200/60'
+                  ? 'bg-[#123B5D] text-[#FAF9F6] shadow-xs' 
+                  : 'text-[#59636B] hover:bg-[#E3E2DE]/60'
               }`}
             >
               <Zap className="w-3.5 h-3.5 text-amber-400" />
@@ -138,8 +139,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
             <div className="flex items-center gap-2 text-[11px]">
               <button
                 onClick={() => setFilterUnreadOnly(!filterUnreadOnly)}
-                className={`px-2.5 py-1 rounded-lg border text-stone-700 transition ${
-                  filterUnreadOnly ? 'bg-amber-100 border-amber-300 font-bold' : 'border-stone-200 bg-white'
+                className={`px-2.5 py-1 rounded-lg border text-[#59636B] transition ${
+                  filterUnreadOnly ? 'bg-amber-100 border-amber-300 font-bold' : 'border-[#E3E2DE] bg-white'
                 }`}
               >
                 {filterUnreadOnly ? 'Unread Only' : 'Show All'}
@@ -147,7 +148,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-emerald-800 hover:underline font-semibold"
+                  className="text-[#123B5D] hover:underline font-semibold"
                 >
                   Mark all read
                 </button>
@@ -163,10 +164,10 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
           {activeTab === 'NOTIFICATIONS' && (
             <div className="space-y-3">
               {filteredNotifications.length === 0 ? (
-                <div className="p-12 text-center text-stone-400 space-y-2">
-                  <Bell className="w-8 h-8 mx-auto text-stone-300" />
+                <div className="p-12 text-center text-[#59636B] space-y-2">
+                  <Bell className="w-8 h-8 mx-auto text-[#E3E2DE]" />
                   <p className="text-xs font-semibold">No notifications recorded yet.</p>
-                  <p className="text-[11px] text-stone-400">Use "Test 10 Triggers" tab to evaluate all notification events.</p>
+                  <p className="text-[11px] text-[#59636B]">Use "Test 10 Triggers" tab to evaluate all notification events.</p>
                 </div>
               ) : (
                 filteredNotifications.map((item) => {
@@ -179,7 +180,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
                       onClick={() => markAsRead(item.id)}
                       className={`p-4 rounded-2xl border transition cursor-pointer flex items-start gap-3.5 ${
                         item.read 
-                          ? 'bg-stone-50/60 border-stone-200' 
+                          ? 'bg-[#FAF9F6]/60 border-[#E3E2DE]' 
                           : 'bg-amber-50/40 border-amber-200 shadow-xs'
                       }`}
                     >
@@ -189,14 +190,14 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
 
                       <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-bold text-xs text-stone-900 truncate">{item.title}</span>
-                          <span className="text-[10px] text-stone-400 font-mono shrink-0">
+                          <span className="font-bold text-xs text-[#17212B] truncate">{item.title}</span>
+                          <span className="text-[10px] text-[#59636B] font-mono shrink-0">
                             {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
-                        <p className="text-xs text-stone-600 leading-relaxed">{item.body}</p>
+                        <p className="text-xs text-[#59636B] leading-relaxed">{item.body}</p>
                         <div className="flex items-center gap-2 pt-1 text-[10px]">
-                          <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 font-bold uppercase tracking-wider">
+                          <span className="px-2 py-0.5 rounded-md bg-[#F3F1EC] text-[#59636B] font-bold uppercase tracking-wider">
                             {cfg.label}
                           </span>
                           {!item.read && (
@@ -228,65 +229,65 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
             <div className="space-y-6 text-xs">
               
               {/* Push Permission & Master Toggles */}
-              <div className="p-4 rounded-2xl bg-stone-900 text-stone-100 space-y-4">
+              <div className="p-4 rounded-2xl bg-[#17212B] text-[#F3F1EC] space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <div className="font-bold text-sm text-amber-50">Browser Web Push Notifications</div>
-                    <div className="text-[11px] text-stone-400">Receive background alerts even when Safespace tab is closed</div>
+                    <div className="font-bold text-sm text-[#FAF9F6]">Browser Web Push Notifications</div>
+                    <div className="text-[11px] text-[#59636B]">Receive background alerts even when Safespace tab is closed</div>
                   </div>
 
                   {pushPermissionState === 'granted' ? (
-                    <span className="px-3 py-1 rounded-full bg-emerald-900 text-emerald-300 font-bold text-[10px] border border-emerald-700">
+                    <span className="px-3 py-1 rounded-full bg-[#123B5D] text-[#123B5D]/30 font-bold text-[10px] border border-[#123B5D]">
                       Permission Granted
                     </span>
                   ) : (
                     <button
                       onClick={requestPushPermission}
-                      className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold transition shadow-xs text-xs"
+                      className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#17212B] font-bold transition shadow-xs text-xs"
                     >
                       Enable Web Push
                     </button>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-stone-800">
-                  <label className="flex items-center justify-between p-3 rounded-xl bg-stone-800 border border-stone-700 cursor-pointer">
-                    <span className="font-semibold text-stone-200">Sound Chime Alerts</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#17212B]">
+                  <label className="flex items-center justify-between p-3 rounded-xl bg-[#17212B] border border-[#59636B] cursor-pointer">
+                    <span className="font-semibold text-[#E3E2DE]">Sound Chime Alerts</span>
                     <input
                       type="checkbox"
                       checked={preferences.soundEnabled}
                       onChange={(e) => updatePreferences({ soundEnabled: e.target.checked })}
-                      className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded text-[#123B5D] focus:ring-[#123B5D]"
                     />
                   </label>
 
-                  <label className="flex items-center justify-between p-3 rounded-xl bg-stone-800 border border-stone-700 cursor-pointer">
-                    <span className="font-semibold text-stone-200">Quiet Hours Mode</span>
+                  <label className="flex items-center justify-between p-3 rounded-xl bg-[#17212B] border border-[#59636B] cursor-pointer">
+                    <span className="font-semibold text-[#E3E2DE]">Quiet Hours Mode</span>
                     <input
                       type="checkbox"
                       checked={preferences.quietHoursEnabled}
                       onChange={(e) => updatePreferences({ quietHoursEnabled: e.target.checked })}
-                      className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded text-[#123B5D] focus:ring-[#123B5D]"
                     />
                   </label>
                 </div>
 
                 {preferences.quietHoursEnabled && (
-                  <div className="p-3 rounded-xl bg-stone-800 border border-stone-700 flex items-center justify-between gap-4">
-                    <span className="text-[11px] text-stone-300 font-semibold">Quiet Hours Window:</span>
+                  <div className="p-3 rounded-xl bg-[#17212B] border border-[#59636B] flex items-center justify-between gap-4">
+                    <span className="text-[11px] text-[#E3E2DE] font-semibold">Quiet Hours Window:</span>
                     <div className="flex items-center gap-2">
                       <input
                         type="time"
                         value={preferences.quietHoursStart}
                         onChange={(e) => updatePreferences({ quietHoursStart: e.target.value })}
-                        className="bg-stone-900 text-stone-100 text-xs p-1.5 rounded-lg border border-stone-700"
+                        className="bg-[#17212B] text-[#F3F1EC] text-xs p-1.5 rounded-lg border border-[#59636B]"
                       />
-                      <span className="text-stone-400">to</span>
+                      <span className="text-[#59636B]">to</span>
                       <input
                         type="time"
                         value={preferences.quietHoursEnd}
                         onChange={(e) => updatePreferences({ quietHoursEnd: e.target.value })}
-                        className="bg-stone-900 text-stone-100 text-xs p-1.5 rounded-lg border border-stone-700"
+                        className="bg-[#17212B] text-[#F3F1EC] text-xs p-1.5 rounded-lg border border-[#59636B]"
                       />
                     </div>
                   </div>
@@ -294,16 +295,16 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
               </div>
 
               {/* Anti-Spam Frequency Capping */}
-              <div className="p-4 rounded-2xl bg-white border border-stone-200 space-y-2">
-                <div className="font-bold text-stone-900 text-sm">Anti-Spam & Low-End Device Protection</div>
-                <p className="text-[11px] text-stone-500">Prevent notification flood and conserve device battery & memory on low-end Android devices.</p>
+              <div className="p-4 rounded-2xl bg-white border border-[#E3E2DE] space-y-2">
+                <div className="font-bold text-[#17212B] text-sm">Anti-Spam & Low-End Device Protection</div>
+                <p className="text-[11px] text-[#59636B]">Prevent notification flood and conserve device battery & memory on low-end Android devices.</p>
 
                 <div className="pt-2 flex items-center justify-between gap-4">
-                  <span className="font-semibold text-stone-700">Daily Notification Cap:</span>
+                  <span className="font-semibold text-[#59636B]">Daily Notification Cap:</span>
                   <select
                     value={preferences.frequencyCapping}
                     onChange={(e) => updatePreferences({ frequencyCapping: e.target.value as any })}
-                    className="p-2 rounded-xl border border-stone-200 text-xs font-bold text-stone-800 focus:outline-none"
+                    className="p-2 rounded-xl border border-[#E3E2DE] text-xs font-bold text-[#17212B] focus:outline-none"
                   >
                     <option value="STANDARD">Standard Protection (Max 15 / day)</option>
                     <option value="STRICT">Strict Saver Mode (Max 5 / day)</option>
@@ -314,7 +315,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
 
               {/* Category Toggles for all 10 Event Types */}
               <div className="space-y-3">
-                <div className="font-bold text-stone-900 text-sm">Category Notification Preferences</div>
+                <div className="font-bold text-[#17212B] text-sm">Category Notification Preferences</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {(Object.keys(TYPE_CONFIG) as SafespaceNotificationType[]).map((cat) => {
                     const cfg = TYPE_CONFIG[cat];
@@ -325,14 +326,14 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
                       <label
                         key={cat}
                         className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition ${
-                          isEnabled ? 'bg-stone-50/80 border-stone-300' : 'bg-stone-100/50 border-stone-200 opacity-60'
+                          isEnabled ? 'bg-[#FAF9F6]/80 border-[#E3E2DE]' : 'bg-[#F3F1EC]/50 border-[#E3E2DE] opacity-60'
                         }`}
                       >
                         <div className="flex items-center gap-2.5">
                           <div className={`p-2 rounded-xl border ${cfg.color}`}>
                             <Icon className="w-3.5 h-3.5" />
                           </div>
-                          <span className="font-bold text-stone-800 text-xs">{cfg.label}</span>
+                          <span className="font-bold text-[#17212B] text-xs">{cfg.label}</span>
                         </div>
                         <input
                           type="checkbox"
@@ -340,7 +341,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
                           onChange={(e) => updatePreferences({
                             enabledCategories: { ...preferences.enabledCategories, [cat]: e.target.checked }
                           })}
-                          className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+                          className="w-4 h-4 rounded text-[#123B5D] focus:ring-[#123B5D]"
                         />
                       </label>
                     );
@@ -370,19 +371,19 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
                     <button
                       key={typeKey}
                       onClick={() => triggerNotification(typeKey)}
-                      className="p-3.5 rounded-2xl border border-stone-200 bg-white hover:bg-stone-50 transition text-left flex items-center justify-between group shadow-2xs"
+                      className="p-3.5 rounded-2xl border border-[#E3E2DE] bg-white hover:bg-[#FAF9F6] transition text-left flex items-center justify-between group shadow-2xs"
                     >
                       <div className="flex items-center gap-3">
                         <div className={`p-2.5 rounded-xl border ${cfg.color}`}>
                           <Icon className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="font-bold text-stone-900 text-xs">{cfg.label}</div>
-                          <div className="text-[10px] text-stone-400 font-mono">Trigger Event</div>
+                          <div className="font-bold text-[#17212B] text-xs">{cfg.label}</div>
+                          <div className="text-[10px] text-[#59636B] font-mono">Trigger Event</div>
                         </div>
                       </div>
 
-                      <div className="px-2.5 py-1 rounded-lg bg-emerald-800 text-amber-50 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition shadow-xs">
+                      <div className="px-2.5 py-1 rounded-lg bg-[#123B5D] text-[#FAF9F6] text-[10px] font-bold opacity-0 group-hover:opacity-100 transition shadow-xs">
                         Fire Test
                       </div>
                     </button>
