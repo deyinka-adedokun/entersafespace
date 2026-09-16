@@ -34,15 +34,15 @@ export const PwaBanners: React.FC = () => {
         
         {/* 1. Offline Banner */}
         {!isOnline && (
-          <div className="pointer-events-auto bg-stone-900 text-stone-100 border border-stone-700 rounded-2xl p-3 shadow-xl flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top duration-300">
+          <div className="pointer-events-auto bg-[#17212B] text-[#F3F1EC] border border-[#59636B] rounded-2xl p-3 shadow-xl flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top duration-300">
             <div className="flex items-center gap-2.5">
               <WifiOff className="w-4 h-4 text-amber-400 shrink-0" />
               <div>
                 <span className="font-bold">Offline Mode</span>
-                <span className="hidden sm:inline text-stone-300 ml-1.5">— Real-time calls require internet connection.</span>
+                <span className="hidden sm:inline text-[#E3E2DE] ml-1.5">— Real-time calls require internet connection.</span>
               </div>
             </div>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-stone-800 text-amber-300 uppercase">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#17212B] text-[#FAF9F6] uppercase">
               Offline
             </span>
           </div>
@@ -50,17 +50,17 @@ export const PwaBanners: React.FC = () => {
 
         {/* 2. Network Restored Recovery Toast */}
         {isOnline && wasOffline && (
-          <div className="pointer-events-auto bg-emerald-950 text-emerald-100 border border-emerald-800 rounded-2xl p-3 shadow-xl flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top duration-300">
+          <div className="pointer-events-auto bg-[#0D2A42] text-[#123B5D]/10 border border-[#123B5D] rounded-2xl p-3 shadow-xl flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top duration-300">
             <div className="flex items-center gap-2.5">
-              <Wifi className="w-4 h-4 text-emerald-400 shrink-0" />
+              <Wifi className="w-4 h-4 text-[#123B5D] shrink-0" />
               <div>
                 <span className="font-bold">Connection Restored</span>
-                <span className="text-emerald-200 ml-1.5">You are back online.</span>
+                <span className="text-[#123B5D]/20 ml-1.5">You are back online.</span>
               </div>
             </div>
             <button
               onClick={dismissNetworkToast}
-              className="p-1 rounded-lg hover:bg-emerald-900 text-emerald-300 transition"
+              className="p-1 rounded-lg hover:bg-[#123B5D] text-[#123B5D]/30 transition"
               aria-label="Dismiss notification"
             >
               <X className="w-3.5 h-3.5" />
@@ -70,17 +70,17 @@ export const PwaBanners: React.FC = () => {
 
         {/* 3. Service Worker App Update Banner */}
         {hasSwUpdate && (
-          <div className="pointer-events-auto bg-stone-900 text-stone-100 border border-emerald-800 rounded-2xl p-3 shadow-xl flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top duration-300">
+          <div className="pointer-events-auto bg-[#17212B] text-[#F3F1EC] border border-[#123B5D] rounded-2xl p-3 shadow-xl flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top duration-300">
             <div className="flex items-center gap-2.5">
-              <RefreshCw className="w-4 h-4 text-emerald-400 shrink-0 animate-spin" />
+              <RefreshCw className="w-4 h-4 text-[#123B5D] shrink-0 animate-spin" />
               <div>
-                <span className="font-bold text-amber-200">App Update Ready</span>
-                <span className="hidden sm:inline text-stone-300 ml-1.5">— A new version is available.</span>
+                <span className="font-bold text-[#FAF9F6]">App Update Ready</span>
+                <span className="hidden sm:inline text-[#E3E2DE] ml-1.5">— A new version is available.</span>
               </div>
             </div>
             <button
               onClick={applySwUpdate}
-              className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold transition shadow-xs text-xs"
+              className="px-3 py-1.5 rounded-xl bg-[#123B5D] hover:bg-[#123B5D] text-white font-bold transition shadow-xs text-xs"
             >
               Update Now
             </button>
@@ -130,4 +130,3 @@ export const PwaBanners: React.FC = () => {
     </>
   );
 };
-
