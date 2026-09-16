@@ -860,4 +860,4 @@ export const ForProvidersView: React.FC<ForProvidersViewProps> = ({
 
     </div>
   );
-};
+}; 
