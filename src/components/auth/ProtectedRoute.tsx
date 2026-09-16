@@ -77,29 +77,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // Account Unverified
-  if (user.status === 'UNVERIFIED') {
-    return (
-      <div className="max-w-md mx-auto my-12 p-8 bg-amber-50 border border-amber-200 rounded-3xl text-center space-y-4">
-        <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto text-amber-700">
-          <AlertTriangle className="w-6 h-6" />
-        </div>
-        <div>
-          <h3 className="text-lg font-bold text-amber-900">Account Unverified</h3>
-          <p className="text-xs text-amber-800 mt-1">
-            Please verify your email or phone number with your 6-digit OTP code to continue.
-          </p>
-        </div>
-        <button
-          onClick={() => openAuthModal('OTP', user.email)}
-          className="w-full py-2.5 bg-amber-700 hover:bg-amber-800 text-white font-medium text-sm rounded-xl transition-colors"
-        >
-          Enter 6-Digit OTP Code
-        </button>
-      </div>
-    );
-  }
-
   // Role Restriction Check
   if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
     return (
