@@ -8,17 +8,15 @@ import { useToast } from './ui/ToastContext';
 interface ProfileViewProps {
   currentUser?: User | null;
   preferredProvider?: ProviderProfile | null;
-  onRoleSwitch: (role: UserRole) => void;
   onOpenEmergency: () => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
   currentUser,
   preferredProvider,
-  onRoleSwitch,
   onOpenEmergency
 }) => {
-  const { user, isAuthenticated, logout, updateProfile, openAuthModal, switchRole } = useAuth();
+  const { user, isAuthenticated, logout, updateProfile, openAuthModal } = useAuth();
   const { addToast } = useToast();
 
   const activeUser: User = user || currentUser || {
@@ -62,23 +60,23 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       <Card padding="lg" className="space-y-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-900 text-amber-50 flex items-center justify-center font-serif text-2xl font-bold shadow-sm">
+            <div className="w-14 h-14 rounded-2xl bg-[#123B5D] text-[#FAF9F6] flex items-center justify-center font-display text-2xl font-bold shadow-sm">
               {activeUser.displayName ? activeUser.displayName[0].toUpperCase() : 'S'}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-serif text-xl font-bold text-stone-900">{activeUser.displayName || 'Seeker Account'}</h1>
+                <h1 className="font-display text-xl font-bold text-[#17212B]">{activeUser.displayName || 'Seeker Account'}</h1>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                  activeUser.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' :
+                  activeUser.status === 'ACTIVE' ? 'bg-[#123B5D]/10 text-[#123B5D]' :
                   activeUser.status === 'UNVERIFIED' ? 'bg-amber-100 text-amber-800' :
                   'bg-rose-100 text-rose-800'
                 }`}>
                   {activeUser.status}
                 </span>
               </div>
-              <p className="text-xs text-stone-500 mt-0.5">{activeUser.email}</p>
-              <div className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
-                <Shield className="w-3 h-3 text-emerald-700" />
+              <p className="text-xs text-[#59636B] mt-0.5">{activeUser.email}</p>
+              <div className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-medium text-[#123B5D] bg-[#F3F1EC] px-2.5 py-0.5 rounded-full border border-[#123B5D]/10">
+                <Shield className="w-3 h-3 text-[#123B5D]" />
                 <span>Private Display Alias</span>
               </div>
             </div>
@@ -87,7 +85,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           {!isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              className="p-2 text-stone-500 hover:text-emerald-800 hover:bg-stone-100 rounded-xl transition-colors"
+              className="p-2 text-[#59636B] hover:text-[#123B5D] hover:bg-[#F3F1EC] rounded-xl transition-colors"
               title="Edit Profile"
             >
               <Edit2 className="w-4 h-4" />
@@ -97,36 +95,36 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
         {/* Profile Editing Form */}
         {isEditing ? (
-          <form onSubmit={handleSaveProfile} className="pt-3 border-t border-stone-100 space-y-3.5">
+          <form onSubmit={handleSaveProfile} className="pt-3 border-t border-[#F3F1EC] space-y-3.5">
             <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1">Display Alias / Name</label>
+              <label className="block text-xs font-bold text-[#59636B] mb-1">Display Alias / Name</label>
               <input
                 type="text"
                 required
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E3E2DE] rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#123B5D]"
               />
-              <p className="text-[10px] text-stone-400 mt-1">This alias is shown during listening sessions to preserve your privacy.</p>
+              <p className="text-[10px] text-[#59636B] mt-1">This alias is shown during listening sessions to preserve your privacy.</p>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1">Phone Number</label>
+              <label className="block text-xs font-bold text-[#59636B] mb-1">Phone Number</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+234 800 000 0000"
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E3E2DE] rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#123B5D]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1">Preferred Language</label>
+              <label className="block text-xs font-bold text-[#59636B] mb-1">Preferred Language</label>
               <select
                 value={preferredLanguage}
                 onChange={(e) => setPreferredLanguage(e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E3E2DE] rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#123B5D]"
               >
                 <option value="English">English</option>
                 <option value="Yoruba">Yoruba</option>
@@ -140,7 +138,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <button
                 type="submit"
                 disabled={isSaving}
-                className="flex-1 py-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1 transition-colors"
+                className="flex-1 py-2 bg-[#123B5D] hover:bg-[#123B5D] text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1 transition-colors"
               >
                 <Check className="w-3.5 h-3.5" />
                 {isSaving ? 'Saving...' : 'Save Profile'}
@@ -148,25 +146,25 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium rounded-xl transition-colors"
+                className="px-4 py-2 bg-[#F3F1EC] hover:bg-[#E3E2DE] text-[#59636B] text-xs font-medium rounded-xl transition-colors"
               >
                 Cancel
               </button>
             </div>
           </form>
         ) : (
-          <div className="pt-3 border-t border-stone-100 grid grid-cols-3 gap-2 text-center">
-            <div className="p-2.5 bg-stone-50/80 rounded-xl">
-              <div className="text-[10px] uppercase tracking-wider text-stone-400 font-bold">Role</div>
-              <div className="text-xs font-bold text-stone-800 mt-0.5 truncate">{activeUser.role}</div>
+          <div className="pt-3 border-t border-[#F3F1EC] grid grid-cols-3 gap-2 text-center">
+            <div className="p-2.5 bg-[#FAF9F6]/80 rounded-xl">
+              <div className="text-[10px] uppercase tracking-wider text-[#59636B] font-bold">Role</div>
+              <div className="text-xs font-bold text-[#17212B] mt-0.5 truncate">{activeUser.role}</div>
             </div>
-            <div className="p-2.5 bg-stone-50/80 rounded-xl">
-              <div className="text-[10px] uppercase tracking-wider text-stone-400 font-bold">Language</div>
-              <div className="text-xs font-bold text-stone-800 mt-0.5">{activeUser.preferredLanguage || 'English'}</div>
+            <div className="p-2.5 bg-[#FAF9F6]/80 rounded-xl">
+              <div className="text-[10px] uppercase tracking-wider text-[#59636B] font-bold">Language</div>
+              <div className="text-xs font-bold text-[#17212B] mt-0.5">{activeUser.preferredLanguage || 'English'}</div>
             </div>
-            <div className="p-2.5 bg-stone-50/80 rounded-xl">
-              <div className="text-[10px] uppercase tracking-wider text-stone-400 font-bold">Trial Status</div>
-              <div className="text-xs font-bold text-emerald-800 mt-0.5">
+            <div className="p-2.5 bg-[#FAF9F6]/80 rounded-xl">
+              <div className="text-[10px] uppercase tracking-wider text-[#59636B] font-bold">Trial Status</div>
+              <div className="text-xs font-bold text-[#123B5D] mt-0.5">
                 {activeUser.freeTrialUsed ? 'Used' : 'Available'}
               </div>
             </div>
@@ -186,14 +184,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           ) : (
             <button
               onClick={() => openAuthModal('LOGIN')}
-              className="text-xs font-semibold text-emerald-800 hover:text-emerald-900 flex items-center gap-1.5 p-2 rounded-xl hover:bg-emerald-50 transition-colors"
+              className="text-xs font-semibold text-[#123B5D] hover:text-[#123B5D] flex items-center gap-1.5 p-2 rounded-xl hover:bg-[#F3F1EC] transition-colors"
             >
               <UserCheck className="w-4 h-4" />
               <span>Sign In / Register</span>
             </button>
           )}
 
-          <div className="text-[11px] text-stone-400 font-mono">
+          <div className="text-[11px] text-[#59636B] font-mono">
             User ID: {activeUser.id}
           </div>
         </div>
@@ -203,22 +201,22 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       {preferredProvider && (
         <Card padding="md" className="space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-bold text-stone-800">
-              <Heart className="w-4 h-4 text-emerald-800 fill-emerald-100" />
+            <div className="flex items-center gap-2 text-xs font-bold text-[#17212B]">
+              <Heart className="w-4 h-4 text-[#123B5D] fill-[#123B5D]/10" />
               <span>Saved Preferred Listener</span>
             </div>
-            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Saved</span>
+            <span className="text-[10px] font-bold text-[#123B5D] bg-[#F3F1EC] px-2 py-0.5 rounded-full border border-[#123B5D]/10">Saved</span>
           </div>
 
           <div className="flex items-center gap-3">
             <img
               src={preferredProvider.avatarUrl}
               alt={preferredProvider.displayName}
-              className="w-12 h-12 rounded-full object-cover border border-emerald-100"
+              className="w-12 h-12 rounded-full object-cover border border-[#123B5D]/10"
             />
             <div>
-              <div className="font-serif font-bold text-sm text-stone-900">{preferredProvider.displayName}</div>
-              <p className="text-xs text-stone-500 line-clamp-1">{preferredProvider.bio}</p>
+              <div className="font-display font-bold text-sm text-[#17212B]">{preferredProvider.displayName}</div>
+              <p className="text-xs text-[#59636B] line-clamp-1">{preferredProvider.bio}</p>
             </div>
           </div>
         </Card>
@@ -226,8 +224,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       {/* Privacy & Safeguarding Settings */}
       <Card padding="md" className="space-y-3">
-        <h3 className="font-serif text-base font-bold text-stone-900">Privacy & Confidentiality</h3>
-        <p className="text-xs text-stone-500 leading-relaxed">
+        <h3 className="font-display text-base font-bold text-[#17212B]">Privacy & Confidentiality</h3>
+        <p className="text-xs text-[#59636B] leading-relaxed">
           Safespace never records or stores audio streams. Your real name and contact details are strictly isolated from listening sessions.
         </p>
 
@@ -244,7 +242,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </button>
         </div>
       </Card>
-
 
     </div>
   );
