@@ -165,7 +165,7 @@ export const ApplicantStatusView: React.FC<ApplicantStatusViewProps> = ({
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#F3F1EC] border border-[#E3E2DE] text-[11px] font-bold text-[#123B5D] uppercase tracking-wider">
             Applicant Portal
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#17212B] tracking-tight font-serif">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#17212B] tracking-tight font-display">
             Your Safespace Provider Application
           </h1>
           <p className="text-xs sm:text-sm text-[#59636B] leading-relaxed">
