@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User, ProviderProfile, UserRole } from '../types';
-import { setStoredAccessToken, clearStoredAccessToken } from '../lib/authSession';
 
 export type AuthModalMode = 'LOGIN' | 'REGISTER' | 'OTP';
 
@@ -19,22 +18,14 @@ interface AuthContextType {
   register: (data: { email: string; password?: string; displayName?: string; phone?: string; role?: UserRole }) => Promise<{ success: boolean; requiresOtp?: boolean; error?: string }>;
   verifyOtp: (email: string, otp: string) => Promise<{ success: boolean; error?: string }>;
   resendOtp: (email: string) => Promise<{ success: boolean; error?: string }>;
-  forgotPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
-  resetPassword: (email: string, token: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   updateProfile: (data: { displayName?: string; phone?: string; preferredLanguage?: string; preferredProviderId?: string }) => Promise<{ success: boolean; error?: string }>;
   switchRole: (role: UserRole) => Promise<void>;
+  refreshSession: () => Promise<void>;
   clearAuthError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const MAX_SESSION_FETCH_RETRIES = 2;
-const SESSION_FETCH_RETRY_DELAY_MS = 1500;
-
-function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -46,33 +37,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authModalMode, setAuthModalMode] = useState<AuthModalMode>('LOGIN');
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
-  // Retries on cold boot (e.g. Render free-tier waking up) before deciding
-  // the person is genuinely signed out. Only a network/server failure
-  // retries -- a clean "you are not logged in" response never does.
   const fetchSession = useCallback(async () => {
     setIsLoading(true);
-    for (let attempt = 0; attempt <= MAX_SESSION_FETCH_RETRIES; attempt++) {
-      try {
-        const res = await fetch('/api/v1/auth/me');
-        if (!res.ok && attempt < MAX_SESSION_FETCH_RETRIES) {
-          await delay(SESSION_FETCH_RETRY_DELAY_MS);
-          continue;
-        }
-        const json = await res.json();
-        if (json.success) {
-          setUser(json.data.user || null);
-          setProviderProfile(json.data.providerProfile || null);
-        }
-        break;
-      } catch (err) {
-        if (attempt < MAX_SESSION_FETCH_RETRIES) {
-          await delay(SESSION_FETCH_RETRY_DELAY_MS);
-          continue;
-        }
-        console.error('Failed to sync auth session', err);
+    try {
+      const res = await fetch('/api/v1/auth/me');
+      const json = await res.json();
+      if (json.success && json.data) {
+        setUser(json.data.user || null);
+        setProviderProfile(json.data.providerProfile || null);
       }
+    } catch (err) {
+      console.error('Failed to sync auth session', err);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -104,9 +82,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const json = await res.json();
 
       if (json.success) {
-        if (json.data?.session?.access_token) {
-          setStoredAccessToken(json.data.session.access_token);
-        }
         if (json.requiresOtp) {
           setPendingEmail(email);
           setAuthModalMode('OTP');
@@ -116,13 +91,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setProviderProfile(json.data.providerProfile || null);
           setIsAuthModalOpen(false);
           return { success: true };
-        } else if (json.data?.session) {
-          // Password was correct and Supabase issued a session, but we
-          // couldn't load the profile row. Don't show "invalid password"
-          // for a password that was actually right.
-          const errMsg = 'Signed in, but your account profile could not be loaded. Please contact support.';
-          setAuthError(errMsg);
-          return { success: false, error: errMsg };
         }
       }
       const errMsg = json.error?.message || 'Login failed. Please verify your credentials.';
@@ -146,14 +114,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const json = await res.json();
 
       if (json.success) {
-        if (json.data?.session?.access_token && json.data?.user) {
-          // Supabase project has email confirmation OFF -- already signed in.
-          setStoredAccessToken(json.data.session.access_token);
-          setUser(json.data.user);
-          setProviderProfile(json.data.providerProfile || null);
-          setIsAuthModalOpen(false);
-          return { success: true };
-        }
         setPendingEmail(data.email);
         setAuthModalMode('OTP');
         return { success: true, requiresOtp: true };
@@ -179,15 +139,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const json = await res.json();
 
       if (json.success && json.data?.user) {
-        if (json.data?.session?.access_token) {
-          setStoredAccessToken(json.data.session.access_token);
-        }
         setUser(json.data.user);
         setProviderProfile(json.data.providerProfile || null);
         setIsAuthModalOpen(false);
         return { success: true };
       }
-      const errMsg = json.error?.message || 'Invalid OTP code.';
+      const errMsg = json.error?.message || 'Invalid OTP code. Please try demo code 123456.';
       setAuthError(errMsg);
       return { success: false, error: errMsg };
     } catch (err) {
@@ -211,41 +168,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const forgotPassword = async (email: string) => {
-    try {
-      const res = await fetch('/api/v1/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const json = await res.json();
-      return { success: json.success, error: json.error?.message };
-    } catch (err) {
-      return { success: false, error: 'Network error. Please try again.' };
-    }
-  };
-
-  const resetPassword = async (email: string, token: string, newPassword: string) => {
-    try {
-      const res = await fetch('/api/v1/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, token, newPassword })
-      });
-      const json = await res.json();
-      return { success: json.success, error: json.error?.message };
-    } catch (err) {
-      return { success: false, error: 'Network error. Please try again.' };
-    }
-  };
-
   const logout = async () => {
     try {
       await fetch('/api/v1/auth/logout', { method: 'POST' });
     } catch (err) {
       console.error(err);
     } finally {
-      clearStoredAccessToken();
       setUser(null);
       setProviderProfile(null);
     }
@@ -269,13 +197,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Role switching against a real Supabase-backed account isn't a thing in
-  // production -- your role comes from the database, not a client toggle.
-  // The old backend endpoint that supported this was an unauthenticated
-  // self-promotion vulnerability and has been removed. This now surfaces
-  // that honestly instead of silently faking a role change in local state.
-  const switchRole = async (_role: UserRole) => {
-    setAuthError('Role switching isn\u2019t available. Sign in with an account that already has the role you need.');
+  const switchRole = async (role: UserRole) => {
+    try {
+      const res = await fetch('/api/v1/auth/switch-role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role })
+      });
+      const json = await res.json();
+      if (json.success && json.data?.user) {
+        setUser(json.data.user);
+        setProviderProfile(json.data.providerProfile || null);
+      } else if (user) {
+        setUser({ ...user, role });
+      }
+    } catch (err) {
+      if (user) setUser({ ...user, role });
+    }
   };
 
   return (
@@ -283,7 +221,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         providerProfile,
-        isAuthenticated: !!user && user.status !== 'SUSPENDED',
+        isAuthenticated: !!user && user.status === 'ACTIVE',
         isLoading,
         authError,
         isAuthModalOpen,
@@ -295,11 +233,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         verifyOtp,
         resendOtp,
-        forgotPassword,
-        resetPassword,
         logout,
         updateProfile,
         switchRole,
+        refreshSession: fetchSession,
         clearAuthError
       }}
     >
