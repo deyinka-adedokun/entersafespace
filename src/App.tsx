@@ -270,7 +270,7 @@ const AppContent: React.FC = () => {
               />
             )}
 
-            {currentTab === 'LISTENER' && (
+                        {currentTab === 'LISTENER' && (
               currentUser?.role === 'PROVIDER' || currentUser?.role === 'SUPER_ADMIN' ? (
                 <ProviderView />
               ) : (
