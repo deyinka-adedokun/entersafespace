@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, UserRole, Session } from '../types';
+import { User, Session } from '../types';
 import { Shield, PhoneCall, LogIn, LogOut, Menu, X, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { SafespaceLogo } from './ui/SafespaceLogo';
@@ -7,7 +7,6 @@ import { TabType } from './BottomNav';
 
 interface NavbarProps {
   currentUser?: User;
-  onRoleSwitch?: (role: UserRole) => void;
   currentTab?: TabType;
   onTabChange?: (tab: TabType) => void;
   activeSession?: Session | null;
@@ -19,7 +18,6 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
-  onRoleSwitch,
   currentTab = 'HOME',
   onTabChange,
   activeSession,
@@ -132,9 +130,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <div className="px-3 py-2 border-b border-[#E3E2DE] mb-1">
                     <p className="text-xs font-bold text-[#17212B] truncate">{activeUser?.displayName}</p>
                     <p className="text-[11px] text-[#59636B] truncate">{activeUser?.email}</p>
-                    <span className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#123B5D]/10 text-[#123B5D]">
-                      {activeUser?.role === 'PROVIDER' ? 'Listener' : activeUser?.role === 'SUPPORT_SEEKER' ? 'Seeker' : activeUser?.role}
-                    </span>
                   </div>
                   <button
                     onClick={() => {
