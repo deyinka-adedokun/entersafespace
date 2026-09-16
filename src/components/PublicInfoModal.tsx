@@ -23,12 +23,8 @@ import {
   Clock,
   BookOpen,
   Mail,
-  Handshake,
-  Palette,
-  Compass
+  Handshake
 } from 'lucide-react';
-import { ColourSystemViewer } from './ui/ColourSystemViewer';
-import { DesignIntelligenceViewer } from './ui/DesignIntelligenceViewer';
 import { SafespaceLogo } from './ui/SafespaceLogo';
 
 export type PublicInfoTopic = 
@@ -47,9 +43,7 @@ export type PublicInfoTopic =
   | 'ABOUT'
   | 'CONTACT'
   | 'CAREERS'
-  | 'PARTNERSHIPS'
-  | 'COLOUR_SYSTEM'
-  | 'DESIGN_INTELLIGENCE';
+  | 'PARTNERSHIPS';
 
 interface PublicInfoModalProps {
   isOpen: boolean;
@@ -293,32 +287,6 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
             >
               <Handshake className="w-3.5 h-3.5 text-[#59636B] shrink-0" />
               <span>Partnerships</span>
-            </button>
-
-            <div className="px-3 py-1.5 pt-2 text-[10px] font-bold uppercase tracking-wider text-amber-800">Design System</div>
-
-            <button
-              onClick={() => setActiveTopic('DESIGN_INTELLIGENCE')}
-              className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
-                activeTopic === 'DESIGN_INTELLIGENCE'
-                  ? 'bg-amber-100 text-amber-950 font-bold border border-amber-200'
-                  : 'text-amber-900/80 hover:bg-amber-50'
-              }`}
-            >
-              <Compass className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-              <span>Design Intelligence</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTopic('COLOUR_SYSTEM')}
-              className={`w-full text-left px-3 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
-                activeTopic === 'COLOUR_SYSTEM'
-                  ? 'bg-amber-100 text-amber-950 font-bold border border-amber-200'
-                  : 'text-amber-900/80 hover:bg-amber-50'
-              }`}
-            >
-              <Palette className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-              <span>Colour System</span>
             </button>
 
           </div>
@@ -612,15 +580,6 @@ export const PublicInfoModal: React.FC<PublicInfoModalProps> = ({
               </div>
             )}
 
-            {/* DESIGN INTELLIGENCE */}
-            {activeTopic === 'DESIGN_INTELLIGENCE' && (
-              <DesignIntelligenceViewer />
-            )}
-
-            {/* COLOUR SYSTEM */}
-            {activeTopic === 'COLOUR_SYSTEM' && (
-              <ColourSystemViewer />
-            )}
 
           </div>
         </div>
