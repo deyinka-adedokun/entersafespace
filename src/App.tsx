@@ -28,7 +28,7 @@ import { PwaBanners } from './components/PwaBanners';
 import { NotificationModal } from './components/NotificationModal';
 
 const AppContent: React.FC = () => {
-  const { user, isAuthenticated, switchRole } = useAuth();
+  const { user, isAuthenticated, refreshSession } = useAuth();
   const [currentTab, setCurrentTab] = useState<TabType>('HOME');
   const [viewState, setViewState] = useState<'IDLE' | 'REQUESTING' | 'SESSION' | 'FEEDBACK'>('IDLE');
 
@@ -73,14 +73,6 @@ const AppContent: React.FC = () => {
       })
       .catch(err => console.error('Failed to sync user session', err));
   }, []);
-
-  // Role Switcher
-  const handleRoleSwitch = async (newRole: UserRole) => {
-    await switchRole(newRole);
-    if (newRole === 'PROVIDER') setCurrentTab('LISTENER');
-    else if (['ADMIN', 'SAFETY_REVIEWER', 'CONTENT_EDITOR', 'SUPER_ADMIN'].includes(newRole)) setCurrentTab('ADMIN');
-    else setCurrentTab('HOME');
-  };
 
   // Trigger matching flow from Home CTA
   const handleStartRequestFlow = () => {
@@ -137,7 +129,6 @@ const AppContent: React.FC = () => {
       {viewState !== 'SESSION' && (
         <Navbar
           currentUser={currentUser}
-          onRoleSwitch={handleRoleSwitch}
           currentTab={currentTab}
           onTabChange={(tab) => {
             setCurrentTab(tab);
@@ -265,30 +256,24 @@ const AppContent: React.FC = () => {
               <ProfileView
                 currentUser={currentUser}
                 preferredProvider={preferredProvider}
-                onRoleSwitch={handleRoleSwitch}
                 onOpenEmergency={() => setIsEmergencyOpen(true)}
               />
             )}
 
-  {currentTab === 'LISTENER' && (
-    currentUser?.role === 'PROVIDER' || currentUser?.role === 'SUPER_ADMIN' ? (
+            {currentTab === 'LISTENER' && (
+              currentUser?.role === 'PROVIDER' || currentUser?.role === 'SUPER_ADMIN' ? (
                 <ProviderView />
               ) : (
-                <ProtectedRoute
-                  fallbackTitle="Sign in to start your Listener application"
-                  fallbackDescription="Create a free Safespace account first. You'll then be guided through screening, training and approval before you can start listening."
-                >
-                  <ProviderOnboardingJourney
-                    currentUser={currentUser}
-                    onApproved={() => {
-                      handleRoleSwitch('PROVIDER');
-                    }}
-                    onExit={() => {
-                      setCurrentTab('HOME');
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                  />
-                </ProtectedRoute>
+                <ProviderOnboardingJourney
+                  currentUser={currentUser}
+                  onApproved={() => {
+                    refreshSession();
+                  }}
+                  onExit={() => {
+                    setCurrentTab('HOME');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                />
               )
             )}
 
