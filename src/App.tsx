@@ -270,20 +270,25 @@ const AppContent: React.FC = () => {
               />
             )}
 
-                        {currentTab === 'LISTENER' && (
-              currentUser?.role === 'PROVIDER' || currentUser?.role === 'SUPER_ADMIN' ? (
+  {currentTab === 'LISTENER' && (
+    currentUser?.role === 'PROVIDER' || currentUser?.role === 'SUPER_ADMIN' ? (
                 <ProviderView />
               ) : (
-                <ProviderOnboardingJourney
-                  currentUser={currentUser}
-                  onApproved={() => {
-                    handleRoleSwitch('PROVIDER');
-                  }}
-                  onExit={() => {
-                    setCurrentTab('HOME');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                />
+                <ProtectedRoute
+                  fallbackTitle="Sign in to start your Listener application"
+                  fallbackDescription="Create a free Safespace account first. You'll then be guided through screening, training and approval before you can start listening."
+                >
+                  <ProviderOnboardingJourney
+                    currentUser={currentUser}
+                    onApproved={() => {
+                      handleRoleSwitch('PROVIDER');
+                    }}
+                    onExit={() => {
+                      setCurrentTab('HOME');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  />
+                </ProtectedRoute>
               )
             )}
 
