@@ -42,21 +42,21 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             key={toast.id}
             className={`pointer-events-auto p-4 rounded-2xl shadow-lg border text-xs sm:text-sm font-medium flex items-center justify-between gap-3 animate-in slide-in-from-bottom-2 fade-in duration-200 ${
               toast.type === 'success'
-                ? 'bg-emerald-900 text-amber-50 border-emerald-800'
+                ? 'bg-[#123B5D] text-[#FAF9F6] border-[#123B5D]'
                 : toast.type === 'error'
                 ? 'bg-rose-900 text-white border-rose-800'
-                : 'bg-stone-900 text-amber-50 border-stone-800'
+                : 'bg-[#17212B] text-[#FAF9F6] border-[#17212B]'
             }`}
           >
             <div className="flex items-center gap-2.5">
-              {toast.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />}
+              {toast.type === 'success' && <CheckCircle2 className="w-4 h-4 text-[#123B5D]/30 shrink-0" />}
               {toast.type === 'error' && <AlertCircle className="w-4 h-4 text-rose-300 shrink-0" />}
-              {toast.type === 'info' && <Info className="w-4 h-4 text-amber-200 shrink-0" />}
+              {toast.type === 'info' && <Info className="w-4 h-4 text-[#FAF9F6] shrink-0" />}
               <span>{toast.message}</span>
             </div>
             <button
               onClick={() => removeToast(toast.id)}
-              className="text-stone-400 hover:text-white transition-colors"
+              className="text-[#59636B] hover:text-white transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
