@@ -245,57 +245,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
       </Card>
 
-      {/* Account Persona Switcher */}
-      <Card padding="md" className="space-y-3 bg-stone-50/90 border-dashed">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-emerald-700" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-stone-700">Switch Demo Account Persona</h3>
-          </div>
-          <span className="text-[10px] font-mono text-stone-400">Isolated Accounts</span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {(
-            [
-              'SUPPORT_SEEKER',
-              'PROVIDER',
-              'ADMIN',
-              'SAFETY_REVIEWER',
-              'CONTENT_EDITOR',
-              'SUPER_ADMIN'
-            ] as UserRole[]
-          ).map(r => (
-            <button
-              key={r}
-              onClick={() => {
-                switchRole(r);
-                onRoleSwitch(r);
-                addToast(`Switched account to ${
-                  r === 'SUPPORT_SEEKER' ? 'Emma (Seeker)' :
-                  r === 'PROVIDER' ? 'Sarah (Listener)' :
-                  r === 'ADMIN' ? 'Safespace Ops (Admin)' :
-                  r === 'SAFETY_REVIEWER' ? 'Safeguard Reviewer' :
-                  r === 'CONTENT_EDITOR' ? 'Content Manager' :
-                  'Super Admin'
-                }`, 'info');
-              }}
-              className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all text-left truncate ${
-                activeUser.role === r
-                  ? 'bg-emerald-900 text-amber-50 border-emerald-900 shadow-2xs'
-                  : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-100'
-              }`}
-            >
-              {r === 'SUPPORT_SEEKER' ? '🙋 Emma (Seeker)' :
-               r === 'PROVIDER' ? '👂 Sarah (Listener)' :
-               r === 'ADMIN' ? '🛡️ Ops Admin' :
-               r === 'SAFETY_REVIEWER' ? '🚨 Safety Review' :
-               r === 'CONTENT_EDITOR' ? '📝 CMS Editor' :
-               '👑 Super Admin'}
-            </button>
-          ))}
-        </div>
-      </Card>
 
     </div>
   );
