@@ -352,7 +352,7 @@ export const ForProvidersView: React.FC<ForProvidersViewProps> = ({
             <h2 className="font-display font-normal text-3xl sm:text-4xl md:text-5xl text-[#17212B] leading-tight">
               What does a Provider do?
             </h2>
-            <p className="text-xl sm:text-2xl text-[#123B5D] font-serif italic">
+            <p className="text-xl sm:text-2xl text-[#123B5D] font-display italic">
               You listen.
             </p>
           </div>
