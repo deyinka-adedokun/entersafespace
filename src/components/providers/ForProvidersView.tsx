@@ -20,12 +20,15 @@ interface ForProvidersViewProps {
   onBecomeProvider: () => void;
   onOpenHowItWorks: () => void;
   onOpenSafety: () => void;
+  // Already-approved listeners are sent to their dashboard, not an application.
+  isListener?: boolean;
 }
 
 export const ForProvidersView: React.FC<ForProvidersViewProps> = ({
   onBecomeProvider,
   onOpenHowItWorks,
-  onOpenSafety
+  onOpenSafety,
+  isListener = false
 }) => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
@@ -238,7 +241,7 @@ export const ForProvidersView: React.FC<ForProvidersViewProps> = ({
                     onClick={onBecomeProvider}
                     className="px-7 py-3.5 bg-[#123B5D] hover:bg-[#0D2A42] text-white text-sm sm:text-base font-semibold rounded-lg transition-colors shadow-xs flex items-center justify-center gap-2 group cursor-pointer"
                   >
-                    <span>Become a Provider</span>
+                    <span>{isListener ? 'Go to your dashboard' : 'Become a Provider'}</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                   </button>
 
@@ -733,7 +736,7 @@ export const ForProvidersView: React.FC<ForProvidersViewProps> = ({
               onClick={onBecomeProvider}
               className="px-6 py-3 bg-[#123B5D] hover:bg-[#0D2A42] text-white text-xs sm:text-sm font-semibold rounded-lg transition-colors shrink-0 cursor-pointer"
             >
-              Start Application
+              {isListener ? 'Go to your dashboard' : 'Start Application'}
             </button>
           </div>
 
@@ -843,7 +846,7 @@ export const ForProvidersView: React.FC<ForProvidersViewProps> = ({
               onClick={onBecomeProvider}
               className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-[#FAF9F6] text-[#123B5D] font-bold text-sm sm:text-base rounded-lg transition-colors shadow-md inline-flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Become a Provider</span>
+              <span>{isListener ? 'Go to your dashboard' : 'Become a Provider'}</span>
               <ArrowRight className="w-4 h-4 text-[#123B5D]" />
             </button>
 

@@ -214,6 +214,7 @@ const AppContent: React.FC = () => {
 
             {currentTab === 'FOR_PROVIDERS' && (
               <ForProvidersView
+                isListener={currentUser?.role === 'PROVIDER' || currentUser?.role === 'SUPER_ADMIN'}
                 onBecomeProvider={() => {
                   setCurrentTab('LISTENER');
                   window.scrollTo({ top: 0, behavior: 'smooth' });

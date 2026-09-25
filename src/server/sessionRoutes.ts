@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
+import multer from 'multer';
 import { supabaseAdmin } from './supabaseClients.js';
 import { attachAuth, requireAuth, requireAdmin, type AuthenticatedUser } from './authMiddleware.js';
 
@@ -24,6 +25,19 @@ const RESERVATION_MS = 10 * 60 * 1000;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PROVIDER_SET_STATUSES = ['AVAILABLE', 'AWAY', 'OFFLINE'];
 const MAX_DURATION_OPTIONS = [15, 30, 60, 90];
+const AVATAR_BUCKET = 'provider-avatars';
+const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+
+const avatarUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: AVATAR_MAX_BYTES, files: 1 } });
+
+// Identify the image from its first bytes rather than trusting the
+// browser-supplied content type.
+function sniffImage(buf: Buffer): { ext: string; contentType: string } | null {
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return { ext: 'jpg', contentType: 'image/jpeg' };
+  if (buf.length >= 8 && buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return { ext: 'png', contentType: 'image/png' };
+  if (buf.length >= 12 && buf.subarray(0, 4).toString('ascii') === 'RIFF' && buf.subarray(8, 12).toString('ascii') === 'WEBP') return { ext: 'webp', contentType: 'image/webp' };
+  return null;
+}
 
 type Row = Record<string, any>;
 
@@ -833,6 +847,45 @@ export function registerSessionRoutes(app: Express) {
       };
     });
     res.json({ success: true, data: { requests } });
+  }));
+
+  // Profile photo. Stored in a public bucket because seekers are shown it
+  // when matched; only the server (service role) can write to the bucket.
+  app.post('/api/v1/providers/avatar', requireAuth, (req, res, next) => {
+    avatarUpload.single('avatar')(req, res, err => {
+      if (!err) return next();
+      const tooLarge = (err as { code?: string }).code === 'LIMIT_FILE_SIZE';
+      fail(res, 400, tooLarge ? 'FILE_TOO_LARGE' : 'UPLOAD_FAILED', tooLarge ? 'Photos must be 2 MB or smaller.' : 'The photo could not be uploaded.');
+    });
+  }, handle('provider avatar', async (req, res) => {
+    const provider = await getOwnProvider(req, res);
+    if (!provider) return;
+    const file = req.file;
+    if (!file) return fail(res, 400, 'NO_FILE', 'Please choose a photo to upload.');
+    const kind = sniffImage(file.buffer);
+    if (!kind) return fail(res, 400, 'INVALID_IMAGE', 'Please upload a JPG, PNG or WebP image.');
+
+    const path = `${provider.id}/${randomUUID()}.${kind.ext}`;
+    const { error: uploadError } = await supabaseAdmin.storage.from(AVATAR_BUCKET)
+      .upload(path, file.buffer, { contentType: kind.contentType, upsert: false });
+    if (uploadError) throw uploadError;
+    const { data: publicUrl } = supabaseAdmin.storage.from(AVATAR_BUCKET).getPublicUrl(path);
+
+    const { data, error } = await supabaseAdmin.from('provider_profiles')
+      .update({ avatar_url: publicUrl.publicUrl }).eq('id', provider.id).select().single();
+    if (error) throw error;
+
+    // Remove the previous photo so old pictures don't linger.
+    const marker = `/${AVATAR_BUCKET}/`;
+    if (provider.avatar_url && provider.avatar_url.includes(marker)) {
+      const oldPath = provider.avatar_url.split(marker)[1];
+      if (oldPath && oldPath.startsWith(`${provider.id}/`)) {
+        const { error: removeError } = await supabaseAdmin.storage.from(AVATAR_BUCKET).remove([oldPath]);
+        if (removeError) console.error('[Safespace] old avatar removal failed:', removeError);
+      }
+    }
+
+    res.json({ success: true, data: { provider: mapProvider(data) } });
   }));
 
   app.post('/api/v1/providers/availability', requireAuth, handle('provider availability', async (req, res) => {
