@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Session, SessionExtension, UserRole } from '../types';
 import { CANONICAL_PACKAGES } from '../data/mockData';
 import { SafespaceLogo } from './ui/SafespaceLogo';
+import { useSessionAudio } from '../lib/useSessionAudio';
 import { 
   Mic, 
   MicOff, 
@@ -39,13 +40,21 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
   // Session & Heartbeat Data
   const [session, setSession] = useState<Session | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
-  const [connectionState, setConnectionState] = useState<AudioConnectionState>('CONNECTING');
-  const [reconnectAttempts, setReconnectAttempts] = useState<number>(0);
+  const [sessionEnded, setSessionEnded] = useState<boolean>(false);
 
-  // Audio Controls State
-  const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [isSpeakerOn, setIsSpeakerOn] = useState<boolean>(true);
-  const [audioLevel, setAudioLevel] = useState<number>(1);
+  // Live audio (LiveKit). The room is left automatically once the session ends.
+  const audio = useSessionAudio(sessionId, !sessionEnded);
+  const connectionState: AudioConnectionState = sessionEnded ? 'ENDED'
+    : audio.status === 'CONNECTED' ? 'CONNECTED'
+    : audio.status === 'RECONNECTING' ? 'RECONNECTING'
+    : ['DISCONNECTED', 'ERROR', 'MIC_BLOCKED', 'NOT_CONFIGURED'].includes(audio.status) ? 'FAILED'
+    : 'CONNECTING';
+  const isMuted = audio.muted;
+  const setIsMuted = (next: boolean) => { void audio.setMuted(next); };
+  const isSpeakerOn = audio.speakerOn;
+  const setIsSpeakerOn = (next: boolean) => audio.setSpeakerOn(next);
+  const someoneSpeaking = audio.otherSpeaking || audio.selfSpeaking;
+  const [audioLevel, setAudioLevel] = useState<number>(0);
 
   // Modals & Sheets State
   const [showEndConfirmModal, setShowEndConfirmModal] = useState<boolean>(false);
@@ -67,26 +76,17 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
   const [extensionToast, setExtensionToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [ending, setEnding] = useState<boolean>(false);
 
-  // Gentle Audio Activity Simulation
+  // Gentle activity indicator, only while someone is actually speaking.
   useEffect(() => {
-    if (connectionState !== 'CONNECTED' || isMuted) {
+    if (connectionState !== 'CONNECTED' || !someoneSpeaking) {
       setAudioLevel(0);
       return;
     }
     const interval = setInterval(() => {
-      // Soft organic audio fluctuation between 0.3 and 1
       setAudioLevel(0.4 + Math.random() * 0.6);
     }, 450);
     return () => clearInterval(interval);
-  }, [connectionState, isMuted]);
-
-  // Initial Connection Transition (CONNECTING -> CONNECTED)
-  useEffect(() => {
-    const connectTimer = setTimeout(() => {
-      setConnectionState('CONNECTED');
-    }, 1200);
-    return () => clearTimeout(connectTimer);
-  }, []);
+  }, [connectionState, someoneSpeaking]);
 
   // Authoritative Heartbeat Polling
   useEffect(() => {
@@ -102,21 +102,15 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
           setRemainingSeconds(json.data.remainingSeconds);
 
           if (json.data.session.status === 'COMPLETED' || json.data.session.status === 'CANCELLED') {
-            setConnectionState('ENDED');
+            setSessionEnded(true);
             clearInterval(interval);
             setTimeout(() => {
               onSessionEnded();
             }, 1000);
-          } else if (connectionState === 'RECONNECTING' || connectionState === 'CONNECTING') {
-            setConnectionState('CONNECTED');
           }
         }
       } catch (err) {
-        // Soft reconnection state on network glitch
-        setReconnectAttempts(prev => prev + 1);
-        if (reconnectAttempts > 2) {
-          setConnectionState('RECONNECTING');
-        }
+        // The timer is kept on the server; a missed heartbeat just retries.
       }
     };
 
@@ -124,7 +118,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
     interval = setInterval(syncHeartbeat, 3000);
 
     return () => clearInterval(interval);
-  }, [sessionId, onSessionEnded, connectionState, reconnectAttempts]);
+  }, [sessionId, onSessionEnded]);
 
   // Format MM:SS without flashing or panic
   const formatTimeRemaining = (seconds: number): string => {
@@ -145,7 +139,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
       const json = await res.json();
       if (json.success) {
         setShowEndConfirmModal(false);
-        setConnectionState('ENDED');
+        setSessionEnded(true);
         setTimeout(() => {
           onSessionEnded();
         }, 800);
@@ -297,7 +291,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
           />
           <span className="hidden sm:inline">
             {connectionState === 'CONNECTED' && "You're connected"}
-            {connectionState === 'CONNECTING' && "Connecting..."}
+            {connectionState === 'CONNECTING' && (audio.status === 'WAITING' ? 'Waiting for your listener to join...' : 'Connecting...')}
             {connectionState === 'RECONNECTING' && "Trying to reconnect..."}
             {connectionState === 'ENDED' && "Conversation ended"}
             {connectionState === 'FAILED' && "Connection interrupted"}
@@ -349,6 +343,21 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
             >
               Dismiss
             </button>
+          </div>
+        )}
+
+        {/* Audio problems and the browser's "tap to play" requirement */}
+        {(audio.needsAudioUnlock || connectionState === 'FAILED' || audio.status === 'WAITING') && !sessionEnded && (
+          <div className="max-w-sm mx-auto p-3 rounded-xl border border-[#E3E2DE] bg-white text-xs text-[#17212B] space-y-2" role="status">
+            {audio.needsAudioUnlock ? (
+              <button onClick={() => void audio.unlockAudio()} className="w-full py-2 rounded-lg bg-[#123B5D] hover:bg-[#0D2A42] text-white font-semibold cursor-pointer">
+                Tap to hear your listener
+              </button>
+            ) : connectionState === 'FAILED' ? (
+              <p>{audio.error || 'The audio connection was interrupted. Please check your internet connection.'}</p>
+            ) : (
+              <p>You're in the conversation. Your listener is joining now.</p>
+            )}
           </div>
         )}
 
@@ -496,13 +505,13 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
                   ? 'bg-[#F3F1EC] border-[#E3E2DE] text-[#59636B]'
                   : 'bg-white hover:bg-[#F3F1EC] border-[#E3E2DE] text-[#17212B]'
               }`}
-              aria-label={isSpeakerOn ? 'Turn off speaker' : 'Turn on speaker'}
+              aria-label={isSpeakerOn ? 'Turn sound off' : 'Turn sound on'}
               aria-pressed={isSpeakerOn}
             >
               {isSpeakerOn ? <Volume2 className="w-6 h-6 text-[#123B5D]" /> : <VolumeX className="w-6 h-6" />}
             </button>
             <span className="text-xs font-medium text-[#59636B]">
-              {isSpeakerOn ? 'Speaker' : 'Earpiece'}
+              {isSpeakerOn ? 'Sound on' : 'Sound off'}
             </span>
           </div>
 

@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import { SafetyReportModal } from './SafetyReportModal';
 import { Avatar } from './ui/Avatar';
+import { useSessionAudio } from '../lib/useSessionAudio';
+import type { Session } from '../types';
 
 interface IncomingRequest {
   id: string;
@@ -70,13 +72,19 @@ export const ProviderView: React.FC = () => {
 
   // Incoming Session Request State
   const [incomingRequests, setIncomingRequests] = useState<IncomingRequest[]>([]);
-  const [activeCallRequest, setActiveCallRequest] = useState<IncomingRequest | null>(null);
 
-  // Active Provider Call Shell State
-  const [isCallActive, setIsCallActive] = useState<boolean>(false);
-  const [callSeconds, setCallSeconds] = useState<number>(0);
-  const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [isSpeakerOn, setIsSpeakerOn] = useState<boolean>(true);
+  // Live conversation: the session the seeker started with this listener.
+  const [activeSession, setActiveSession] = useState<Session | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
+  const [joinedCall, setJoinedCall] = useState<boolean>(false);
+  const [endingCall, setEndingCall] = useState<boolean>(false);
+  const [lastMatchedRequest, setLastMatchedRequest] = useState<IncomingRequest | null>(null);
+  const audio = useSessionAudio(activeSession?.id ?? null, joinedCall && !!activeSession);
+  const isCallActive = joinedCall && !!activeSession;
+  const isMuted = audio.muted;
+  const setIsMuted = (next: boolean) => { void audio.setMuted(next); };
+  const isSpeakerOn = audio.speakerOn;
+  const setIsSpeakerOn = (next: boolean) => audio.setSpeakerOn(next);
   const [isSafetyReportOpen, setIsSafetyReportOpen] = useState<boolean>(false);
   const [sessionCompletedSummary, setSessionCompletedSummary] = useState<{
     durationMins: number;
@@ -114,6 +122,7 @@ export const ProviderView: React.FC = () => {
       const json = await res.json();
       if (json.success && json.data?.requests) {
         setIncomingRequests(json.data.requests);
+        if (json.data.requests.length > 0) setLastMatchedRequest(json.data.requests[0]);
       }
     } catch (err) {
       console.error('Failed to poll incoming requests', err);
@@ -124,25 +133,46 @@ export const ProviderView: React.FC = () => {
     fetchProviderData();
   }, []);
 
-  // Poll incoming requests when availability is AVAILABLE
-  useEffect(() => {
-    if (availability !== 'AVAILABLE') {
-      setIncomingRequests([]);
-      return;
-    }
+  // Poll for requests matched to this listener and for a conversation the
+  // seeker has started. (Once matched, the listener is BUSY, so this can't
+  // depend on being AVAILABLE.)
+  // The poller is set up once, so it reads the latest values through refs.
+  const activeSessionRef = React.useRef<Session | null>(null);
+  activeSessionRef.current = activeSession;
+  const joinedCallRef = React.useRef(false);
+  joinedCallRef.current = joinedCall;
+  const lastMatchedRef = React.useRef<IncomingRequest | null>(null);
+  lastMatchedRef.current = lastMatchedRequest;
+  const pollLiveState = async () => {
     fetchIncomingRequests();
-    const interval = setInterval(fetchIncomingRequests, 6000);
-    return () => clearInterval(interval);
-  }, [availability]);
-
-  // Provider call timer
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isCallActive) {
-      timer = setInterval(() => {
-        setCallSeconds(prev => prev + 1);
-      }, 1000);
+    try {
+      const res = await fetch('/api/v1/providers/active-session');
+      const json = await res.json();
+      if (!json.success) return;
+      const next: Session | null = json.data?.session || null;
+      const previous = activeSessionRef.current;
+      if (next) {
+        setActiveSession(next);
+        setRemainingSeconds(json.data.remainingSeconds ?? 0);
+      } else if (previous) {
+        // The conversation ended (time ran out, or the seeker ended it).
+        finishCall(previous);
+      }
+    } catch (err) {
+      console.error('Failed to poll active session', err);
     }
+  };
+
+  useEffect(() => {
+    pollLiveState();
+    const interval = setInterval(pollLiveState, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Smooth one-second countdown between polls; the server stays authoritative.
+  useEffect(() => {
+    if (!isCallActive) return;
+    const timer = setInterval(() => setRemainingSeconds(prev => Math.max(0, prev - 1)), 1000);
     return () => clearInterval(timer);
   }, [isCallActive]);
 
@@ -230,33 +260,35 @@ export const ProviderView: React.FC = () => {
     }
   };
 
-  // Accept incoming session request
-  const handleAcceptRequest = (req: IncomingRequest) => {
-    setActiveCallRequest(req);
-    setIncomingRequests([]);
-    setIsCallActive(true);
-    setCallSeconds(0);
-  };
-
-  // Decline incoming session request
-  const handleDeclineRequest = (reqId: string) => {
-    setIncomingRequests(prev => prev.filter(r => r.id !== reqId));
-  };
-
-  // End active call from provider shell
-  const handleEndCall = () => {
-    if (!confirm('Are you sure you want to end this conversation?')) return;
-    const durationMins = Math.max(1, Math.ceil(callSeconds / 60));
-    const earningNGN = activeCallRequest?.providerShareNGN || 1200;
-
-    setIsCallActive(false);
-    setSessionCompletedSummary({
-      durationMins,
-      earningNGN
-    });
-    setActiveCallRequest(null);
-    setCallSeconds(0);
+  // Leave the call and show a summary, whoever ended the conversation.
+  const finishCall = (ended: Session) => {
+    const wasJoined = joinedCallRef.current;
+    const matched = lastMatchedRef.current;
+    setActiveSession(null);
+    setJoinedCall(false);
+    setRemainingSeconds(0);
+    if (wasJoined || ended.consumedSeconds > 0) {
+      setSessionCompletedSummary({
+        durationMins: Math.max(1, Math.ceil((ended.consumedSeconds || 0) / 60)),
+        earningNGN: ended.isFreeTrial ? 0 : (matched?.packageId === ended.packageId ? matched.providerShareNGN : 0)
+      });
+    }
     fetchProviderData();
+  };
+
+  const handleEndCall = async () => {
+    if (!activeSession) return;
+    if (!confirm('Are you sure you want to end this conversation?')) return;
+    setEndingCall(true);
+    try {
+      const res = await fetch(`/api/v1/sessions/${activeSession.id}/end`, { method: 'POST' });
+      const json = await res.json();
+      finishCall(json.data?.session || activeSession);
+    } catch (err) {
+      alert('Could not end the conversation. Please try again.');
+    } finally {
+      setEndingCall(false);
+    }
   };
 
   if (loading || !data) {
@@ -294,7 +326,23 @@ export const ProviderView: React.FC = () => {
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 animate-in fade-in duration-300">
       
       {/* Active Provider Call Shell Mode */}
-      {isCallActive && activeCallRequest && (
+      {/* The seeker has started: the listener joins with a tap (browsers need one to allow audio). */}
+      {activeSession && !joinedCall && (
+        <div className="bg-[#0D2A42] text-white rounded-2xl p-5 border border-[#123B5D] shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="font-serif text-base font-bold">{activeSession.seekerDisplayName || 'Your seeker'} has started the conversation</h3>
+            <p className="text-xs text-white/75">{activeSession.packageName} · Join now so they aren't left waiting.</p>
+          </div>
+          <button
+            onClick={() => setJoinedCall(true)}
+            className="px-5 py-2.5 bg-white hover:bg-[#F3F1EC] text-[#123B5D] font-bold text-xs rounded-lg shadow-md cursor-pointer"
+          >
+            Join conversation
+          </button>
+        </div>
+      )}
+
+      {isCallActive && activeSession && (
         <div className="bg-[#17212B] text-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/10 space-y-8 relative overflow-hidden animate-in zoom-in-95 duration-200">
           
           {/* Header & Privacy Protection Banner */}
@@ -307,7 +355,7 @@ export const ProviderView: React.FC = () => {
             <div className="flex items-center gap-3">
               {/* Discrete Timer */}
               <div className="text-xs font-mono bg-white/10 text-white/75 px-3 py-1 rounded-full border border-white/15">
-                {Math.floor(callSeconds / 60).toString().padStart(2, '0')}:{(callSeconds % 60).toString().padStart(2, '0')}
+                {Math.floor(remainingSeconds / 60).toString().padStart(2, '0')}:{(remainingSeconds % 60).toString().padStart(2, '0')} left
               </div>
 
               <button
@@ -331,19 +379,33 @@ export const ProviderView: React.FC = () => {
           {/* Seeker Information & Call Centerpiece */}
           <div className="text-center space-y-4 py-4">
             <div className="w-24 h-24 rounded-full bg-[#0D2A42] border-2 border-white/20 text-[#C5D6E4] flex items-center justify-center mx-auto text-3xl font-serif font-bold shadow-lg">
-              {activeCallRequest.anonymousSeekerTag[0] || 'S'}
+              {(activeSession.seekerDisplayName || 'S')[0].toUpperCase()}
             </div>
 
             <div>
               <h2 className="font-serif text-2xl font-bold text-white">
-                {activeCallRequest.anonymousSeekerTag}
+                {activeSession.seekerDisplayName || 'Seeker'}
               </h2>
-              <p className="text-xs font-medium text-[#C5D6E4] mt-1">
-                Topic: "{activeCallRequest.supportReason}"
+              {lastMatchedRequest?.supportReason && (
+                <p className="text-xs font-medium text-[#C5D6E4] mt-1">
+                  Topic: "{lastMatchedRequest.supportReason}"
+                </p>
+              )}
+              <p className="text-[11px] text-white/60 mt-0.5">
+                {activeSession.packageName}
               </p>
-              <p className="text-[11px] text-[#59636B]/80 mt-0.5">
-                {activeCallRequest.packageName} • Provider Share (40%): ₦{activeCallRequest.providerShareNGN.toLocaleString()}
+              <p className="text-xs text-white/80 mt-2" role="status">
+                {audio.status === 'CONNECTED' && 'Connected. You can hear each other.'}
+                {(audio.status === 'CONNECTING' || audio.status === 'IDLE') && 'Connecting audio...'}
+                {audio.status === 'WAITING' && 'Waiting for the seeker to connect...'}
+                {audio.status === 'RECONNECTING' && 'Reconnecting...'}
+                {['DISCONNECTED', 'ERROR', 'MIC_BLOCKED', 'NOT_CONFIGURED'].includes(audio.status) && (audio.error || 'The audio connection was interrupted.')}
               </p>
+              {audio.needsAudioUnlock && (
+                <button onClick={() => void audio.unlockAudio()} className="mt-2 px-4 py-2 rounded-lg bg-white text-[#123B5D] text-xs font-bold cursor-pointer">
+                  Tap to hear the seeker
+                </button>
+              )}
             </div>
           </div>
 
@@ -361,6 +423,7 @@ export const ProviderView: React.FC = () => {
 
             <button
               onClick={handleEndCall}
+              disabled={endingCall}
               className="w-18 h-18 rounded-3xl bg-rose-600 hover:bg-rose-700 text-white flex flex-col items-center justify-center shadow-lg transition-all active:scale-95 cursor-pointer"
             >
               <PhoneOff className="w-8 h-8" />
@@ -374,7 +437,7 @@ export const ProviderView: React.FC = () => {
               }`}
             >
               {isSpeakerOn ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
-              <span className="text-[10px] font-bold mt-1">{isSpeakerOn ? 'Speaker' : 'Off'}</span>
+              <span className="text-[10px] font-bold mt-1">{isSpeakerOn ? 'Sound on' : 'Sound off'}</span>
             </button>
           </div>
 
@@ -382,7 +445,7 @@ export const ProviderView: React.FC = () => {
       )}
 
       {/* Live Incoming Session Requests Widget */}
-      {!isCallActive && availability === 'AVAILABLE' && incomingRequests.length > 0 && (
+      {!activeSession && incomingRequests.length > 0 && (
         <div className="bg-[#0D2A42] text-white rounded-2xl p-5 border border-[#123B5D] shadow-xl space-y-3 animate-in slide-in-from-top-4 duration-300">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -408,20 +471,10 @@ export const ProviderView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <button
-                  onClick={() => handleAcceptRequest(req)}
-                  className="flex-1 sm:flex-none px-4 py-2 bg-white hover:bg-[#F3F1EC] text-[#123B5D] font-bold text-xs rounded-lg transition-all shadow-md active:scale-95"
-                >
-                  Accept Session
-                </button>
-                <button
-                  onClick={() => handleDeclineRequest(req.id)}
-                  className="px-3 py-2 bg-[#0D2A42] hover:bg-[#123B5D] text-white/75 text-xs font-semibold rounded-lg"
-                >
-                  Pass
-                </button>
-              </div>
+              {/* Service-led matching: the seeker starts the call, then you join. */}
+              <p className="text-xs text-white/80 sm:max-w-[12rem]">
+                Matched with you. You'll be able to join as soon as they press Start.
+              </p>
             </div>
           ))}
         </div>
