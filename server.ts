@@ -72,25 +72,6 @@ async function startServer() {
   registerRealAuthRoutes(app);
   registerProviderApplicationSubmit(app);
   
-  // PWA Dynamic SVG Icon Endpoints
-  const generatePwaIconSvg = (size: number, isMaskable = false) => `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-      <rect width="${size}" height="${size}" fill="#064E3B" rx="${isMaskable ? 0 : size * 0.22}" />
-      <circle cx="${size / 2}" cy="${size / 2}" r="${size * 0.35}" fill="#047857" opacity="0.4" />
-      <path d="M${size * 0.3} ${size * 0.65} C${size * 0.3} ${size * 0.45}, ${size * 0.4} ${size * 0.35}, ${size * 0.5} ${size * 0.35} C${size * 0.6} ${size * 0.35}, ${size * 0.7} ${size * 0.45}, ${size * 0.7} ${size * 0.65}" fill="none" stroke="#FDE68A" stroke-width="${size * 0.05}" stroke-linecap="round" />
-      <circle cx="${size * 0.5}" cy="${size * 0.32}" r="${size * 0.08}" fill="#FDE68A" />
-      <text x="${size / 2}" y="${size * 0.82}" font-family="sans-serif" font-weight="bold" font-size="${size * 0.12}" fill="#FAF8F5" text-anchor="middle">Safespace</text>
-    </svg>
-  `;
-
-  app.get(['/pwa-192.png', '/pwa-512.png', '/pwa-maskable.png'], (req, res) => {
-    const isMaskable = req.path.includes('maskable');
-    const size = req.path.includes('512') ? 512 : 192;
-    res.setHeader('Content-Type', 'image/svg+xml');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
-    res.send(generatePwaIconSvg(size, isMaskable));
-  });
-
   // Memory Database Store for local prototype state
   let users: User[] = [...DEMO_USERS];
   let activeUserId: string | null = 'user-seeker-1';

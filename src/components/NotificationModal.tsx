@@ -33,13 +33,13 @@ interface NotificationModalProps {
 
 const TYPE_CONFIG: Record<SafespaceNotificationType, { label: string; icon: React.FC<{ className?: string }>; color: string }> = {
   MATCH_FOUND: { label: 'Match Found', icon: Zap, color: 'text-amber-500 bg-amber-50 border-amber-200' },
-  SESSION_REMINDER: { label: 'Session Reminder', icon: Clock, color: 'text-blue-600 bg-blue-50 border-blue-200' },
-  SESSION_ENDING: { label: 'Session Ending', icon: PhoneCall, color: 'text-orange-600 bg-orange-50 border-orange-200' },
+  SESSION_REMINDER: { label: 'Session Reminder', icon: Clock, color: 'text-[#123B5D] bg-[#EAF0F5] border-[#C5D6E4]' },
+  SESSION_ENDING: { label: 'Session Ending', icon: PhoneCall, color: 'text-amber-700 bg-amber-50 border-amber-200' },
   PAYMENT_SUCCESS: { label: 'Payment Success', icon: CreditCard, color: 'text-[#123B5D] bg-[#F3F1EC] border-[#123B5D]/20' },
   PAYMENT_FAILED: { label: 'Payment Failed', icon: AlertTriangle, color: 'text-rose-600 bg-rose-50 border-rose-200' },
-  GIFT_RECEIVED: { label: 'Gift Voucher', icon: GiftIcon, color: 'text-purple-600 bg-purple-50 border-purple-200' },
-  PROVIDER_REQUEST: { label: 'Provider Request', icon: Headphones, color: 'text-teal-600 bg-teal-50 border-teal-200' },
-  PROVIDER_SESSION: { label: 'Provider Session', icon: PhoneCall, color: 'text-indigo-600 bg-indigo-50 border-indigo-200' },
+  GIFT_RECEIVED: { label: 'Gift Voucher', icon: GiftIcon, color: 'text-[#123B5D] bg-[#EAF0F5] border-[#C5D6E4]' },
+  PROVIDER_REQUEST: { label: 'Provider Request', icon: Headphones, color: 'text-[#123B5D] bg-[#EAF0F5] border-[#C5D6E4]' },
+  PROVIDER_SESSION: { label: 'Provider Session', icon: PhoneCall, color: 'text-[#123B5D] bg-[#EAF0F5] border-[#C5D6E4]' },
   PAYOUT: { label: 'Bank Payout', icon: Landmark, color: 'text-[#123B5D] bg-[#F3F1EC] border-[#123B5D]/20' },
   SAFETY_ALERT: { label: 'Safety Alert', icon: ShieldAlert, color: 'text-rose-700 bg-rose-50 border-rose-200' }
 };
@@ -237,7 +237,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
                   </div>
 
                   {pushPermissionState === 'granted' ? (
-                    <span className="px-3 py-1 rounded-full bg-[#123B5D] text-[#123B5D]/30 font-bold text-[10px] border border-[#123B5D]">
+                    <span className="px-3 py-1 rounded-full bg-[#123B5D] text-white font-bold text-[10px] border border-[#123B5D]">
                       Permission Granted
                     </span>
                   ) : (

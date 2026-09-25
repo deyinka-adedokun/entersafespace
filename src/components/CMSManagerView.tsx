@@ -214,17 +214,17 @@ export const CMSManagerView: React.FC = () => {
   const getTypeBadge = (type: CMSContentType) => {
     switch (type) {
       case 'HOMEPAGE':
-        return <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200"><Home className="w-3 h-3" /> Homepage</span>;
+        return <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-[#EAF0F5] text-[#123B5D] border border-[#C5D6E4]"><Home className="w-3 h-3" /> Homepage</span>;
       case 'FAQ':
-        return <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200"><HelpCircle className="w-3 h-3" /> FAQ</span>;
+        return <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-[#EAF0F5] text-[#123B5D] border border-[#C5D6E4]"><HelpCircle className="w-3 h-3" /> FAQ</span>;
       case 'ARTICLE':
         return <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-[#F3F1EC] text-[#123B5D] border border-[#123B5D]/20"><BookOpen className="w-3 h-3" /> Article</span>;
       case 'RESOURCE':
-        return <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-teal-50 text-teal-700 border border-teal-200"><FileText className="w-3 h-3" /> Resource</span>;
+        return <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-[#EAF0F5] text-[#123B5D] border border-[#C5D6E4]"><FileText className="w-3 h-3" /> Resource</span>;
       case 'SAFETY_RESOURCE':
         return <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200"><ShieldAlert className="w-3 h-3" /> Safety</span>;
       case 'PROVIDER_TRAINING':
-        return <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200"><Award className="w-3 h-3" /> Training</span>;
+        return <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-[#EAF0F5] text-[#123B5D] border border-[#C5D6E4]"><Award className="w-3 h-3" /> Training</span>;
       case 'LEGAL_PAGE':
         return <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-[#F3F1EC] text-[#17212B] border border-[#E3E2DE]"><Lock className="w-3 h-3" /> Legal</span>;
       case 'ANNOUNCEMENT':
@@ -242,7 +242,7 @@ export const CMSManagerView: React.FC = () => {
       case 'REVIEW':
         return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200">IN REVIEW</span>;
       case 'APPROVED':
-        return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200">APPROVED</span>;
+        return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#EAF0F5] text-[#123B5D] border border-[#C5D6E4]">APPROVED</span>;
       case 'PUBLISHED':
         return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#123B5D]/10 text-[#123B5D] border border-[#123B5D]/20">PUBLISHED</span>;
       case 'ARCHIVED':
@@ -276,7 +276,7 @@ export const CMSManagerView: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="p-2 rounded-xl bg-purple-50 text-purple-700">
+              <span className="p-2 rounded-xl bg-[#EAF0F5] text-[#123B5D]">
                 <Globe className="w-5 h-5" />
               </span>
               <h2 className="text-xl font-bold text-[#17212B]">Content Management & SEO Hub</h2>
@@ -298,7 +298,7 @@ export const CMSManagerView: React.FC = () => {
               });
               setIsEditorOpen(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-700 text-white font-medium hover:bg-purple-800 transition-colors shadow-sm self-start md:self-auto"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#123B5D] text-white font-medium hover:bg-[#0D2A42] transition-colors shadow-sm self-start md:self-auto"
           >
             <Plus className="w-4 h-4" />
             Create CMS Content
@@ -311,7 +311,7 @@ export const CMSManagerView: React.FC = () => {
             onClick={() => setActiveSubTab('CONTENTS')}
             className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${
               activeSubTab === 'CONTENTS'
-                ? 'bg-purple-100 text-purple-900 font-semibold'
+                ? 'bg-[#EAF0F5] text-[#123B5D] font-semibold'
                 : 'text-[#59636B] hover:bg-[#FAF9F6]'
             }`}
           >
@@ -323,7 +323,7 @@ export const CMSManagerView: React.FC = () => {
             onClick={() => setActiveSubTab('CANONICAL_ROUTES')}
             className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${
               activeSubTab === 'CANONICAL_ROUTES'
-                ? 'bg-purple-100 text-purple-900 font-semibold'
+                ? 'bg-[#EAF0F5] text-[#123B5D] font-semibold'
                 : 'text-[#59636B] hover:bg-[#FAF9F6]'
             }`}
           >
@@ -335,7 +335,7 @@ export const CMSManagerView: React.FC = () => {
             onClick={() => setActiveSubTab('LLM_DISCOVERABILITY')}
             className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${
               activeSubTab === 'LLM_DISCOVERABILITY'
-                ? 'bg-purple-100 text-purple-900 font-semibold'
+                ? 'bg-[#EAF0F5] text-[#123B5D] font-semibold'
                 : 'text-[#59636B] hover:bg-[#FAF9F6]'
             }`}
           >
@@ -358,7 +358,7 @@ export const CMSManagerView: React.FC = () => {
                 placeholder="Search title, slug, summary..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-xl border border-[#E3E2DE] text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-[#E3E2DE] text-sm focus:outline-none focus:ring-2 focus:ring-[#123B5D]"
               />
             </div>
 
@@ -443,7 +443,7 @@ export const CMSManagerView: React.FC = () => {
                           setEditingContent(item);
                           setIsEditorOpen(true);
                         }}
-                        className="px-3 py-1.5 rounded-lg border border-purple-200 bg-purple-50 text-xs font-medium text-purple-700 hover:bg-purple-100 flex items-center gap-1.5"
+                        className="px-3 py-1.5 rounded-lg border border-[#C5D6E4] bg-[#EAF0F5] text-xs font-medium text-[#123B5D] hover:bg-[#C5D6E4]/60 flex items-center gap-1.5"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
                         Edit
@@ -464,7 +464,7 @@ export const CMSManagerView: React.FC = () => {
                         {item.status === 'REVIEW' && (
                           <button
                             onClick={() => handleWorkflowTransition(item.id, 'APPROVED')}
-                            className="px-2 py-1 text-[11px] font-semibold text-blue-800 hover:bg-blue-100 rounded"
+                            className="px-2 py-1 text-[11px] font-semibold text-[#123B5D] hover:bg-[#C5D6E4]/60 rounded"
                             title="Approve content"
                           >
                             Approve
@@ -512,9 +512,9 @@ export const CMSManagerView: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
             {CANONICAL_ROUTES.map((item, idx) => (
-              <div key={idx} className="p-4 rounded-xl border border-[#E3E2DE] bg-[#FAF9F6] space-y-2 hover:border-purple-300 transition-colors">
+              <div key={idx} className="p-4 rounded-xl border border-[#E3E2DE] bg-[#FAF9F6] space-y-2 hover:border-[#123B5D]/40 transition-colors">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                  <span className="font-mono text-xs font-bold text-[#123B5D] bg-[#EAF0F5] px-2 py-0.5 rounded border border-[#C5D6E4]">
                     {item.route}
                   </span>
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#E3E2DE] text-[#59636B]">
@@ -531,7 +531,7 @@ export const CMSManagerView: React.FC = () => {
                     href={item.route}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-purple-700 font-medium hover:underline"
+                    className="inline-flex items-center gap-1 text-[#123B5D] font-medium hover:underline"
                   >
                     Visit <ExternalLink className="w-3 h-3" />
                   </a>
@@ -549,7 +549,7 @@ export const CMSManagerView: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-[#17212B] text-lg flex items-center gap-2">
-                  <Bot className="w-5 h-5 text-purple-700" />
+                  <Bot className="w-5 h-5 text-[#123B5D]" />
                   Machine-Readable Discovery Endpoint (/llms.txt)
                 </h3>
                 <p className="text-xs text-[#59636B]">
@@ -561,7 +561,7 @@ export const CMSManagerView: React.FC = () => {
                 href="/llms.txt"
                 target="_blank"
                 rel="noreferrer"
-                className="px-3 py-1.5 rounded-lg border border-purple-200 bg-purple-50 text-xs font-semibold text-purple-800 hover:bg-purple-100 flex items-center gap-1.5"
+                className="px-3 py-1.5 rounded-lg border border-[#C5D6E4] bg-[#EAF0F5] text-xs font-semibold text-[#123B5D] hover:bg-[#C5D6E4]/60 flex items-center gap-1.5"
               >
                 View Live /llms.txt <ExternalLink className="w-3.5 h-3.5" />
               </a>
@@ -587,7 +587,7 @@ Safespace does NOT provide medical diagnosis, psychotherapy, psychiatric treatme
             <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE]/80 shadow-sm space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="font-bold text-[#17212B] text-base">robots.txt</h4>
-                <a href="/robots.txt" target="_blank" rel="noreferrer" className="text-xs font-medium text-purple-700 hover:underline flex items-center gap-1">
+                <a href="/robots.txt" target="_blank" rel="noreferrer" className="text-xs font-medium text-[#123B5D] hover:underline flex items-center gap-1">
                   View <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
@@ -608,7 +608,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
             <div className="bg-white p-6 rounded-2xl border border-[#E3E2DE]/80 shadow-sm space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="font-bold text-[#17212B] text-base">sitemap.xml</h4>
-                <a href="/sitemap.xml" target="_blank" rel="noreferrer" className="text-xs font-medium text-purple-700 hover:underline flex items-center gap-1">
+                <a href="/sitemap.xml" target="_blank" rel="noreferrer" className="text-xs font-medium text-[#123B5D] hover:underline flex items-center gap-1">
                   View XML <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
@@ -647,7 +647,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
             <form onSubmit={handleSaveContent} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
               {/* Primary Content Info */}
               <div className="space-y-4">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-purple-900">1. Basic Content Details</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#123B5D]">1. Basic Content Details</h4>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -658,7 +658,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                       value={editingContent.title || ''}
                       onChange={(e) => setEditingContent(prev => ({ ...prev, title: e.target.value }))}
                       placeholder="e.g. Active Listening Foundations"
-                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-sm focus:ring-2 focus:ring-[#123B5D] focus:outline-none"
                     />
                   </div>
 
@@ -667,7 +667,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                     <select
                       value={editingContent.type || 'ARTICLE'}
                       onChange={(e) => setEditingContent(prev => ({ ...prev, type: e.target.value as CMSContentType }))}
-                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none bg-white"
+                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-sm focus:ring-2 focus:ring-[#123B5D] focus:outline-none bg-white"
                     >
                       <option value="HOMEPAGE">Homepage</option>
                       <option value="FAQ">FAQ</option>
@@ -689,7 +689,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                       value={editingContent.slug || ''}
                       onChange={(e) => setEditingContent(prev => ({ ...prev, slug: e.target.value }))}
                       placeholder="auto-generated-if-empty"
-                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-sm font-mono focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-sm font-mono focus:ring-2 focus:ring-[#123B5D] focus:outline-none"
                     />
                   </div>
 
@@ -698,7 +698,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                     <select
                       value={editingContent.status || 'DRAFT'}
                       onChange={(e) => setEditingContent(prev => ({ ...prev, status: e.target.value as CMSWorkflowStatus }))}
-                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none bg-white font-semibold"
+                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-sm focus:ring-2 focus:ring-[#123B5D] focus:outline-none bg-white font-semibold"
                     >
                       <option value="DRAFT">DRAFT</option>
                       <option value="REVIEW">REVIEW</option>
@@ -716,7 +716,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                     value={editingContent.summary || ''}
                     onChange={(e) => setEditingContent(prev => ({ ...prev, summary: e.target.value }))}
                     placeholder="Brief description used in cards and search summaries..."
-                    className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-sm focus:ring-2 focus:ring-[#123B5D] focus:outline-none"
                   />
                 </div>
 
@@ -728,7 +728,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                     value={editingContent.content || ''}
                     onChange={(e) => setEditingContent(prev => ({ ...prev, content: e.target.value }))}
                     placeholder="# Article Heading&#10;&#10;Write main content here..."
-                    className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-sm font-mono focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-sm font-mono focus:ring-2 focus:ring-[#123B5D] focus:outline-none"
                   />
                 </div>
               </div>
@@ -736,11 +736,11 @@ Sitemap: https://safespace.ng/sitemap.xml`}
               {/* SEO Fields Section */}
               <div className="space-y-4 pt-4 border-t border-[#E3E2DE]">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-purple-900">2. SEO & Head Meta Tag Settings</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#123B5D]">2. SEO & Head Meta Tag Settings</h4>
                   <button
                     type="button"
                     onClick={handleGenerateStructuredData}
-                    className="px-2.5 py-1 rounded-lg bg-purple-100 text-purple-900 text-xs font-semibold hover:bg-purple-200 flex items-center gap-1"
+                    className="px-2.5 py-1 rounded-lg bg-[#EAF0F5] text-[#123B5D] text-xs font-semibold hover:bg-[#C5D6E4]/60 flex items-center gap-1"
                   >
                     <Sparkles className="w-3.5 h-3.5" /> Auto-Generate Schema
                   </button>
@@ -754,7 +754,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                       value={editingContent.seo_title || ''}
                       onChange={(e) => setEditingContent(prev => ({ ...prev, seo_title: e.target.value }))}
                       placeholder="Title for search engine results..."
-                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs focus:ring-2 focus:ring-[#123B5D] focus:outline-none"
                     />
                   </div>
 
@@ -765,7 +765,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                       value={editingContent.canonical_url || ''}
                       onChange={(e) => setEditingContent(prev => ({ ...prev, canonical_url: e.target.value }))}
                       placeholder="https://safespace.ng/..."
-                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs font-mono focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs font-mono focus:ring-2 focus:ring-[#123B5D] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -777,7 +777,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                     value={editingContent.meta_description || ''}
                     onChange={(e) => setEditingContent(prev => ({ ...prev, meta_description: e.target.value }))}
                     placeholder="Search engine meta description tag..."
-                    className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs focus:ring-2 focus:ring-[#123B5D] focus:outline-none"
                   />
                 </div>
 
@@ -788,7 +788,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                       type="text"
                       value={editingContent.og_title || ''}
                       onChange={(e) => setEditingContent(prev => ({ ...prev, og_title: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs focus:ring-2 focus:ring-[#123B5D] focus:outline-none"
                     />
                   </div>
 
@@ -799,7 +799,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                       value={editingContent.robots_directive || 'index, follow'}
                       onChange={(e) => setEditingContent(prev => ({ ...prev, robots_directive: e.target.value }))}
                       placeholder="e.g. index, follow or noindex, follow"
-                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs font-mono focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs font-mono focus:ring-2 focus:ring-[#123B5D] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -811,7 +811,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                     value={editingContent.structured_data || ''}
                     onChange={(e) => setEditingContent(prev => ({ ...prev, structured_data: e.target.value }))}
                     placeholder={`{\n  "@context": "https://schema.org",\n  "@type": "Article"\n}`}
-                    className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs font-mono bg-[#17212B] text-[#123B5D] focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-[#E3E2DE] text-xs font-mono bg-[#17212B] text-[#C5D6E4] focus:ring-2 focus:ring-[#123B5D] focus:outline-none"
                   />
                 </div>
               </div>
@@ -827,7 +827,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-purple-700 text-white font-medium text-sm hover:bg-purple-800 shadow-sm"
+                  className="px-5 py-2.5 rounded-xl bg-[#123B5D] text-white font-medium text-sm hover:bg-[#0D2A42] shadow-sm"
                 >
                   Save CMS Item
                 </button>
@@ -841,14 +841,14 @@ Sitemap: https://safespace.ng/sitemap.xml`}
       {inspectorItem && (
         <div className="fixed inset-0 z-50 bg-[#17212B]/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-[#E3E2DE] my-8 overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#E3E2DE] flex items-center justify-between bg-purple-900 text-white">
+            <div className="px-6 py-4 border-b border-[#E3E2DE] flex items-center justify-between bg-[#123B5D] text-white">
               <div className="flex items-center gap-2">
-                <Globe className="w-5 h-5 text-purple-300" />
+                <Globe className="w-5 h-5 text-[#C5D6E4]" />
                 <h3 className="font-bold text-lg">SEO & Head Tag Inspector</h3>
               </div>
               <button
                 onClick={() => setInspectorItem(null)}
-                className="text-purple-300 hover:text-white text-lg font-bold"
+                className="text-[#C5D6E4] hover:text-white text-lg font-bold"
               >
                 ✕
               </button>
@@ -857,7 +857,7 @@ Sitemap: https://safespace.ng/sitemap.xml`}
             <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto text-xs">
               <div>
                 <h4 className="font-bold text-[#17212B] text-sm mb-1">{inspectorItem.title}</h4>
-                <p className="text-[#59636B]">Canonical Slug: <code className="text-purple-800 font-mono">/{inspectorItem.slug}</code></p>
+                <p className="text-[#59636B]">Canonical Slug: <code className="text-[#123B5D] font-mono">/{inspectorItem.slug}</code></p>
               </div>
 
               <div className="space-y-3 bg-[#17212B] text-[#F3F1EC] p-4 rounded-xl font-mono">
@@ -866,9 +866,9 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                 </div>
 
                 <div>
-                  <span className="text-purple-400">&lt;title&gt;</span>
+                  <span className="text-[#C5D6E4]">&lt;title&gt;</span>
                   {inspectorItem.seo_title || inspectorItem.title}
-                  <span className="text-purple-400">&lt;/title&gt;</span>
+                  <span className="text-[#C5D6E4]">&lt;/title&gt;</span>
                 </div>
 
                 <div>
@@ -884,18 +884,18 @@ Sitemap: https://safespace.ng/sitemap.xml`}
                 </div>
 
                 <div>
-                  <span className="text-blue-400">{'<meta name="robots" content="'}</span>
+                  <span className="text-[#C5D6E4]">{'<meta name="robots" content="'}</span>
                   {inspectorItem.robots_directive || 'index, follow'}
-                  <span className="text-blue-400">{'"/>'}</span>
+                  <span className="text-[#C5D6E4]">{'"/>'}</span>
                 </div>
 
                 {inspectorItem.structured_data && (
                   <div className="pt-2 border-t border-[#17212B]">
-                    <span className="text-purple-300">{'<script type="application/ld+json">'}</span>
-                    <pre className="text-[#123B5D]/30 text-[10px] mt-1 whitespace-pre-wrap">
+                    <span className="text-[#C5D6E4]">{'<script type="application/ld+json">'}</span>
+                    <pre className="text-white/75 text-[10px] mt-1 whitespace-pre-wrap">
                       {inspectorItem.structured_data}
                     </pre>
-                    <span className="text-purple-300">{'</script>'}</span>
+                    <span className="text-[#C5D6E4]">{'</script>'}</span>
                   </div>
                 )}
 
