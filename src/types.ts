@@ -23,6 +23,8 @@ export interface User {
   };
   preferredLanguage?: string;
   preferredProviderId?: string;
+  // Private photo link, only ever returned to the account's owner.
+  avatarUrl?: string;
   createdAt: string;
 }
 

@@ -1,6 +1,7 @@
 import type { Express } from 'express';
 import { supabaseAdmin, supabasePublic, getSupabaseForToken } from './supabaseClients.js';
 import { requireAuth } from './authMiddleware.js';
+import { buildUserPayload } from './profileRoutes.js';
 
 async function loadUserPayload(accessToken: string) {
   const scoped = getSupabaseForToken(accessToken);
@@ -15,19 +16,7 @@ async function loadUserPayload(accessToken: string) {
     .eq('user_id', profile?.id)
     .maybeSingle();
 
-  const user = profile ? {
-    id: profile.id,
-    email: profile.email,
-    phone: profile.phone || undefined,
-    displayName: profile.display_name,
-    role: profile.role,
-    status: profile.status,
-    freeTrialUsed: Boolean(profile.free_trial_used),
-    preferredLanguage: profile.preferred_language || undefined,
-    preferredProviderId: profile.preferred_provider_id || undefined,
-    savedPaymentMethod: profile.saved_payment_method || undefined,
-    createdAt: profile.created_at
-  } : null;
+  const user = profile ? await buildUserPayload(profile.id) : null;
 
   return { user, providerProfile: providerProfile || null };
 }

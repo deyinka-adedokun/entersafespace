@@ -4,6 +4,7 @@ import { registerRealAuthRoutes } from './src/server/realAuthRoutes.js';
 import { registerProviderApplicationSubmit } from './src/server/providerApplicationSubmit.js';
 import { registerSessionRoutes, loadSessionAdminData } from './src/server/sessionRoutes.js';
 import { registerSafetyRoutes, loadSafetyAdminData } from './src/server/safetyRoutes.js';
+import { registerProfileRoutes } from './src/server/profileRoutes.js';
 import { applySecurity } from './src/server/security.js';
 import { attachAuth, requireAuth, requireAdmin } from './src/server/authMiddleware.js';
 import path from 'path';
@@ -75,6 +76,7 @@ async function startServer() {
   registerProviderApplicationSubmit(app);
   registerSessionRoutes(app);
   registerSafetyRoutes(app);
+  registerProfileRoutes(app);
   
   // Memory Database Store for local prototype state
   let users: User[] = [...DEMO_USERS];

@@ -26,7 +26,7 @@ import {
   HeartHandshake
 } from 'lucide-react';
 import { SafetyReportModal } from './SafetyReportModal';
-import { ListenerAvatar } from './ui/ListenerAvatar';
+import { Avatar } from './ui/Avatar';
 
 interface IncomingRequest {
   id: string;
@@ -432,7 +432,7 @@ export const ProviderView: React.FC = () => {
         
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <ListenerAvatar name={provider.displayName} url={provider.avatarUrl} className="w-16 h-16 text-2xl" />
+            <Avatar name={provider.displayName} url={provider.avatarUrl} className="w-16 h-16 text-2xl" />
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="font-serif text-2xl font-bold text-[#17212B]">{provider.displayName}</h1>
@@ -734,7 +734,7 @@ export const ProviderView: React.FC = () => {
               <div>
                 <label className="text-xs font-bold text-[#17212B] uppercase tracking-wider block mb-2">Profile Photo</label>
                 <div className="flex items-center gap-4">
-                  <ListenerAvatar name={editDisplayName || provider?.displayName} url={provider?.avatarUrl} className="w-16 h-16 text-2xl" />
+                  <Avatar name={editDisplayName || provider?.displayName} url={provider?.avatarUrl} className="w-16 h-16 text-2xl" />
                   <div className="space-y-1.5">
                     <label className={`inline-flex items-center px-3.5 py-2 rounded-lg border border-[#E3E2DE] text-xs font-semibold text-[#123B5D] bg-white hover:bg-[#F3F1EC] transition-colors ${uploadingAvatar ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`}>
                       {uploadingAvatar ? 'Uploading…' : provider?.avatarUrl ? 'Change photo' : 'Upload photo'}

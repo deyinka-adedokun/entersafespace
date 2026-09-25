@@ -1,6 +1,7 @@
 import type { Express } from 'express';
 import { attachAuth, requireAuth, requireAdmin } from './authMiddleware.js';
 import { supabaseAdmin } from './supabaseClients.js';
+import { buildUserPayload } from './profileRoutes.js';
 
 export function registerExampleRoutes(app: Express) {
   app.post('/api/v1/auth/switch-role', (_req, res) => {
@@ -21,7 +22,16 @@ export function registerExampleRoutes(app: Express) {
       .eq('user_id', req.user.id)
       .maybeSingle();
 
-    res.json({ success: true, data: { user: req.user, providerProfile: providerProfile || null } });
+    // Full profile (phone, language, free-trial status, private photo link),
+    // not just the fields the auth middleware keeps.
+    let user: unknown = req.user;
+    try {
+      user = (await buildUserPayload(req.user.id)) || req.user;
+    } catch (err) {
+      console.error('[Safespace] /auth/me profile load failed:', err);
+    }
+
+    res.json({ success: true, data: { user, providerProfile: providerProfile || null } });
   });
 
   const APPLICANT_EDITABLE_FIELDS = [
