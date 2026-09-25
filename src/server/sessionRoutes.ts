@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
+import { AccessToken, RoomServiceClient, TrackSource } from 'livekit-server-sdk';
 import { supabaseAdmin } from './supabaseClients.js';
 import { attachAuth, requireAuth, requireAdmin, type AuthenticatedUser } from './authMiddleware.js';
 import { UUID_RE, fail, handle, writeAudit, receiveAvatar, sniffImage } from './routeHelpers.js';
@@ -188,6 +189,22 @@ function remainingOf(session: Row) {
   return Math.max(0, session.allocated_seconds - session.consumed_seconds);
 }
 
+const audioRoomName = (sessionId: string) => `safespace-session-${sessionId}`;
+
+// Closes the session's audio room so nobody keeps talking after the server's
+// timer has ended the conversation. Best effort: a failure is logged, not fatal.
+async function closeAudioRoom(sessionId: string) {
+  const { LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET } = process.env;
+  if (!LIVEKIT_URL || !LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) return;
+  try {
+    const host = LIVEKIT_URL.replace(/^wss:/, 'https:').replace(/^ws:/, 'http:');
+    await new RoomServiceClient(host, LIVEKIT_API_KEY, LIVEKIT_API_SECRET).deleteRoom(audioRoomName(sessionId));
+  } catch (err) {
+    // deleteRoom fails harmlessly if nobody ever joined the room.
+    console.warn('[Safespace] audio room close skipped for session', sessionId);
+  }
+}
+
 async function releaseProvider(providerUserId: string, countCompleted: boolean) {
   const { data: provider } = await supabaseAdmin
     .from('provider_profiles')
@@ -239,6 +256,7 @@ async function completeSession(session: Row, actor: AuthenticatedUser | null, re
   }
 
   if (completed.provider_id) await releaseProvider(completed.provider_id, true);
+  await closeAudioRoom(completed.id);
   await writeAudit(actor, 'SESSION_END', 'SESSION', completed.id, { reason, consumedSeconds: consumed });
   return completed;
 }
@@ -772,6 +790,63 @@ export function registerSessionRoutes(app: Express) {
 
   // Requests the service has matched to this listener that the seeker hasn't
   // started yet. Seekers are shown only by an anonymous tag.
+  // -------------------------------------------------------------------------
+  // LIVE AUDIO (LiveKit)
+  // Each participant gets a short-lived pass for their own session's room
+  // only. The pass allows publishing the microphone and nothing else, so the
+  // audio-only rule is enforced by LiveKit, not just by the app.
+  // -------------------------------------------------------------------------
+  app.post('/api/v1/sessions/:id/audio-token', requireAuth, handle('audio token', async (req, res) => {
+    const { LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET } = process.env;
+    if (!LIVEKIT_URL || !LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) {
+      return fail(res, 503, 'AUDIO_NOT_CONFIGURED', 'Live audio is not set up yet.');
+    }
+    const session = await loadOwnSession(req, res);
+    if (!session) return;
+    const current = await syncClock(session, req.user!, true);
+    if (current.status !== 'ACTIVE') {
+      return fail(res, 409, 'SESSION_NOT_ACTIVE', 'This conversation has ended.');
+    }
+
+    const isSeeker = current.seeker_id === req.user!.id;
+    const token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
+      identity: req.user!.id,
+      // Seekers are shown by their alias; listeners by their listener name.
+      name: isSeeker ? (current.seeker_display_name || 'Seeker') : (current.provider_display_name || 'Listener'),
+      // Covers the remaining time plus room for extensions and reconnects.
+      ttl: remainingOf(current) + 30 * 60
+    });
+    token.addGrant({
+      room: audioRoomName(current.id),
+      roomJoin: true,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: false,
+      canPublishSources: [TrackSource.MICROPHONE]
+    });
+
+    res.json({ success: true, data: { url: LIVEKIT_URL, token: await token.toJwt(), role: isSeeker ? 'SEEKER' : 'LISTENER' } });
+  }));
+
+  // The conversation this listener is currently in (once the seeker has
+  // pressed "Start talking"), so their dashboard can join it.
+  app.get('/api/v1/providers/active-session', requireAuth, handle('provider active session', async (req, res) => {
+    const provider = await getOwnProvider(req, res);
+    if (!provider) return;
+    const { data, error } = await supabaseAdmin
+      .from('sessions')
+      .select('*')
+      .eq('provider_id', req.user!.id)
+      .eq('status', 'ACTIVE')
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return res.json({ success: true, data: { session: null } });
+    const current = await syncClock(data, req.user!, false);
+    res.json({ success: true, data: current.status === 'ACTIVE' ? sessionPayload(current) : { session: null } });
+  }));
+
   app.get('/api/v1/providers/incoming-requests', requireAuth, handle('provider incoming', async (req, res) => {
     const provider = await getOwnProvider(req, res);
     if (!provider) return;
