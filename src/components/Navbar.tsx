@@ -30,6 +30,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { user, isAuthenticated, openAuthModal, logout } = useAuth();
 
   const activeUser = user || currentUser;
+  // Approved listeners go straight to their dashboard instead of the public
+  // recruitment page.
+  const isListener = activeUser?.role === 'PROVIDER' || activeUser?.role === 'SUPER_ADMIN';
+  const providerTab = isListener ? 'LISTENER' : 'FOR_PROVIDERS';
+  const providerLabel = isListener ? 'Listener Dashboard' : 'For Providers';
 
   const handleNavClick = (action: () => void) => {
     action();
@@ -64,14 +69,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             <button
-              onClick={() => onTabChange?.('FOR_PROVIDERS')}
+              onClick={() => onTabChange?.(providerTab)}
               className={`transition-colors cursor-pointer text-left ${
-                currentTab === 'FOR_PROVIDERS'
+                currentTab === providerTab
                   ? 'text-[#123B5D] font-bold'
                   : 'hover:text-[#17212B]'
               }`}
             >
-              For Providers
+              {providerLabel}
             </button>
 
             <button
@@ -140,6 +145,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <span>Profile & Settings</span>
                   </button>
+                  {isListener && (
+                    <button
+                      onClick={() => {
+                        onTabChange?.('LISTENER');
+                        setShowUserMenu(false);
+                      }}
+                      className="w-full text-left p-2 rounded-lg text-xs text-[#17212B] hover:bg-[#F3F1EC] flex items-center gap-2"
+                    >
+                      <span>Listener Dashboard</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       onTabChange?.('SESSIONS');
@@ -214,12 +230,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             <button
-              onClick={() => handleNavClick(() => onTabChange?.('FOR_PROVIDERS'))}
+              onClick={() => handleNavClick(() => onTabChange?.(providerTab))}
               className={`text-sm font-semibold py-1.5 text-left ${
-                currentTab === 'FOR_PROVIDERS' ? 'text-[#123B5D] font-bold' : 'text-[#17212B]'
+                currentTab === providerTab ? 'text-[#123B5D] font-bold' : 'text-[#17212B]'
               }`}
             >
-              For Providers
+              {providerLabel}
             </button>
 
             <button

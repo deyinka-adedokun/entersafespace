@@ -26,6 +26,7 @@ import {
   HeartHandshake
 } from 'lucide-react';
 import { SafetyReportModal } from './SafetyReportModal';
+import { ListenerAvatar } from './ui/ListenerAvatar';
 
 interface IncomingRequest {
   id: string;
@@ -64,6 +65,8 @@ export const ProviderView: React.FC = () => {
   const [editListeningAreas, setEditListeningAreas] = useState<string[]>([]);
   const [editPreferredSessionTypes, setEditPreferredSessionTypes] = useState<string[]>([]);
   const [savingProfile, setSavingProfile] = useState<boolean>(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState<boolean>(false);
+  const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
 
   // Incoming Session Request State
   const [incomingRequests, setIncomingRequests] = useState<IncomingRequest[]>([]);
@@ -168,6 +171,34 @@ export const ProviderView: React.FC = () => {
       fetchProviderData();
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleAvatarSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarMessage('Photos must be 2 MB or smaller.');
+      return;
+    }
+    setUploadingAvatar(true);
+    setAvatarMessage(null);
+    try {
+      const body = new FormData();
+      body.append('avatar', file);
+      const res = await fetch('/api/v1/providers/avatar', { method: 'POST', body });
+      const json = await res.json();
+      if (json.success) {
+        setAvatarMessage('Photo updated.');
+        fetchProviderData();
+      } else {
+        setAvatarMessage(json.error?.message || 'The photo could not be uploaded.');
+      }
+    } catch (err) {
+      setAvatarMessage('Network error uploading your photo. Please try again.');
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -401,11 +432,7 @@ export const ProviderView: React.FC = () => {
         
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <img
-              src={provider.avatarUrl}
-              alt={provider.displayName}
-              className="w-16 h-16 rounded-full object-cover border-2 border-[#C5D6E4] shadow-xs shrink-0"
-            />
+            <ListenerAvatar name={provider.displayName} url={provider.avatarUrl} className="w-16 h-16 text-2xl" />
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="font-serif text-2xl font-bold text-[#17212B]">{provider.displayName}</h1>
@@ -703,6 +730,22 @@ export const ProviderView: React.FC = () => {
             </div>
 
             <div className="space-y-4">
+              {/* Profile Photo */}
+              <div>
+                <label className="text-xs font-bold text-[#17212B] uppercase tracking-wider block mb-2">Profile Photo</label>
+                <div className="flex items-center gap-4">
+                  <ListenerAvatar name={editDisplayName || provider?.displayName} url={provider?.avatarUrl} className="w-16 h-16 text-2xl" />
+                  <div className="space-y-1.5">
+                    <label className={`inline-flex items-center px-3.5 py-2 rounded-lg border border-[#E3E2DE] text-xs font-semibold text-[#123B5D] bg-white hover:bg-[#F3F1EC] transition-colors ${uploadingAvatar ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`}>
+                      {uploadingAvatar ? 'Uploading…' : provider?.avatarUrl ? 'Change photo' : 'Upload photo'}
+                      <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handleAvatarSelected} disabled={uploadingAvatar} />
+                    </label>
+                    <p className="text-[11px] text-[#59636B]">JPG, PNG or WebP, up to 2 MB. Seekers see this photo when they're matched with you.</p>
+                    {avatarMessage && <p className="text-[11px] font-medium text-[#123B5D]">{avatarMessage}</p>}
+                  </div>
+                </div>
+              </div>
+
               {/* Display Name */}
               <div>
                 <label className="text-xs font-bold text-[#17212B] uppercase tracking-wider block mb-1">Display Name</label>

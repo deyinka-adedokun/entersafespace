@@ -16,6 +16,7 @@ import {
   CreditCard
 } from 'lucide-react';
 import { SafespaceLogo } from './ui/SafespaceLogo';
+import { ListenerAvatar } from './ui/ListenerAvatar';
 
 interface SupportRequestFlowProps {
   currentUser?: User | null;
@@ -762,11 +763,7 @@ export const SupportRequestFlow: React.FC<SupportRequestFlowProps> = ({
           {/* Approved Limited Provider Information */}
           <div className="bg-[#F3F1EC] rounded-xl p-5 sm:p-6 border border-[#E3E2DE] max-w-md mx-auto text-left space-y-4">
             <div className="flex items-center gap-4">
-              <img
-                src={matchedProvider.avatarUrl}
-                alt={matchedProvider.displayName}
-                className="w-14 h-14 rounded-full object-cover border border-[#E3E2DE]"
-              />
+              <ListenerAvatar name={matchedProvider.displayName} url={matchedProvider.avatarUrl} className="w-14 h-14 text-lg" />
               <div>
                 <h3 className="text-lg font-bold text-[#17212B]">
                   {matchedProvider.displayName}
