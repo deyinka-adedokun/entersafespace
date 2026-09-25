@@ -16,6 +16,7 @@ export const AuthModal: React.FC = () => {
     forgotPassword,
     resetPassword,
     authError,
+    setAuthError,
     clearAuthError,
   } = useAuth();
 
@@ -42,8 +43,11 @@ export const AuthModal: React.FC = () => {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await login(email, password);
-    setIsSubmitting(false);
+    try {
+      await login(email, password);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
@@ -68,15 +72,21 @@ const PHONE_RE = /^(\+234|0)[789][01]\d{8}$/; // Nigerian mobile format
       setIsSubmitting(false);
       return;
     }
+    try {
       await register({ email, password, displayName, phone });
-    setIsSubmitting(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await verifyOtp(email || pendingEmail || '', otp);
-    setIsSubmitting(false);
+    try {
+      await verifyOtp(email || pendingEmail || '', otp);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleResendOtp = async () => {
@@ -95,8 +105,12 @@ const PHONE_RE = /^(\+234|0)[789][01]\d{8}$/; // Nigerian mobile format
     e.preventDefault();
     setIsSubmitting(true);
     setForgotStatus(null);
-    const res = await forgotPassword(email);
-    setIsSubmitting(false);
+    let res;
+    try {
+      res = await forgotPassword(email);
+    } finally {
+      setIsSubmitting(false);
+    }
     if (res.success) {
       setForgotStatus('If that email has an account, a reset code has been sent.');
       setMode('RESET');
@@ -108,8 +122,12 @@ const PHONE_RE = /^(\+234|0)[789][01]\d{8}$/; // Nigerian mobile format
   const handleResetSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const res = await resetPassword(email, resetToken, newPassword);
-    setIsSubmitting(false);
+    let res;
+    try {
+      res = await resetPassword(email, resetToken, newPassword);
+    } finally {
+      setIsSubmitting(false);
+    }
     if (res.success) {
       setForgotStatus('Password updated. Please sign in.');
       setMode('LOGIN');
