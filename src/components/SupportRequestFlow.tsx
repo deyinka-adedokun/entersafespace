@@ -57,6 +57,8 @@ export const SupportRequestFlow: React.FC<SupportRequestFlowProps> = ({
 
   // Dynamic Packages
   const [packages, setPackages] = useState<SessionPackage[]>(CANONICAL_PACKAGES);
+  // The server is the source of truth for whether the free trial is still available.
+  const [trialUsed, setTrialUsed] = useState<boolean>(Boolean(safeUser.freeTrialUsed));
 
   useEffect(() => {
     fetch('/api/v1/packages')
@@ -64,6 +66,10 @@ export const SupportRequestFlow: React.FC<SupportRequestFlowProps> = ({
       .then(json => {
         if (json.success && json.data?.packages) {
           setPackages(json.data.packages);
+          if (json.data.userFreeTrialEligible === false) {
+            setTrialUsed(true);
+            setSelectedPackageId(prev => (prev === 'package-try' ? 'package-open' : prev));
+          }
         }
       })
       .catch(() => {
@@ -146,7 +152,7 @@ export const SupportRequestFlow: React.FC<SupportRequestFlowProps> = ({
           setCurrentStep('PREPARATION');
         } else {
           setMatchingError(
-            json.data?.message || "We haven't found the right available listener yet. You can stay here while we continue looking."
+            json.data?.message || json.error?.message || "We haven't found the right available listener yet. You can stay here while we continue looking."
           );
         }
       }, 1500);
@@ -500,7 +506,7 @@ export const SupportRequestFlow: React.FC<SupportRequestFlowProps> = ({
           <div className="space-y-3">
             {packages.map((pkg) => {
               const isSelected = selectedPackageId === pkg.id;
-              const isFreeDisabled = pkg.isFreeTrial && safeUser.freeTrialUsed;
+              const isFreeDisabled = pkg.isFreeTrial && trialUsed;
 
               return (
                 <div
@@ -521,7 +527,7 @@ export const SupportRequestFlow: React.FC<SupportRequestFlowProps> = ({
                       <span className="font-bold text-[#17212B] text-base">{pkg.name}</span>
                       {pkg.isFreeTrial && (
                         <span className="px-2 py-0.5 rounded-md bg-[#123B5D] text-white text-[10px] font-bold uppercase tracking-wider">
-                          {safeUser.freeTrialUsed ? 'Used' : 'One-time Intro'}
+                          {trialUsed ? 'Used' : 'One-time Intro'}
                         </span>
                       )}
                     </div>

@@ -28,7 +28,7 @@ import { PwaBanners } from './components/PwaBanners';
 import { NotificationModal } from './components/NotificationModal';
 
 const AppContent: React.FC = () => {
-  const { user, isAuthenticated, refreshSession } = useAuth();
+  const { user, isAuthenticated, refreshSession, openAuthModal } = useAuth();
   const [currentTab, setCurrentTab] = useState<TabType>('HOME');
   const [viewState, setViewState] = useState<'IDLE' | 'REQUESTING' | 'SESSION' | 'FEEDBACK'>('IDLE');
 
@@ -76,6 +76,11 @@ const AppContent: React.FC = () => {
 
   // Trigger matching flow from Home CTA
   const handleStartRequestFlow = () => {
+    // Requests are tied to the signed-in account, so ask visitors to sign in first.
+    if (!isAuthenticated) {
+      openAuthModal('LOGIN');
+      return;
+    }
     setViewState('REQUESTING');
   };
 
@@ -175,9 +180,7 @@ const AppContent: React.FC = () => {
               <HomeView
                 currentUser={currentUser}
                 onStartTalk={handleStartRequestFlow}
-                onQuickRebook={() => {
-                  setViewState('REQUESTING');
-                }}
+                onQuickRebook={handleStartRequestFlow}
                 preferredProvider={preferredProvider}
                 onOpenHowItWorks={() => {
                   setCurrentTab('HOW_IT_WORKS');
