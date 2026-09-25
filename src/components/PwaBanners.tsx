@@ -50,17 +50,17 @@ export const PwaBanners: React.FC = () => {
 
         {/* 2. Network Restored Recovery Toast */}
         {isOnline && wasOffline && (
-          <div className="pointer-events-auto bg-[#0D2A42] text-[#123B5D]/10 border border-[#123B5D] rounded-2xl p-3 shadow-xl flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top duration-300">
+          <div className="pointer-events-auto bg-[#0D2A42] text-white border border-[#123B5D] rounded-2xl p-3 shadow-xl flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top duration-300">
             <div className="flex items-center gap-2.5">
-              <Wifi className="w-4 h-4 text-[#123B5D] shrink-0" />
+              <Wifi className="w-4 h-4 text-[#C5D6E4] shrink-0" />
               <div>
                 <span className="font-bold">Connection Restored</span>
-                <span className="text-[#123B5D]/20 ml-1.5">You are back online.</span>
+                <span className="text-white/70 ml-1.5">You are back online.</span>
               </div>
             </div>
             <button
               onClick={dismissNetworkToast}
-              className="p-1 rounded-lg hover:bg-[#123B5D] text-[#123B5D]/30 transition"
+              className="p-1 rounded-lg hover:bg-[#123B5D] text-white/70 transition"
               aria-label="Dismiss notification"
             >
               <X className="w-3.5 h-3.5" />

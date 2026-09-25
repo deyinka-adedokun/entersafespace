@@ -82,7 +82,7 @@ const ROLE_PERMISSIONS: Record<AdminRole, RoleConfig> = {
   },
   SUPPORT_OPS: {
     label: 'Support Operations',
-    badgeBg: 'bg-blue-100 text-blue-900 border-blue-200',
+    badgeBg: 'bg-[#EAF0F5] text-[#123B5D] border-[#C5D6E4]',
     badgeText: 'OPS & USER SUPPORT CLEARANCE',
     description: 'Focuses on live session monitoring, user account assistance, provider matching, feedback, and gifts.',
     allowedTabs: [
@@ -119,7 +119,7 @@ const ROLE_PERMISSIONS: Record<AdminRole, RoleConfig> = {
   },
   CONTENT: {
     label: 'Content & CMS',
-    badgeBg: 'bg-purple-100 text-purple-900 border-purple-200',
+    badgeBg: 'bg-[#EAF0F5] text-[#123B5D] border-[#C5D6E4]',
     badgeText: 'EDITORIAL & SEO CLEARANCE',
     description: 'Manages platform publications, wellness resources, FAQs, legal documentation, and search engine optimization.',
     allowedTabs: [
@@ -362,12 +362,12 @@ export const SafespaceControlCentreView: React.FC = () => {
 
       {/* Action Success Alert Toast */}
       {actionSuccessMsg && (
-        <div className="p-4 rounded-2xl bg-[#123B5D] text-[#123B5D]/10 border border-[#123B5D] flex items-center justify-between shadow-lg animate-in fade-in">
+        <div className="p-4 rounded-2xl bg-[#123B5D] text-white border border-[#123B5D] flex items-center justify-between shadow-lg animate-in fade-in">
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-[#123B5D] shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-[#C5D6E4] shrink-0" />
             <span className="text-xs font-semibold">{actionSuccessMsg}</span>
           </div>
-          <span className="text-[10px] font-mono text-[#123B5D]/30 uppercase font-bold">Audit Entry Generated</span>
+          <span className="text-[10px] font-mono text-white/70 uppercase font-bold">Audit Entry Generated</span>
         </div>
       )}
 
@@ -515,7 +515,7 @@ export const SafespaceControlCentreView: React.FC = () => {
                     </div>
                     <div className="flex justify-between p-3 rounded-xl bg-[#FAF9F6] border border-[#E3E2DE]">
                       <span className="text-[#59636B] font-medium">Active Free Trials Claimed</span>
-                      <span className="font-bold text-blue-700">{data.users?.filter((u: any) => u.freeTrialUsed)?.length || 0} Claimed</span>
+                      <span className="font-bold text-[#123B5D]">{data.users?.filter((u: any) => u.freeTrialUsed)?.length || 0} Claimed</span>
                     </div>
                   </div>
                 </div>
@@ -580,7 +580,7 @@ export const SafespaceControlCentreView: React.FC = () => {
                           <td className="py-3 px-3">
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                               s.status === 'ACTIVE' ? 'bg-[#123B5D]/10 text-[#123B5D]' :
-                              s.status === 'COMPLETED' ? 'bg-blue-100 text-blue-800' :
+                              s.status === 'COMPLETED' ? 'bg-[#EAF0F5] text-[#123B5D]' :
                               'bg-[#F3F1EC] text-[#59636B]'
                             }`}>
                               {s.status}
@@ -705,8 +705,8 @@ export const SafespaceControlCentreView: React.FC = () => {
                               <span className="text-xs text-[#59636B]">({app.email})</span>
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                 app.status === 'APPROVED' ? 'bg-[#123B5D]/10 text-[#123B5D]' :
-                                app.status === 'TRAINING' ? 'bg-purple-100 text-purple-800' :
-                                app.status === 'INTERVIEW' ? 'bg-blue-100 text-blue-800' :
+                                app.status === 'TRAINING' ? 'bg-[#EAF0F5] text-[#123B5D]' :
+                                app.status === 'INTERVIEW' ? 'bg-[#EAF0F5] text-[#123B5D]' :
                                 app.status === 'SCREENING' ? 'bg-amber-100 text-amber-800' :
                                 'bg-[#F3F1EC] text-[#17212B]'
                               }`}>
@@ -773,7 +773,7 @@ export const SafespaceControlCentreView: React.FC = () => {
                             {app.backgroundScreeningStatus === 'PASSED' && app.assessmentStatus !== 'COMPLETED' && (
                               <button
                                 onClick={() => handleAdvanceApplicationStage(app.id, 'COMPLETE_ASSESSMENT')}
-                                className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-[10px] font-bold transition cursor-pointer"
+                                className="px-2.5 py-1 rounded-lg bg-[#EAF0F5] hover:bg-[#C5D6E4]/60 text-[#123B5D] border border-[#C5D6E4] text-[10px] font-bold transition cursor-pointer"
                               >
                                 Pass Interview
                               </button>
@@ -782,7 +782,7 @@ export const SafespaceControlCentreView: React.FC = () => {
                             {app.assessmentStatus === 'COMPLETED' && app.safeguardingTrainingStatus !== 'COMPLETED' && (
                               <button
                                 onClick={() => handleAdvanceApplicationStage(app.id, 'COMPLETE_TRAINING')}
-                                className="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-[10px] font-bold transition cursor-pointer"
+                                className="px-2.5 py-1 rounded-lg bg-[#EAF0F5] hover:bg-[#C5D6E4]/60 text-[#123B5D] border border-[#C5D6E4] text-[10px] font-bold transition cursor-pointer"
                               >
                                 Pass Training
                               </button>
@@ -1114,7 +1114,7 @@ export const SafespaceControlCentreView: React.FC = () => {
                         <td className="py-3 px-3 font-bold text-[#17212B]">{g.packageName}</td>
                         <td className="py-3 px-3 text-[#59636B]">{g.recipientEmail || 'N/A'}</td>
                         <td className="py-3 px-3">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EAF0F5] text-[#123B5D]">
                             {g.status}
                           </span>
                         </td>

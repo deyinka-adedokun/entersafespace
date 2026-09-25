@@ -144,7 +144,7 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6 animate-in fade-in duration-300">
       
       {/* Top Banner */}
-      <div className="bg-gradient-to-br from-[#123B5D] via-[#0D2A42] to-[#17212B] text-[#FAF9F6] rounded-3xl p-6 sm:p-8 shadow-lg relative overflow-hidden">
+      <div className="bg-[#123B5D] text-[#FAF9F6] rounded-3xl p-6 sm:p-8 shadow-lg relative overflow-hidden">
         <div className="relative z-10 space-y-2 text-left">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#123B5D]/90 text-[#FAF9F6] text-xs font-semibold border border-[#123B5D]/50">
             <GiftIcon className="w-3.5 h-3.5 text-[#FAF9F6]" />
@@ -153,7 +153,7 @@ export const GiftView: React.FC<GiftViewProps> = ({ onGiftSent }) => {
           <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">
             Gift a Conversation
           </h1>
-          <p className="text-xs sm:text-sm text-[#123B5D]/20 max-w-lg leading-relaxed">
+          <p className="text-xs sm:text-sm text-white/80 max-w-lg leading-relaxed">
             Send a pre-paid, confidential listening session to someone you care about with warm, respectful messages.
           </p>
         </div>
