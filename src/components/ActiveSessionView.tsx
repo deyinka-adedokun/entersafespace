@@ -88,37 +88,48 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
     return () => clearInterval(interval);
   }, [connectionState, someoneSpeaking]);
 
-  // Authoritative Heartbeat Polling
-  useEffect(() => {
-    let interval: any;
+  // Authoritative heartbeat: the server's timer decides when the session ends.
+  const onSessionEndedRef = useRef(onSessionEnded);
+  onSessionEndedRef.current = onSessionEnded;
+  const endedRef = useRef(false);
+  const checkNowRef = useRef<() => void>(() => undefined);
 
+  useEffect(() => {
     const syncHeartbeat = async () => {
+      if (endedRef.current) return;
       try {
         const res = await fetch(`/api/v1/sessions/${sessionId}/heartbeat`, { method: 'POST' });
         const json = await res.json();
-        
         if (json.success && json.data) {
           setSession(json.data.session);
           setRemainingSeconds(json.data.remainingSeconds);
-
-          if (json.data.session.status === 'COMPLETED' || json.data.session.status === 'CANCELLED') {
+          if (json.data.session.status !== 'ACTIVE' && !endedRef.current) {
+            endedRef.current = true;
             setSessionEnded(true);
-            clearInterval(interval);
-            setTimeout(() => {
-              onSessionEnded();
-            }, 1000);
+            setTimeout(() => onSessionEndedRef.current(), 1000);
           }
         }
       } catch (err) {
         // The timer is kept on the server; a missed heartbeat just retries.
       }
     };
+    checkNowRef.current = () => { void syncHeartbeat(); };
 
     syncHeartbeat();
-    interval = setInterval(syncHeartbeat, 3000);
-
+    const interval = setInterval(syncHeartbeat, 5000);
     return () => clearInterval(interval);
-  }, [sessionId, onSessionEnded]);
+  }, [sessionId]);
+
+  // When the audio drops or the listener leaves, check straight away whether
+  // the conversation was ended rather than waiting for the next heartbeat.
+  const previousAudioStatus = useRef(audio.status);
+  useEffect(() => {
+    const was = previousAudioStatus.current;
+    previousAudioStatus.current = audio.status;
+    if (audio.status === 'DISCONNECTED' || (was === 'CONNECTED' && audio.status === 'WAITING')) {
+      checkNowRef.current();
+    }
+  }, [audio.status]);
 
   // Format MM:SS without flashing or panic
   const formatTimeRemaining = (seconds: number): string => {
@@ -139,6 +150,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
       const json = await res.json();
       if (json.success) {
         setShowEndConfirmModal(false);
+        endedRef.current = true;
         setSessionEnded(true);
         setTimeout(() => {
           onSessionEnded();
@@ -354,7 +366,14 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
                 Tap to hear your listener
               </button>
             ) : connectionState === 'FAILED' ? (
-              <p>{audio.error || 'The audio connection was interrupted. Please check your internet connection.'}</p>
+              <>
+                <p>{audio.error || 'The audio connection was interrupted. Please check your internet connection.'}</p>
+                {audio.status !== 'NOT_CONFIGURED' && (
+                  <button onClick={audio.retry} className="w-full py-2 rounded-lg border border-[#123B5D] text-[#123B5D] font-semibold cursor-pointer">
+                    Try again
+                  </button>
+                )}
+              </>
             ) : (
               <p>You're in the conversation. Your listener is joining now.</p>
             )}

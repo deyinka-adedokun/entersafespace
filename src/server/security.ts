@@ -38,9 +38,11 @@ export function applySecurity(app: Express) {
 
   // Looser general limiter for everything else under /api/, so the app
   // stays usable under ordinary traffic but a scripted flood still gets cut off.
+  // Sized for live sessions, which poll every few seconds, and for Nigerian
+  // mobile networks where many people share one IP address (CGNAT).
   const generalApiLimiter = rateLimit({
     windowMs: 5 * 60 * 1000,
-    max: 300,
+    max: 1500,
     standardHeaders: true,
     legacyHeaders: false,
     message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many requests. Please slow down.' } }

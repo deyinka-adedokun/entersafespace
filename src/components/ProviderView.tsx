@@ -165,9 +165,20 @@ export const ProviderView: React.FC = () => {
 
   useEffect(() => {
     pollLiveState();
-    const interval = setInterval(pollLiveState, 4000);
+    const interval = setInterval(pollLiveState, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // If the audio drops or the seeker leaves, check at once whether the
+  // conversation was ended instead of waiting for the next poll.
+  const previousAudioStatus = React.useRef(audio.status);
+  useEffect(() => {
+    const was = previousAudioStatus.current;
+    previousAudioStatus.current = audio.status;
+    if (audio.status === 'DISCONNECTED' || (was === 'CONNECTED' && audio.status === 'WAITING')) {
+      pollLiveState();
+    }
+  }, [audio.status]);
 
   // Smooth one-second countdown between polls; the server stays authoritative.
   useEffect(() => {
@@ -401,6 +412,11 @@ export const ProviderView: React.FC = () => {
                 {audio.status === 'RECONNECTING' && 'Reconnecting...'}
                 {['DISCONNECTED', 'ERROR', 'MIC_BLOCKED', 'NOT_CONFIGURED'].includes(audio.status) && (audio.error || 'The audio connection was interrupted.')}
               </p>
+              {['DISCONNECTED', 'ERROR', 'MIC_BLOCKED'].includes(audio.status) && (
+                <button onClick={audio.retry} className="mt-2 px-4 py-2 rounded-lg border border-white/40 text-white text-xs font-bold cursor-pointer">
+                  Try again
+                </button>
+              )}
               {audio.needsAudioUnlock && (
                 <button onClick={() => void audio.unlockAudio()} className="mt-2 px-4 py-2 rounded-lg bg-white text-[#123B5D] text-xs font-bold cursor-pointer">
                   Tap to hear the seeker
