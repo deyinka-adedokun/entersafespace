@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import multer from 'multer';
 import { supabaseAdmin } from './supabaseClients.js';
 import { attachAuth, requireAuth, requireAdmin, type AuthenticatedUser } from './authMiddleware.js';
+import { UUID_RE, fail, handle, writeAudit } from './routeHelpers.js';
 
 // ---------------------------------------------------------------------------
 // Sessions, support requests, service-led matching and the provider-side
@@ -22,7 +23,6 @@ import { attachAuth, requireAuth, requireAdmin, type AuthenticatedUser } from '.
 
 // How long a matched provider is held for the seeker to press "Start talking".
 const RESERVATION_MS = 10 * 60 * 1000;
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PROVIDER_SET_STATUSES = ['AVAILABLE', 'AWAY', 'OFFLINE'];
 const MAX_DURATION_OPTIONS = [15, 30, 60, 90];
 const AVATAR_BUCKET = 'provider-avatars';
@@ -41,14 +41,7 @@ function sniffImage(buf: Buffer): { ext: string; contentType: string } | null {
 
 type Row = Record<string, any>;
 
-function fail(res: Response, status: number, code: string, message: string) {
-  return res.status(status).json({ success: false, error: { code, message } });
-}
 
-function serverError(res: Response, context: string, error: unknown) {
-  console.error(`[Safespace] ${context}:`, error);
-  return fail(res, 500, 'SERVER_ERROR', 'Something went wrong. Please try again.');
-}
 
 // --- Row mappers (snake_case DB rows -> the camelCase shapes the UI uses) ---
 
@@ -195,18 +188,6 @@ async function getFreeTrialUsed(userId: string): Promise<boolean> {
   return Boolean(data.free_trial_used);
 }
 
-async function writeAudit(actor: AuthenticatedUser | null, action: string, resource: string, resourceId: string, metadata?: Record<string, unknown>) {
-  const { error } = await supabaseAdmin.from('audit_logs').insert({
-    actor_id: actor?.id ?? null,
-    actor_name: actor?.displayName ?? 'System',
-    action,
-    resource,
-    resource_id: resourceId,
-    metadata: metadata ?? null
-  });
-  // An audit write failing must not fail the user's action, but it must be visible.
-  if (error) console.error('[Safespace] audit log write failed:', action, error);
-}
 
 // Seconds used so far, computed from the server clock -- never from how
 // often a client happens to poll.
@@ -367,16 +348,6 @@ async function getOwnProvider(req: Request, res: Response): Promise<Row | null> 
   return data;
 }
 
-// Wraps async handlers so a thrown Supabase error becomes a 500 instead of
-// an unhandled rejection that leaves the request hanging.
-function handle(context: string, fn: (req: Request, res: Response) => Promise<unknown>) {
-  return (req: Request, res: Response) => {
-    fn(req, res).catch(err => {
-      if (!res.headersSent) serverError(res, context, err);
-      else console.error(`[Safespace] ${context}:`, err);
-    });
-  };
-}
 
 export function registerSessionRoutes(app: Express) {
   // -------------------------------------------------------------------------

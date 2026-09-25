@@ -14,20 +14,28 @@ export const SafetyReportModal: React.FC<SafetyReportModalProps> = ({
   isOpen,
   onClose
 }) => {
-  const [category, setCategory] = useState<string>('HARASSMENT');
+  // No preselected category: a report sent without choosing must not be filed as something it isn't.
+  const [category, setCategory] = useState<string>('');
   const [note, setNote] = useState<string>('');
   const [blockUser, setBlockUser] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [blockApplied, setBlockApplied] = useState<boolean>(false);
 
   if (!isOpen) return null;
 
   const handleSubmitReport = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!category) {
+      setSubmitError('Please choose what happened.');
+      return;
+    }
     setSubmitting(true);
+    setSubmitError(null);
 
     try {
-      await fetch('/api/v1/safety/reports', {
+      const res = await fetch('/api/v1/safety/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -37,9 +45,18 @@ export const SafetyReportModal: React.FC<SafetyReportModalProps> = ({
           blockUser
         })
       });
-      setSubmitted(true);
+      const json = await res.json().catch(() => null);
+      if (res.ok && json?.success) {
+        setBlockApplied(Boolean(json.data?.userBlocked));
+        setSubmitted(true);
+      } else if (res.status === 401) {
+        setSubmitError('Please sign in to send a report. If anyone is in immediate danger, call 112 now.');
+      } else {
+        setSubmitError(json?.error?.message || 'Your report could not be sent. Please try again. If anyone is in immediate danger, call 112 now.');
+      }
     } catch (err) {
-      setSubmitted(true);
+      // Never pretend a safety report was received when it wasn't.
+      setSubmitError('Your report could not be sent because of a connection problem. Please try again. If anyone is in immediate danger, call 112 now.');
     } finally {
       setSubmitting(false);
     }
@@ -63,10 +80,11 @@ export const SafetyReportModal: React.FC<SafetyReportModalProps> = ({
               <CheckCircle2 className="w-8 h-8" />
             </div>
             <h3 className="font-display text-xl font-bold text-[#17212B]">
-              Report Submitted & Safety Actions Applied
+              Report received
             </h3>
             <p className="text-xs text-[#59636B] leading-relaxed max-w-md mx-auto">
-              Thank you for keeping Safespace safe. Our Trust & Safety team reviews every flag immediately. If you chose to block this listener, you will never be matched with them again.
+              Thank you for telling us. A member of our safeguarding team will review it.
+              {blockApplied && ' You will not be matched with this person again.'}
             </p>
             <button
               onClick={onClose}
@@ -98,9 +116,11 @@ export const SafetyReportModal: React.FC<SafetyReportModalProps> = ({
               </label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                required
+                onChange={(e) => { setCategory(e.target.value); setSubmitError(null); }}
                 className="w-full px-3.5 py-2.5 bg-[#FAF9F6] border border-[#E3E2DE] rounded-xl text-xs text-[#17212B] font-semibold focus:ring-2 focus:ring-[#123B5D] outline-hidden"
               >
+                <option value="" disabled>Choose what happened…</option>
                 <option value="THREAT_OF_VIOLENCE">Threat of Violence or Verbal Abuse</option>
                 <option value="SEXUAL_ASSAULT">Sexual Assault or Boundary Violation</option>
                 <option value="DOMESTIC_VIOLENCE">Domestic Violence or Intimate Partner Risk</option>
@@ -149,13 +169,17 @@ export const SafetyReportModal: React.FC<SafetyReportModalProps> = ({
               <span>If someone is in immediate physical danger, call emergency services or Nigeria Suicide Prevention Initiative (+234 806 210 6497).</span>
             </div>
 
+            {submitError && (
+              <p role="alert" className="text-xs font-medium text-[#B3261E] bg-[#FDF2F2] border border-[#F9C9C7] rounded-xl p-3">{submitError}</p>
+            )}
+
             {/* Submit */}
             <button
               type="submit"
               disabled={submitting}
               className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors"
             >
-              Submit Confidential Safety Flag
+              {submitting ? 'Sending…' : 'Submit Confidential Safety Flag'}
             </button>
           </form>
         )}
