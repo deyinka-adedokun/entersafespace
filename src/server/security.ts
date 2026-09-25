@@ -7,6 +7,10 @@ import rateLimit from 'express-rate-limit';
  * Call this once, right after app.use(express.json()).
  */
 export function applySecurity(app: Express) {
+  // Render sits in front of the app as a single proxy hop; trust it so
+  // req.ip (and the rate limiters) see each visitor's real address.
+  app.set('trust proxy', 1);
+
   app.use(helmet({
     // The app serves its own frontend from the same origin (Vite/static
     // build), so a strict default CSP would need real tuning against the
