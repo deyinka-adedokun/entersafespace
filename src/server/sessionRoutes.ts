@@ -1,9 +1,8 @@
 import type { Express, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
-import multer from 'multer';
 import { supabaseAdmin } from './supabaseClients.js';
 import { attachAuth, requireAuth, requireAdmin, type AuthenticatedUser } from './authMiddleware.js';
-import { UUID_RE, fail, handle, writeAudit } from './routeHelpers.js';
+import { UUID_RE, fail, handle, writeAudit, receiveAvatar, sniffImage } from './routeHelpers.js';
 
 // ---------------------------------------------------------------------------
 // Sessions, support requests, service-led matching and the provider-side
@@ -26,18 +25,6 @@ const RESERVATION_MS = 10 * 60 * 1000;
 const PROVIDER_SET_STATUSES = ['AVAILABLE', 'AWAY', 'OFFLINE'];
 const MAX_DURATION_OPTIONS = [15, 30, 60, 90];
 const AVATAR_BUCKET = 'provider-avatars';
-const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
-
-const avatarUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: AVATAR_MAX_BYTES, files: 1 } });
-
-// Identify the image from its first bytes rather than trusting the
-// browser-supplied content type.
-function sniffImage(buf: Buffer): { ext: string; contentType: string } | null {
-  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return { ext: 'jpg', contentType: 'image/jpeg' };
-  if (buf.length >= 8 && buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return { ext: 'png', contentType: 'image/png' };
-  if (buf.length >= 12 && buf.subarray(0, 4).toString('ascii') === 'RIFF' && buf.subarray(8, 12).toString('ascii') === 'WEBP') return { ext: 'webp', contentType: 'image/webp' };
-  return null;
-}
 
 type Row = Record<string, any>;
 
@@ -822,13 +809,7 @@ export function registerSessionRoutes(app: Express) {
 
   // Profile photo. Stored in a public bucket because seekers are shown it
   // when matched; only the server (service role) can write to the bucket.
-  app.post('/api/v1/providers/avatar', requireAuth, (req, res, next) => {
-    avatarUpload.single('avatar')(req, res, err => {
-      if (!err) return next();
-      const tooLarge = (err as { code?: string }).code === 'LIMIT_FILE_SIZE';
-      fail(res, 400, tooLarge ? 'FILE_TOO_LARGE' : 'UPLOAD_FAILED', tooLarge ? 'Photos must be 2 MB or smaller.' : 'The photo could not be uploaded.');
-    });
-  }, handle('provider avatar', async (req, res) => {
+  app.post('/api/v1/providers/avatar', requireAuth, receiveAvatar, handle('provider avatar', async (req, res) => {
     const provider = await getOwnProvider(req, res);
     if (!provider) return;
     const file = req.file;

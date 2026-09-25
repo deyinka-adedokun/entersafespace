@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Avatar } from './ui/Avatar';
 import { User, Session } from '../types';
 import { Shield, PhoneCall, LogIn, LogOut, Menu, X, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -35,6 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   const isListener = activeUser?.role === 'PROVIDER' || activeUser?.role === 'SUPER_ADMIN';
   const providerTab = isListener ? 'LISTENER' : 'FOR_PROVIDERS';
   const providerLabel = isListener ? 'Listener Dashboard' : 'For Providers';
+  // Staff reach their console (safeguarding, CMS, admin) from the account menu.
+  const isStaff = ['ADMIN', 'SAFETY_REVIEWER', 'CONTENT_EDITOR', 'SUPER_ADMIN'].includes(activeUser?.role || '');
 
   const handleNavClick = (action: () => void) => {
     action();
@@ -124,9 +127,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-[#E3E2DE] bg-white text-[#17212B] text-xs font-semibold hover:bg-[#F3F1EC] transition-colors cursor-pointer"
               >
-                <div className="w-5 h-5 rounded-full bg-[#123B5D] text-white flex items-center justify-center text-[10px] font-bold">
-                  {activeUser?.displayName ? activeUser.displayName[0].toUpperCase() : 'U'}
-                </div>
+                <Avatar name={activeUser?.displayName} url={activeUser?.avatarUrl} className="w-5 h-5 text-[10px]" />
                 <span className="truncate max-w-[100px]">{activeUser?.displayName || 'Account'}</span>
               </button>
 
@@ -145,6 +146,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <span>Profile & Settings</span>
                   </button>
+                  {isStaff && (
+                    <button
+                      onClick={() => {
+                        onTabChange?.('ADMIN');
+                        setShowUserMenu(false);
+                      }}
+                      className="w-full text-left p-2 rounded-lg text-xs text-[#17212B] hover:bg-[#F3F1EC] flex items-center gap-2"
+                    >
+                      <span>Staff Console</span>
+                    </button>
+                  )}
                   {isListener && (
                     <button
                       onClick={() => {
@@ -266,7 +278,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   Account ({activeUser?.displayName})
                 </button>
-              ) : (
+              ) : null}
+              {isAuthenticated && isStaff && (
+                <button
+                  onClick={() => handleNavClick(() => onTabChange?.('ADMIN'))}
+                  className="w-full text-left py-2 text-sm font-semibold text-[#17212B]"
+                >
+                  Staff Console
+                </button>
+              )}
+              {!isAuthenticated && (
                 <button
                   onClick={() => handleNavClick(() => openAuthModal('LOGIN'))}
                   className="w-full text-left py-2 text-sm font-semibold text-[#123B5D]"

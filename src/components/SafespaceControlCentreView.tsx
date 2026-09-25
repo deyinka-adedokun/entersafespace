@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { SafeguardingView } from './SafeguardingView';
 import { CMSManagerView } from './CMSManagerView';
+import { useAuth } from '../context/AuthContext';
 
 export type AdminRole = 
   | 'SUPPORT_OPS' 
@@ -113,18 +114,15 @@ const ROLE_PERMISSIONS: Record<AdminRole, RoleConfig> = {
     badgeBg: 'bg-rose-100 text-rose-900 border-rose-200',
     badgeText: 'TRUST & SAFETY CLEARANCE',
     description: 'Restricted triage for 7-stage safeguarding cases, incident reports, authority referrals, and safety audits.',
-    allowedTabs: [
-      'SESSIONS', 'USERS', 'REPORTS', 'SAFEGUARDING', 'AUDIT_LOGS'
-    ]
+    // Reviewers can only load safeguarding data; the other tabs read the admin-only dashboard.
+    allowedTabs: ['SAFEGUARDING']
   },
   CONTENT: {
     label: 'Content & CMS',
     badgeBg: 'bg-[#EAF0F5] text-[#123B5D] border-[#C5D6E4]',
     badgeText: 'EDITORIAL & SEO CLEARANCE',
     description: 'Manages platform publications, wellness resources, FAQs, legal documentation, and search engine optimization.',
-    allowedTabs: [
-      'CMS', 'ANALYTICS'
-    ]
+    allowedTabs: ['CMS']
   }
 };
 
@@ -147,8 +145,15 @@ const TAB_CONFIG: Record<ControlCentreTab, { label: string; icon: React.FC<{ cla
 };
 
 export const SafespaceControlCentreView: React.FC = () => {
-  const [activeRole, setActiveRole] = useState<AdminRole>('SUPER_ADMIN');
-  const [activeTab, setActiveTab] = useState<ControlCentreTab>('ANALYTICS');
+  // The console follows the signed-in account's real role. (It used to offer a
+  // dropdown to pretend to be any role, starting as Super Admin.)
+  const { user } = useAuth();
+  const activeRole = (
+    user?.role === 'SAFETY_REVIEWER' ? 'SAFEGUARDING'
+    : user?.role === 'CONTENT_EDITOR' ? 'CONTENT'
+    : 'SUPER_ADMIN'
+  ) as AdminRole;
+  const [activeTab, setActiveTab] = useState<ControlCentreTab>(ROLE_PERMISSIONS[activeRole].allowedTabs[0]);
   const [showMatrixModal, setShowMatrixModal] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<any>(null);
@@ -171,9 +176,13 @@ export const SafespaceControlCentreView: React.FC = () => {
     }
   };
 
+  // Only full admins can read the dashboard dataset; reviewers' and editors'
+  // modules load their own data.
+  const needsDashboard = activeRole === 'SUPER_ADMIN';
   useEffect(() => {
-    fetchControlCentreData();
-  }, []);
+    if (needsDashboard) fetchControlCentreData();
+    else setLoading(false);
+  }, [needsDashboard]);
 
   // When active role changes, ensure active tab is allowed
   useEffect(() => {
@@ -311,27 +320,13 @@ export const SafespaceControlCentreView: React.FC = () => {
             </p>
           </div>
 
-          {/* Active Role Selector Dropdown */}
+          {/* Active role (from the signed-in account) */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <div className="text-right hidden sm:block">
               <div className="text-[10px] uppercase font-bold text-[#59636B] tracking-wider">Active Admin Role</div>
               <div className="text-xs font-bold text-[#FAF9F6]">{ROLE_PERMISSIONS[activeRole].label}</div>
             </div>
 
-            <div className="relative">
-              <select
-                value={activeRole}
-                onChange={(e) => setActiveRole(e.target.value as AdminRole)}
-                className="bg-[#17212B] text-[#F3F1EC] text-xs font-bold px-4 py-2.5 rounded-2xl border border-[#59636B] focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
-              >
-                <option value="SUPER_ADMIN">👑 Super Admin (Full Clearance)</option>
-                <option value="SUPPORT_OPS">🎧 Support Operations</option>
-                <option value="FINANCE">💳 Finance & Revenue</option>
-                <option value="PROVIDER_OPS">👥 Provider Operations</option>
-                <option value="SAFEGUARDING">🛡️ Safeguarding & Safety</option>
-                <option value="CONTENT">📝 Content & CMS Editor</option>
-              </select>
-            </div>
 
             <button
               onClick={() => setShowMatrixModal(true)}
@@ -443,12 +438,6 @@ export const SafespaceControlCentreView: React.FC = () => {
 
           <div className="flex items-center justify-center gap-3 pt-2">
             <button
-              onClick={() => setActiveRole('SUPER_ADMIN')}
-              className="px-5 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-[#17212B] text-xs font-bold transition shadow-md"
-            >
-              Switch to Super Admin Role
-            </button>
-            <button
               onClick={() => setActiveTab(ROLE_PERMISSIONS[activeRole].allowedTabs[0] || 'ANALYTICS')}
               className="px-5 py-2.5 rounded-2xl bg-[#17212B] hover:bg-[#59636B] text-[#E3E2DE] text-xs font-medium border border-[#59636B] transition"
             >
@@ -456,7 +445,7 @@ export const SafespaceControlCentreView: React.FC = () => {
             </button>
           </div>
         </div>
-      ) : loading || !data ? (
+      ) : needsDashboard && (loading || !data) ? (
         <div className="p-12 text-center text-[#59636B] font-medium bg-white rounded-3xl border border-[#E3E2DE] shadow-xs">
           <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#123B5D] mb-2" />
           Loading Safespace Control Centre Datasets...

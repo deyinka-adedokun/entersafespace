@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { User, ProviderProfile, UserRole } from '../types';
 import { Shield, Heart, PhoneCall, LogOut, Edit2, Check, UserCheck, AlertTriangle, KeyRound, Sparkles } from 'lucide-react';
 import { Card } from './ui/Card';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from './ui/ToastContext';
+import { Avatar } from './ui/Avatar';
 
 interface ProfileViewProps {
   currentUser?: User | null;
@@ -16,7 +17,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   preferredProvider,
   onOpenEmergency
 }) => {
-  const { user, isAuthenticated, logout, updateProfile, openAuthModal } = useAuth();
+  const { user, isAuthenticated, logout, updateProfile, openAuthModal, refreshSession } = useAuth();
   const { addToast } = useToast();
 
   const activeUser: User = user || currentUser || {
@@ -34,6 +35,43 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [phone, setPhone] = useState(activeUser.phone || '');
   const [preferredLanguage, setPreferredLanguage] = useState(activeUser.preferredLanguage || 'English');
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  // Account details can arrive after this screen opens (or change after a
+  // save), so keep the form in step unless the person is mid-edit.
+  useEffect(() => {
+    if (isEditing) return;
+    setDisplayName(activeUser.displayName || '');
+    setPhone(activeUser.phone || '');
+    setPreferredLanguage(activeUser.preferredLanguage || 'English');
+  }, [activeUser.displayName, activeUser.phone, activeUser.preferredLanguage, isEditing]);
+
+  const handlePhotoSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      addToast('Photos must be 2 MB or smaller.', 'error');
+      return;
+    }
+    setUploadingPhoto(true);
+    try {
+      const body = new FormData();
+      body.append('avatar', file);
+      const res = await fetch('/api/v1/profile/avatar', { method: 'POST', body });
+      const json = await res.json();
+      if (json.success) {
+        await refreshSession();
+        addToast('Profile photo updated.', 'success');
+      } else {
+        addToast(json.error?.message || 'The photo could not be uploaded.', 'error');
+      }
+    } catch (err) {
+      addToast('Network error uploading your photo. Please try again.', 'error');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,8 +98,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       <Card padding="lg" className="space-y-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-[#123B5D] text-[#FAF9F6] flex items-center justify-center font-display text-2xl font-bold shadow-sm">
-              {activeUser.displayName ? activeUser.displayName[0].toUpperCase() : 'S'}
+            <div className="flex flex-col items-center gap-1.5 shrink-0">
+              <Avatar name={activeUser.displayName} url={activeUser.avatarUrl} className="w-14 h-14 text-2xl" />
+              {isAuthenticated && (
+                <label className={`text-[11px] font-semibold text-[#123B5D] hover:underline ${uploadingPhoto ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`}>
+                  {uploadingPhoto ? 'Uploading…' : activeUser.avatarUrl ? 'Change photo' : 'Add photo'}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handlePhotoSelected} disabled={uploadingPhoto} />
+                </label>
+              )}
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -79,6 +123,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <Shield className="w-3 h-3 text-[#123B5D]" />
                 <span>Private Display Alias</span>
               </div>
+              <p className="text-[10px] text-[#59636B] mt-1">Your photo is only visible to you. Listeners never see it.</p>
             </div>
           </div>
 
