@@ -49,6 +49,8 @@ export const FeedbackView: React.FC<FeedbackViewProps> = ({
   const [showSafetyReportModal, setShowSafetyReportModal] = useState<boolean>(false);
   const [safetyReason, setSafetyReason] = useState<string>('Uncomfortable boundary or interaction');
   const [safetyReportSent, setSafetyReportSent] = useState<boolean>(false);
+  const [safetyReportError, setSafetyReportError] = useState<string | null>(null);
+  const [safetyReportSending, setSafetyReportSending] = useState<boolean>(false);
 
   // Fetch session data if sessionId is provided
   useEffect(() => {
@@ -110,28 +112,37 @@ export const FeedbackView: React.FC<FeedbackViewProps> = ({
   };
 
   // Submit Safety Report quietly
+  // Files a real safety report (it previously posted to a route that didn't
+  // exist, so these concerns were silently lost). Confirms only on success.
   const handleSendSafetyReport = async () => {
-    setSafetyReportSent(true);
+    setSafetyReportSending(true);
+    setSafetyReportError(null);
     try {
-      if (sessionId) {
-        await fetch('/api/v1/safeguarding/report', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId,
-            reason: safetyReason,
-            timestamp: new Date().toISOString()
-          })
-        });
+      const res = await fetch('/api/v1/safety/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          category: 'OTHER',
+          details: safetyReason,
+          blockUser: false
+        })
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.success) {
+        setSafetyReportError(json?.error?.message || 'Your concern could not be sent. Please try again.');
+        return;
       }
+      setSafetyReportSent(true);
+      setTimeout(() => {
+        setShowSafetyReportModal(false);
+        setSafetyReportSent(false);
+      }, 1500);
     } catch (e) {
-      // Quiet fail-safe
+      setSafetyReportError('Your concern could not be sent because of a connection problem. Please try again.');
+    } finally {
+      setSafetyReportSending(false);
     }
-
-    setTimeout(() => {
-      setShowSafetyReportModal(false);
-      setSafetyReportSent(false);
-    }, 1500);
   };
 
   const providerName = session?.providerDisplayName || 'Your Provider';
@@ -485,11 +496,15 @@ export const FeedbackView: React.FC<FeedbackViewProps> = ({
                 </div>
 
                 <div className="space-y-2 pt-2">
+                  {safetyReportError && (
+                    <p role="alert" className="text-xs font-medium text-[#B3261E]">{safetyReportError}</p>
+                  )}
                   <button
                     onClick={handleSendSafetyReport}
-                    className="w-full py-3 bg-[#123B5D] hover:bg-[#0D2A42] text-white rounded-lg font-semibold text-xs transition-colors cursor-pointer"
+                    disabled={safetyReportSending}
+                    className="w-full py-3 bg-[#123B5D] hover:bg-[#0D2A42] text-white rounded-lg font-semibold text-xs transition-colors cursor-pointer disabled:opacity-50"
                   >
-                    Submit confidential report
+                    {safetyReportSending ? 'Sending…' : 'Submit confidential report'}
                   </button>
 
                   <button
