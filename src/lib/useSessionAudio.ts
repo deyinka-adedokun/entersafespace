@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 // livekit-client is loaded only when a call starts, to keep the first page load small.
 import type { Room, RemoteTrack } from 'livekit-client';
+import { reportClientProblem } from './clientLog';
 
 // Live audio for one conversation, over LiveKit. Both the seeker's call
 // screen and the listener's dashboard use this. The server issues a pass for
@@ -53,7 +54,13 @@ export function useSessionAudio(sessionId: string | null, enabled: boolean) {
         .on(RoomEvent.ParticipantDisconnected, () => refreshPresence(r))
         .on(RoomEvent.Reconnecting, () => setStatus('RECONNECTING'))
         .on(RoomEvent.Reconnected, () => refreshPresence(r))
-        .on(RoomEvent.Disconnected, () => { if (!cancelled) setStatus('DISCONNECTED'); })
+        .on(RoomEvent.Disconnected, reason => {
+          if (!cancelled) {
+            setStatus('DISCONNECTED');
+            reportClientProblem('audio-disconnected', `reason ${String(reason)}`, undefined, sessionId);
+          }
+        })
+        .on(RoomEvent.MediaDevicesError, (e: Error) => reportClientProblem('audio-device', e.message, e.name, sessionId))
         .on(RoomEvent.AudioPlaybackStatusChanged, () => setNeedsAudioUnlock(!r.canPlaybackAudio))
         .on(RoomEvent.ActiveSpeakersChanged, speakers => {
           setSelfSpeaking(speakers.some(p => p.identity === r.localParticipant.identity));
@@ -89,15 +96,24 @@ export function useSessionAudio(sessionId: string | null, enabled: boolean) {
         if (!json.success) {
           setStatus(json.error?.code === 'AUDIO_NOT_CONFIGURED' ? 'NOT_CONFIGURED' : 'ERROR');
           setError(json.error?.message || 'Could not start audio.');
+          reportClientProblem('audio-token', json.error?.code || 'no token', json.error?.message, sessionId);
           return;
         }
-        await room.connect(json.data.url, json.data.token);
+        try {
+          await room.connect(json.data.url, json.data.token);
+        } catch (connectErr) {
+          const msg = connectErr instanceof Error ? connectErr.message : String(connectErr);
+          // Includes LiveKit's reason, e.g. an invalid key/secret or an unreachable URL.
+          reportClientProblem('audio-connect', msg, `url host ${String(json.data.url).replace(/^wss?:\/\//, '').split('/')[0]}`, sessionId);
+          throw connectErr;
+        }
         if (cancelled) return;
         refreshPresence(room);
         setNeedsAudioUnlock(!room.canPlaybackAudio);
         try {
           await room.localParticipant.setMicrophoneEnabled(true);
         } catch (micErr) {
+          reportClientProblem('audio-microphone', micErr instanceof Error ? `${micErr.name}: ${micErr.message}` : String(micErr), undefined, sessionId);
           setStatus('MIC_BLOCKED');
           setError('Safespace needs your microphone. Please allow microphone access in your browser and try again.');
         }

@@ -1,7 +1,7 @@
 import type { Express } from 'express';
 import { randomUUID } from 'crypto';
 import { supabaseAdmin } from './supabaseClients.js';
-import { requireAuth } from './authMiddleware.js';
+import { attachAuth, requireAuth } from './authMiddleware.js';
 import { fail, handle, receiveAvatar, sniffImage } from './routeHelpers.js';
 
 // ---------------------------------------------------------------------------
@@ -48,6 +48,17 @@ export async function buildUserPayload(userId: string) {
 }
 
 export function registerProfileRoutes(app: Express) {
+  // Problems the browser reports (audio failures, page errors), written to the
+  // server log so they can be diagnosed. Nothing is stored. Clipped and
+  // single-line so a client can't flood or forge log output.
+  app.post('/api/v1/client-log', attachAuth, (req, res) => {
+    const clean = (v: unknown, max: number) => String(v ?? '').replace(/[\r\n\t]+/g, ' ').slice(0, max);
+    const { kind, message, sessionId, detail } = req.body || {};
+    const who = req.user ? `${req.user.role} ${req.user.id}` : 'anonymous';
+    console.warn(`[Safespace][client] ${clean(kind, 40)} | ${who} | session ${clean(sessionId, 40) || '-'} | ${clean(message, 300)} | ${clean(detail, 500)}`);
+    res.json({ success: true });
+  });
+
   app.post('/api/v1/profile/avatar', requireAuth, receiveAvatar, handle('profile avatar', async (req, res) => {
     const userId = req.user!.id;
     const file = req.file;

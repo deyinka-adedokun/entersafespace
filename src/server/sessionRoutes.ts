@@ -23,6 +23,8 @@ import { UUID_RE, fail, handle, writeAudit, receiveAvatar, sniffImage } from './
 
 // How long a matched provider is held for the seeker to press "Start talking".
 const RESERVATION_MS = 10 * 60 * 1000;
+// How long the listener's phone rings before an unanswered call is cancelled.
+export const RING_SECONDS = 45;
 const PROVIDER_SET_STATUSES = ['AVAILABLE', 'AWAY', 'OFFLINE'];
 const MAX_DURATION_OPTIONS = [15, 30, 60, 90];
 const AVATAR_BUCKET = 'provider-avatars';
@@ -205,14 +207,14 @@ async function closeAudioRoom(sessionId: string) {
   }
 }
 
-async function releaseProvider(providerUserId: string, countCompleted: boolean) {
+async function releaseProvider(providerUserId: string, countCompleted: boolean, availability: 'AVAILABLE' | 'AWAY' = 'AVAILABLE') {
   const { data: provider } = await supabaseAdmin
     .from('provider_profiles')
     .select('id, sessions_completed')
     .eq('user_id', providerUserId)
     .maybeSingle();
   if (!provider) return;
-  const updates: Row = { availability_status: 'AVAILABLE', current_session_id: null };
+  const updates: Row = { availability_status: availability, current_session_id: null };
   if (countCompleted) updates.sessions_completed = (provider.sessions_completed || 0) + 1;
   const { error } = await supabaseAdmin.from('provider_profiles').update(updates).eq('id', provider.id);
   if (error) console.error('[Safespace] provider release failed:', error);
@@ -262,11 +264,52 @@ async function completeSession(session: Row, actor: AuthenticatedUser | null, re
 }
 
 /**
+ * Cancels a call that was never answered (declined, unanswered, or called off
+ * by the seeker). Nothing is charged: time only starts when the listener
+ * accepts, and a free trial is handed back. A listener who declined or didn't
+ * answer is set to Away so they aren't rung again until they choose.
+ */
+async function cancelSession(session: Row, actor: AuthenticatedUser | null, reason: 'DECLINED' | 'NO_ANSWER' | 'SEEKER_CANCELLED'): Promise<Row> {
+  const { data: cancelled, error } = await supabaseAdmin
+    .from('sessions')
+    .update({ status: 'CANCELLED', ended_at: new Date().toISOString(), consumed_seconds: 0 })
+    .eq('id', session.id)
+    .eq('status', 'CONNECTING')
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  if (!cancelled) {
+    const { data: current } = await supabaseAdmin.from('sessions').select('*').eq('id', session.id).single();
+    return current;
+  }
+  if (cancelled.is_free_trial) {
+    await supabaseAdmin.from('profiles').update({ free_trial_used: false }).eq('id', cancelled.seeker_id);
+  }
+  if (cancelled.provider_id) {
+    await releaseProvider(cancelled.provider_id, false, reason === 'SEEKER_CANCELLED' ? 'AVAILABLE' : 'AWAY');
+  }
+  await writeAudit(actor, 'SESSION_CANCELLED', 'SESSION', cancelled.id, { reason });
+  return cancelled;
+}
+
+function ringExpired(session: Row) {
+  return session.status === 'CONNECTING' && session.started_at
+    && Date.now() - new Date(session.started_at).getTime() > RING_SECONDS * 1000;
+}
+
+/**
  * Housekeeping run before matching: finishes sessions whose time ran out
  * while nobody was polling, and frees providers held for seekers who never
  * pressed "Start talking".
  */
 async function settleStale() {
+  const { data: ringing } = await supabaseAdmin.from('sessions').select('*').eq('status', 'CONNECTING').limit(100);
+  for (const s of ringing || []) {
+    if (ringExpired(s)) {
+      try { await cancelSession(s, null, 'NO_ANSWER'); } catch (e) { console.error('[Safespace] stale ring settle failed:', e); }
+    }
+  }
+
   const { data: active } = await supabaseAdmin.from('sessions').select('*').eq('status', 'ACTIVE').limit(100);
   for (const s of active || []) {
     if (elapsedSeconds(s) >= s.allocated_seconds) {
@@ -294,7 +337,7 @@ async function settleStale() {
 }
 
 // Loads a session the caller participates in, or sends the error response.
-async function loadOwnSession(req: Request, res: Response, opts: { seekerOnly?: boolean } = {}): Promise<Row | null> {
+async function loadOwnSession(req: Request, res: Response, opts: { seekerOnly?: boolean; providerOnly?: boolean } = {}): Promise<Row | null> {
   const id = req.params.id;
   if (!UUID_RE.test(id)) {
     fail(res, 404, 'SESSION_NOT_FOUND', 'Session does not exist.');
@@ -307,16 +350,22 @@ async function loadOwnSession(req: Request, res: Response, opts: { seekerOnly?: 
     return null;
   }
   const userId = req.user!.id;
-  const allowed = opts.seekerOnly ? session.seeker_id === userId : (session.seeker_id === userId || session.provider_id === userId);
+  const allowed = opts.seekerOnly ? session.seeker_id === userId
+    : opts.providerOnly ? session.provider_id === userId
+    : (session.seeker_id === userId || session.provider_id === userId);
   if (!allowed) {
-    fail(res, 403, 'FORBIDDEN', opts.seekerOnly ? 'Only the seeker can do this for this session.' : 'You are not a participant in this session.');
+    fail(res, 403, 'FORBIDDEN', opts.seekerOnly ? 'Only the seeker can do this for this session.'
+      : opts.providerOnly ? 'Only the listener can do this for this session.'
+      : 'You are not a participant in this session.');
     return null;
   }
   return session;
 }
 
-// Brings an ACTIVE session's clock up to date (and completes it if time is up).
+// Brings a session up to date: cancels a call that rang out, and advances an
+// ACTIVE session's clock (completing it if time is up).
 async function syncClock(session: Row, actor: AuthenticatedUser, persist: boolean): Promise<Row> {
+  if (ringExpired(session)) return cancelSession(session, actor, 'NO_ANSWER');
   if (session.status !== 'ACTIVE') return session;
   const consumed = elapsedSeconds(session);
   if (consumed >= session.allocated_seconds) {
@@ -336,9 +385,13 @@ async function syncClock(session: Row, actor: AuthenticatedUser, persist: boolea
 
 function sessionPayload(session: Row) {
   const remainingSeconds = remainingOf(session);
+  const ringSecondsLeft = session.status === 'CONNECTING' && session.started_at
+    ? Math.max(0, RING_SECONDS - Math.floor((Date.now() - new Date(session.started_at).getTime()) / 1000))
+    : 0;
   return {
     session: mapSession(session),
     remainingSeconds,
+    ringSecondsLeft,
     isLowCredit: remainingSeconds <= 300 && remainingSeconds > 0
   };
 }
@@ -515,7 +568,8 @@ export function registerSessionRoutes(app: Express) {
       package_name: pkg.name,
       allocated_seconds: pkg.duration_seconds,
       consumed_seconds: 0,
-      status: 'ACTIVE',
+      // Rings the listener; time starts only when they accept.
+      status: 'CONNECTING',
       started_at: new Date().toISOString(),
       credit_id: `cred-${randomUUID()}`,
       is_free_trial: Boolean(pkg.is_free_trial),
@@ -527,9 +581,9 @@ export function registerSessionRoutes(app: Express) {
       supabaseAdmin.from('support_requests').update({ session_id: session.id }).eq('id', request.id),
       supabaseAdmin.from('provider_profiles').update({ current_session_id: session.id, availability_status: 'BUSY' }).eq('id', provider.id)
     ]);
-    await writeAudit(user, 'SESSION_START', 'SESSION', session.id, { package: pkg.name, providerProfileId: provider.id });
+    await writeAudit(user, 'SESSION_RINGING', 'SESSION', session.id, { package: pkg.name, providerProfileId: provider.id });
 
-    res.json({ success: true, data: { session: mapSession(session), remainingSeconds: session.allocated_seconds } });
+    res.json({ success: true, data: sessionPayload(session) });
   }));
 
   // History must be registered before '/:id' so "history" isn't read as an id.
@@ -566,8 +620,40 @@ export function registerSessionRoutes(app: Express) {
   app.post('/api/v1/sessions/:id/end', requireAuth, handle('session end', async (req, res) => {
     const session = await loadOwnSession(req, res);
     if (!session) return;
-    const ended = session.status === 'ACTIVE' ? await completeSession(session, req.user!, 'ENDED_BY_PARTICIPANT') : session;
+    const isProvider = session.provider_id === req.user!.id;
+    const ended = session.status === 'ACTIVE' ? await completeSession(session, req.user!, isProvider ? 'ENDED_BY_LISTENER' : 'ENDED_BY_SEEKER')
+      : session.status === 'CONNECTING' ? await cancelSession(session, req.user!, isProvider ? 'DECLINED' : 'SEEKER_CANCELLED')
+      : session;
     res.json({ success: true, data: { session: mapSession(ended) } });
+  }));
+
+  // The listener answers the incoming call: the conversation (and the seeker's
+  // time) starts now.
+  app.post('/api/v1/sessions/:id/accept', requireAuth, handle('session accept', async (req, res) => {
+    const session = await loadOwnSession(req, res, { providerOnly: true });
+    if (!session) return;
+    const current = await syncClock(session, req.user!, false);
+    if (current.status !== 'CONNECTING') {
+      return fail(res, 409, 'CALL_NOT_RINGING', current.status === 'ACTIVE' ? 'This call is already in progress.' : 'This call is no longer waiting.');
+    }
+    const { data: accepted, error } = await supabaseAdmin
+      .from('sessions')
+      .update({ status: 'ACTIVE', started_at: new Date().toISOString(), consumed_seconds: 0 })
+      .eq('id', current.id)
+      .eq('status', 'CONNECTING')
+      .select()
+      .maybeSingle();
+    if (error) throw error;
+    if (!accepted) return fail(res, 409, 'CALL_NOT_RINGING', 'This call is no longer waiting.');
+    await writeAudit(req.user!, 'SESSION_START', 'SESSION', accepted.id, { package: accepted.package_name });
+    res.json({ success: true, data: sessionPayload(accepted) });
+  }));
+
+  app.post('/api/v1/sessions/:id/decline', requireAuth, handle('session decline', async (req, res) => {
+    const session = await loadOwnSession(req, res, { providerOnly: true });
+    if (!session) return;
+    const cancelled = session.status === 'CONNECTING' ? await cancelSession(session, req.user!, 'DECLINED') : session;
+    res.json({ success: true, data: { session: mapSession(cancelled) } });
   }));
 
   // "Continue talking". NOTE (open P0): payment is still simulated here,
@@ -841,14 +927,14 @@ export function registerSessionRoutes(app: Express) {
       .from('sessions')
       .select('*')
       .eq('provider_id', req.user!.id)
-      .eq('status', 'ACTIVE')
+      .in('status', ['CONNECTING', 'ACTIVE'])
       .order('started_at', { ascending: false })
       .limit(1)
       .maybeSingle();
     if (error) throw error;
     if (!data) return res.json({ success: true, data: { session: null } });
     const current = await syncClock(data, req.user!, false);
-    res.json({ success: true, data: current.status === 'ACTIVE' ? sessionPayload(current) : { session: null } });
+    res.json({ success: true, data: ['CONNECTING', 'ACTIVE'].includes(current.status) ? sessionPayload(current) : { session: null } });
   }));
 
   app.get('/api/v1/providers/incoming-requests', requireAuth, handle('provider incoming', async (req, res) => {
