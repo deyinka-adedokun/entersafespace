@@ -8,6 +8,9 @@ interface NotificationContextType {
   preferences: NotificationPreferences;
   updatePreferences: (newPrefs: Partial<NotificationPreferences>) => void;
   triggerNotification: (type: SafespaceNotificationType, customBody?: string, customTitle?: string) => void;
+  // Alerts about a live conversation (matched, joined, ended). These are never
+  // held back by quiet hours or daily caps: the person is in or about to be in a call.
+  alertLiveSession: (type: SafespaceNotificationType, title: string, body: string) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearAll: () => void;
@@ -317,6 +320,60 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   };
 
+  // Flash the tab title while the page is in the background, until they come back.
+  const titleFlashRef = React.useRef<number | null>(null);
+  const flashTitle = (text: string) => {
+    if (typeof document === 'undefined' || !document.hidden) return;
+    const original = document.title;
+    let on = false;
+    if (titleFlashRef.current) window.clearInterval(titleFlashRef.current);
+    titleFlashRef.current = window.setInterval(() => {
+      on = !on;
+      document.title = on ? `🔔 ${text}` : original;
+    }, 1200);
+    const stop = () => {
+      if (titleFlashRef.current) window.clearInterval(titleFlashRef.current);
+      titleFlashRef.current = null;
+      document.title = original;
+      document.removeEventListener('visibilitychange', stop);
+    };
+    document.addEventListener('visibilitychange', stop);
+  };
+
+  const alertLiveSession = (type: SafespaceNotificationType, title: string, body: string) => {
+    const item: SafespaceNotificationItem = {
+      id: `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      type,
+      title,
+      body,
+      timestamp: new Date().toISOString(),
+      read: false,
+      actionUrl: NOTIFICATION_TEMPLATES[type].actionUrl
+    };
+    setNotifications(prev => [item, ...prev]);
+    playGentleChime();
+    try { navigator.vibrate?.([120, 80, 120]); } catch { /* not supported */ }
+    flashTitle(title);
+
+    // A system notification only matters when they aren't looking at the page.
+    const permitted = preferences.pushNotificationsEnabled && typeof window !== 'undefined'
+      && 'Notification' in window && Notification.permission === 'granted';
+    if (permitted && document.hidden) {
+      const options = { body, icon: '/pwa-192.png', badge: '/pwa-192.png', tag: `safespace-live-${type}` };
+      const direct = () => {
+        try { new Notification(title, options); } catch { /* unsupported here */ }
+      };
+      // Android Chrome only allows notifications through the service worker.
+      if (navigator.serviceWorker?.getRegistration) {
+        navigator.serviceWorker.getRegistration()
+          .then(reg => (reg ? reg.showNotification(title, options) : direct()))
+          .catch(direct);
+      } else {
+        direct();
+      }
+    }
+  };
+
   const markAsRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   };
@@ -446,6 +503,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
         preferences,
         updatePreferences,
         triggerNotification,
+        alertLiveSession,
         markAsRead,
         markAllAsRead,
         clearAll,

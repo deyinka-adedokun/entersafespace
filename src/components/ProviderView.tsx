@@ -28,6 +28,8 @@ import {
 import { SafetyReportModal } from './SafetyReportModal';
 import { Avatar } from './ui/Avatar';
 import { useSessionAudio } from '../lib/useSessionAudio';
+import { useNotifications } from '../context/NotificationContext';
+import { useToast } from './ui/ToastContext';
 import type { Session } from '../types';
 
 interface IncomingRequest {
@@ -116,11 +118,28 @@ export const ProviderView: React.FC = () => {
     }
   };
 
+  // Alerts for live-conversation moments. The pollers are created once, so
+  // they reach the latest functions through refs.
+  const { alertLiveSession, requestPushPermission, pushPermissionState } = useNotifications();
+  const { addToast } = useToast();
+  const liveAlertRef = React.useRef((type: 'PROVIDER_REQUEST' | 'PROVIDER_SESSION', title: string, body: string) => {});
+  liveAlertRef.current = (type, title, body) => {
+    alertLiveSession(type, title, body);
+    addToast(title, 'info');
+  };
+  const seenRequestIdsRef = React.useRef<Set<string>>(new Set());
+  const announcedSessionIdRef = React.useRef<string | null>(null);
+
   const fetchIncomingRequests = async () => {
     try {
       const res = await fetch('/api/v1/providers/incoming-requests');
       const json = await res.json();
       if (json.success && json.data?.requests) {
+        const fresh = (json.data.requests as IncomingRequest[]).filter(r => !seenRequestIdsRef.current.has(r.id));
+        fresh.forEach(r => seenRequestIdsRef.current.add(r.id));
+        if (fresh.length > 0) {
+          liveAlertRef.current('PROVIDER_REQUEST', 'A seeker has been matched with you', "They'll start the conversation shortly. Please stay close.");
+        }
         setIncomingRequests(json.data.requests);
         if (json.data.requests.length > 0) setLastMatchedRequest(json.data.requests[0]);
       }
@@ -152,10 +171,15 @@ export const ProviderView: React.FC = () => {
       const next: Session | null = json.data?.session || null;
       const previous = activeSessionRef.current;
       if (next) {
+        if (announcedSessionIdRef.current !== next.id && !joinedCallRef.current) {
+          announcedSessionIdRef.current = next.id;
+          liveAlertRef.current('PROVIDER_SESSION', 'Your seeker is waiting', `${next.seekerDisplayName || 'A seeker'} has started the conversation. Join now.`);
+        }
         setActiveSession(next);
         setRemainingSeconds(json.data.remainingSeconds ?? 0);
       } else if (previous) {
         // The conversation ended (time ran out, or the seeker ended it).
+        liveAlertRef.current('PROVIDER_SESSION', 'The conversation has ended', 'Thank you for listening.');
         finishCall(previous);
       }
     } catch (err) {
@@ -168,6 +192,15 @@ export const ProviderView: React.FC = () => {
     const interval = setInterval(pollLiveState, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // One reminder if the seeker has been waiting 30 seconds and the listener hasn't joined.
+  useEffect(() => {
+    if (!activeSession || joinedCall) return;
+    const t = setTimeout(() => {
+      liveAlertRef.current('PROVIDER_SESSION', 'Your seeker is still waiting', 'Press Join conversation to start talking.');
+    }, 30000);
+    return () => clearTimeout(t);
+  }, [activeSession?.id, joinedCall]);
 
   // If the audio drops or the seeker leaves, check at once whether the
   // conversation was ended instead of waiting for the next poll.
@@ -189,6 +222,10 @@ export const ProviderView: React.FC = () => {
 
   const handleUpdateAvailability = async (newStatus: string) => {
     setAvailability(newStatus);
+    // So a match can reach them even when Safespace isn't the tab they're on.
+    if (newStatus === 'AVAILABLE' && pushPermissionState === 'default') {
+      void requestPushPermission();
+    }
     try {
       await fetch('/api/v1/providers/availability', {
         method: 'POST',

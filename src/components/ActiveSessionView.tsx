@@ -3,6 +3,8 @@ import { Session, SessionExtension, UserRole } from '../types';
 import { CANONICAL_PACKAGES } from '../data/mockData';
 import { SafespaceLogo } from './ui/SafespaceLogo';
 import { useSessionAudio } from '../lib/useSessionAudio';
+import { useNotifications } from '../context/NotificationContext';
+import { useToast } from './ui/ToastContext';
 import { 
   Mic, 
   MicOff, 
@@ -88,6 +90,17 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
     return () => clearInterval(interval);
   }, [connectionState, someoneSpeaking]);
 
+  // Alerts for the moments that matter in a live conversation.
+  const { alertLiveSession } = useNotifications();
+  const { addToast } = useToast();
+  const liveAlert = (type: 'MATCH_FOUND' | 'SESSION_ENDING' | 'PROVIDER_SESSION', title: string, body: string) => {
+    alertLiveSession(type, title, body);
+    addToast(title, 'info');
+  };
+  const liveAlertRef = useRef(liveAlert);
+  liveAlertRef.current = liveAlert;
+  const endedByMeRef = useRef(false);
+
   // Authoritative heartbeat: the server's timer decides when the session ends.
   const onSessionEndedRef = useRef(onSessionEnded);
   onSessionEndedRef.current = onSessionEnded;
@@ -105,6 +118,13 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
           setRemainingSeconds(json.data.remainingSeconds);
           if (json.data.session.status !== 'ACTIVE' && !endedRef.current) {
             endedRef.current = true;
+            if (!endedByMeRef.current) {
+              const s = json.data.session;
+              const timeUp = s.consumedSeconds >= s.allocatedSeconds;
+              liveAlertRef.current('PROVIDER_SESSION',
+                timeUp ? 'Your conversation time is up' : 'Your listener ended the conversation',
+                'Thank you for talking. You can share how it went on the next screen.');
+            }
             setSessionEnded(true);
             setTimeout(() => onSessionEndedRef.current(), 1000);
           }
@@ -119,6 +139,24 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
     const interval = setInterval(syncHeartbeat, 5000);
     return () => clearInterval(interval);
   }, [sessionId]);
+
+  // "Your listener has joined" -- once, the first time both are connected.
+  const announcedJoinRef = useRef(false);
+  useEffect(() => {
+    if (audio.status === 'CONNECTED' && !announcedJoinRef.current) {
+      announcedJoinRef.current = true;
+      liveAlertRef.current('MATCH_FOUND', 'Your listener has joined', 'You can start talking whenever you are ready.');
+    }
+  }, [audio.status]);
+
+  // A gentle heads-up two minutes before the end, so extending is a choice, not a surprise.
+  const warnedEndingRef = useRef(false);
+  useEffect(() => {
+    if (!sessionEnded && !warnedEndingRef.current && remainingSeconds > 0 && remainingSeconds <= 120) {
+      warnedEndingRef.current = true;
+      liveAlertRef.current('SESSION_ENDING', 'About 2 minutes left', 'You can continue talking by adding more time.');
+    }
+  }, [remainingSeconds, sessionEnded]);
 
   // When the audio drops or the listener leaves, check straight away whether
   // the conversation was ended rather than waiting for the next heartbeat.
@@ -150,6 +188,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
       const json = await res.json();
       if (json.success) {
         setShowEndConfirmModal(false);
+        endedByMeRef.current = true;
         endedRef.current = true;
         setSessionEnded(true);
         setTimeout(() => {
