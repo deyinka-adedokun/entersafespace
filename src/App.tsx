@@ -26,6 +26,7 @@ import { Footer } from './components/Footer';
 import { PublicInfoModal, PublicInfoTopic } from './components/PublicInfoModal';
 import { PwaBanners } from './components/PwaBanners';
 import { NotificationModal } from './components/NotificationModal';
+import { CallProvider, useCall } from './context/CallContext';
 
 const AppContent: React.FC = () => {
   const { user, isAuthenticated, refreshSession, openAuthModal } = useAuth();
@@ -56,6 +57,86 @@ const AppContent: React.FC = () => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState<boolean>(false);
   const [publicInfoTopic, setPublicInfoTopic] = useState<PublicInfoTopic>('PRIVACY_BY_DESIGN');
 
+
+  const call = useCall();
+  const isListenerRole = currentUser.role === 'PROVIDER' || currentUser.role === 'SUPER_ADMIN';
+
+  // Opened from a call alert on the phone (?open=listener), or the alert was
+  // tapped while Safespace was already open: go straight to the dashboard,
+  // where the call rings.
+  const openListenerDashboard = () => {
+    setViewState(v => (v === 'SESSION' ? v : 'IDLE'));
+    setCurrentTab('LISTENER');
+  };
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('open') === 'listener') {
+      openListenerDashboard();
+      params.delete('open');
+      const rest = params.toString();
+      window.history.replaceState(null, '', window.location.pathname + (rest ? `?${rest}` : '') + window.location.hash);
+    }
+    const onMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'SAFESPACE_OPEN_LISTENER') openListenerDashboard();
+    };
+    navigator.serviceWorker?.addEventListener('message', onMessage);
+    return () => navigator.serviceWorker?.removeEventListener('message', onMessage);
+  }, []);
+
+  // Listeners get their calls wherever they are in Safespace: when a call
+  // starts ringing, the dashboard (with the ringing screen) opens. The
+  // dashboard polls for itself while it's open. This also tells matching
+  // that the listener is online.
+  const onListenerTab = currentTab === 'LISTENER' && viewState === 'IDLE';
+  useEffect(() => {
+    if (!isAuthenticated || !isListenerRole || onListenerTab) return;
+    let stopped = false;
+    const check = async () => {
+      try {
+        const res = await fetch('/api/v1/providers/active-session');
+        if (res.status === 404) { stopped = true; return; } // no listener profile
+        const json = await res.json();
+        if (!stopped && json.data?.session?.status === 'CONNECTING') openListenerDashboard();
+      } catch {
+        // Try again on the next tick.
+      }
+    };
+    void check();
+    const timer = window.setInterval(() => { if (!stopped) void check(); }, 2000);
+    const onVisible = () => { if (document.visibilityState === 'visible' && !stopped) void check(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [isAuthenticated, isListenerRole, onListenerTab]);
+
+  // A seeker whose page was reloaded or closed mid-call comes straight back
+  // to it (the conversation is still running on the server).
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    fetch('/api/v1/sessions/current')
+      .then(res => res.json())
+      .then(json => {
+        const s = json?.data?.session;
+        if (s && (s.status === 'ACTIVE' || s.status === 'CONNECTING')) {
+          setActiveSessionId(s.id);
+          setActiveSession(s);
+          setViewState('SESSION');
+        }
+      })
+      .catch(() => undefined);
+  }, [isAuthenticated, user?.id]);
+
+  // "You're in a conversation" bar, shown when the call's screen isn't.
+  const callScreenOpen = viewState === 'SESSION' || (isListenerRole && onListenerTab);
+  const showInCallBar = call.sessionId !== null && !callScreenOpen;
+  const returnToCall = () => {
+    if (activeSessionId && call.sessionId === activeSessionId) setViewState('SESSION');
+    else openListenerDashboard();
+    window.scrollTo({ top: 0 });
+  };
 
   const handleOpenPublicInfo = (topic: PublicInfoTopic) => {
     setPublicInfoTopic(topic);
@@ -129,6 +210,16 @@ const AppContent: React.FC = () => {
       
       {/* PWA Floating Status Banners (Offline, SW Update, Install Banner) */}
       <PwaBanners />
+
+      {showInCallBar && (
+        <button
+          onClick={returnToCall}
+          className="sticky top-0 z-50 w-full bg-[#123B5D] text-white text-sm font-semibold px-4 py-2.5 flex items-center justify-center gap-2"
+        >
+          <span className="w-2 h-2 rounded-full bg-white animate-pulse" aria-hidden="true" />
+          <span>You're in a conversation · Return to call</span>
+        </button>
+      )}
 
       {/* Primary Top Navbar (Hidden during active in-session conversation) */}
       {viewState !== 'SESSION' && (
@@ -364,7 +455,9 @@ export const App: React.FC = () => {
     <ToastProvider>
       <AuthProvider>
         <NotificationProvider>
-          <AppContent />
+          <CallProvider>
+            <AppContent />
+          </CallProvider>
         </NotificationProvider>
       </AuthProvider>
     </ToastProvider>

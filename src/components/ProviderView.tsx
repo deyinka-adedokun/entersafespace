@@ -27,7 +27,9 @@ import {
 } from 'lucide-react';
 import { SafetyReportModal } from './SafetyReportModal';
 import { Avatar } from './ui/Avatar';
-import { useSessionAudio, isInAppBrowser } from '../lib/useSessionAudio';
+import { isInAppBrowser } from '../lib/useSessionAudio';
+import { useCall } from '../context/CallContext';
+import { enableCallAlerts } from '../lib/webPush';
 import { startRinging } from '../lib/ringtone';
 import { useNotifications } from '../context/NotificationContext';
 import { useToast } from './ui/ToastContext';
@@ -79,14 +81,20 @@ export const ProviderView: React.FC = () => {
   // Live conversation: the session the seeker started with this listener.
   const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
-  const [joinedCall, setJoinedCall] = useState<boolean>(false);
   const [ringSecondsLeft, setRingSecondsLeft] = useState<number>(0);
   const [answering, setAnswering] = useState<boolean>(false);
   const [endingCall, setEndingCall] = useState<boolean>(false);
   const [lastMatchedRequest, setLastMatchedRequest] = useState<IncomingRequest | null>(null);
   const isRinging = activeSession?.status === 'CONNECTING';
-  // Audio only once the call has been accepted and is live.
-  const audio = useSessionAudio(activeSession?.id ?? null, joinedCall && activeSession?.status === 'ACTIVE');
+  // The call's audio lives above this page (CallContext), so it keeps going
+  // when the listener moves to another part of Safespace.
+  const call = useCall();
+  const audio = call.audio;
+  const joinedCall = !!activeSession && call.sessionId === activeSession.id;
+  const setJoinedCall = (next: boolean) => {
+    if (!next) call.leave();
+    else if (activeSessionRef.current) call.join(activeSessionRef.current.id);
+  };
   const isCallActive = joinedCall && activeSession?.status === 'ACTIVE';
   const isMuted = audio.muted;
   const setIsMuted = (next: boolean) => { void audio.setMuted(next); };
@@ -202,9 +210,21 @@ export const ProviderView: React.FC = () => {
 
   useEffect(() => {
     pollLiveState();
-    const interval = setInterval(pollLiveState, 2500);
-    return () => clearInterval(interval);
+    const interval = setInterval(pollLiveState, 2000);
+    // Check at once when the listener comes back to the page (timers are
+    // slowed down while it is hidden).
+    const onVisible = () => { if (document.visibilityState === 'visible') pollLiveState(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
+
+  // Phone alerts for incoming calls when Safespace isn't open.
+  useEffect(() => {
+    if (pushPermissionState === 'granted') void enableCallAlerts();
+  }, [pushPermissionState]);
 
   // Ring (sound + vibration, repeating) for as long as the call is waiting.
   useEffect(() => {
@@ -230,7 +250,7 @@ export const ProviderView: React.FC = () => {
         setActiveSession(json.data.session);
         setRemainingSeconds(json.data.remainingSeconds ?? 0);
         // This tap also lets the browser play the seeker's audio.
-        setJoinedCall(true);
+        call.join(json.data.session.id);
       } else {
         addToast(json.error?.message || 'This call is no longer waiting.', 'error');
         pollLiveState();
@@ -691,7 +711,7 @@ export const ProviderView: React.FC = () => {
                     availability === status
                       ? status === 'AVAILABLE' 
                         ? 'bg-[#123B5D] text-white shadow-2xs' 
-                        : 'bg-white/10 text-white'
+                        : 'bg-white text-[#17212B] border border-[#E3E2DE]'
                       : 'text-[#59636B] hover:bg-[#E3E2DE]/60'
                   }`}
                 >
@@ -701,6 +721,27 @@ export const ProviderView: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Phone alerts, so calls reach the listener when Safespace isn't open */}
+        {availability === 'AVAILABLE' && pushPermissionState !== 'granted' && (
+          <div className="p-3.5 bg-white rounded-2xl border border-[#123B5D]/30 text-xs text-[#17212B] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <span>
+              {pushPermissionState === 'denied'
+                ? "Notifications are blocked for Safespace, so calls can only reach you while this page is open. Allow notifications in your browser's site settings to get calls on your phone."
+                : pushPermissionState === 'unsupported'
+                  ? 'This browser cannot show call alerts. Keep this page open to receive calls, or open Safespace in Chrome.'
+                  : 'Turn on call alerts so seekers can reach you even when Safespace is not open on your screen.'}
+            </span>
+            {pushPermissionState === 'default' && (
+              <button
+                onClick={async () => { if (await requestPushPermission()) void enableCallAlerts(); }}
+                className="px-3 py-1.5 rounded-lg bg-[#123B5D] hover:bg-[#0D2A42] text-white text-xs font-semibold shrink-0"
+              >
+                Turn on call alerts
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Non-Clinical Disclaimer & Verification Trust Safeguard */}
         <div className="p-3.5 bg-[#FAF9F6] rounded-2xl border border-[#E3E2DE]/80 text-xs text-[#59636B] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
