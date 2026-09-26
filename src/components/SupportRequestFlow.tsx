@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { SafespaceLogo } from './ui/SafespaceLogo';
 import { Avatar } from './ui/Avatar';
+import { useNotifications } from '../context/NotificationContext';
 
 interface SupportRequestFlowProps {
   currentUser?: User | null;
@@ -115,8 +116,14 @@ export const SupportRequestFlow: React.FC<SupportRequestFlowProps> = ({
 
   const selectedPkg = packages.find(p => p.id === selectedPackageId) || packages[1];
 
+  const { requestPushPermission, pushPermissionState } = useNotifications();
+
   // Initiate matching with backend
   const handleInitiateMatching = async () => {
+    // So "your listener has joined" can reach them if they switch tabs.
+    if (pushPermissionState === 'default') {
+      void requestPushPermission();
+    }
     if (selectedPkg.priceNGN > 0 && !agreedToCreditRule) {
       alert('Please acknowledge that unused session credit expires when the conversation closes.');
       return;

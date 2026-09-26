@@ -25,6 +25,7 @@ export function useSessionAudio(sessionId: string | null, enabled: boolean) {
   const [needsAudioUnlock, setNeedsAudioUnlock] = useState(false);
   const [otherSpeaking, setOtherSpeaking] = useState(false);
   const [selfSpeaking, setSelfSpeaking] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   const roomRef = useRef<Room | null>(null);
   const audioElements = useRef<HTMLMediaElement[]>([]);
@@ -115,7 +116,7 @@ export function useSessionAudio(sessionId: string | null, enabled: boolean) {
       audioElements.current = [];
       roomRef.current = null;
     };
-  }, [sessionId, enabled, refreshPresence]);
+  }, [sessionId, enabled, refreshPresence, attempt]);
 
   const setMuted = useCallback(async (next: boolean) => {
     setMutedState(next);
@@ -136,9 +137,12 @@ export function useSessionAudio(sessionId: string | null, enabled: boolean) {
     setNeedsAudioUnlock(!(roomRef.current?.canPlaybackAudio ?? true));
   }, []);
 
+  // Start the connection again (after a failure or a blocked microphone).
+  const retry = useCallback(() => setAttempt(a => a + 1), []);
+
   const disconnect = useCallback(() => {
     roomRef.current?.disconnect();
   }, []);
 
-  return { status, error, muted, setMuted, speakerOn, setSpeakerOn, needsAudioUnlock, unlockAudio, otherSpeaking, selfSpeaking, disconnect };
+  return { status, error, muted, setMuted, speakerOn, setSpeakerOn, needsAudioUnlock, unlockAudio, otherSpeaking, selfSpeaking, retry, disconnect };
 }

@@ -825,6 +825,10 @@ export function registerSessionRoutes(app: Express) {
       canPublishSources: [TrackSource.MICROPHONE]
     });
 
+    if (!/^wss?:\/\//.test(LIVEKIT_URL)) {
+      console.error('[Safespace] LIVEKIT_URL should start with wss:// (LiveKit Cloud project URL). Browsers cannot connect otherwise.');
+    }
+    console.log(`[Safespace] audio pass issued: session ${current.id} (${isSeeker ? 'seeker' : 'listener'})`);
     res.json({ success: true, data: { url: LIVEKIT_URL, token: await token.toJwt(), role: isSeeker ? 'SEEKER' : 'LISTENER' } });
   }));
 

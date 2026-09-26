@@ -1,4 +1,4 @@
-const CACHE_NAME = 'safespace-pwa-v4';
+const CACHE_NAME = 'safespace-pwa-v5';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -45,6 +45,24 @@ self.addEventListener('fetch', (event) => {
 
   // Exclude non-GET and API calls from SW cache
   if (event.request.method !== 'GET' || url.pathname.startsWith('/api/')) {
+    return;
+  }
+
+  // Pages: network first, so a new deploy is picked up on the next load
+  // (serving the cached page first kept people on the previous version).
+  // The cached copy is only used when offline.
+  if (event.request.mode === 'navigate' || url.pathname === '/' || url.pathname === '/index.html') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const copy = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put('/index.html', copy));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match('/index.html'))
+    );
     return;
   }
 

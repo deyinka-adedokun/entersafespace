@@ -3,6 +3,8 @@ import { Session, SessionExtension, UserRole } from '../types';
 import { CANONICAL_PACKAGES } from '../data/mockData';
 import { SafespaceLogo } from './ui/SafespaceLogo';
 import { useSessionAudio } from '../lib/useSessionAudio';
+import { useNotifications } from '../context/NotificationContext';
+import { useToast } from './ui/ToastContext';
 import { 
   Mic, 
   MicOff, 
@@ -88,37 +90,84 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
     return () => clearInterval(interval);
   }, [connectionState, someoneSpeaking]);
 
-  // Authoritative Heartbeat Polling
-  useEffect(() => {
-    let interval: any;
+  // Alerts for the moments that matter in a live conversation.
+  const { alertLiveSession } = useNotifications();
+  const { addToast } = useToast();
+  const liveAlert = (type: 'MATCH_FOUND' | 'SESSION_ENDING' | 'PROVIDER_SESSION', title: string, body: string) => {
+    alertLiveSession(type, title, body);
+    addToast(title, 'info');
+  };
+  const liveAlertRef = useRef(liveAlert);
+  liveAlertRef.current = liveAlert;
+  const endedByMeRef = useRef(false);
 
+  // Authoritative heartbeat: the server's timer decides when the session ends.
+  const onSessionEndedRef = useRef(onSessionEnded);
+  onSessionEndedRef.current = onSessionEnded;
+  const endedRef = useRef(false);
+  const checkNowRef = useRef<() => void>(() => undefined);
+
+  useEffect(() => {
     const syncHeartbeat = async () => {
+      if (endedRef.current) return;
       try {
         const res = await fetch(`/api/v1/sessions/${sessionId}/heartbeat`, { method: 'POST' });
         const json = await res.json();
-        
         if (json.success && json.data) {
           setSession(json.data.session);
           setRemainingSeconds(json.data.remainingSeconds);
-
-          if (json.data.session.status === 'COMPLETED' || json.data.session.status === 'CANCELLED') {
+          if (json.data.session.status !== 'ACTIVE' && !endedRef.current) {
+            endedRef.current = true;
+            if (!endedByMeRef.current) {
+              const s = json.data.session;
+              const timeUp = s.consumedSeconds >= s.allocatedSeconds;
+              liveAlertRef.current('PROVIDER_SESSION',
+                timeUp ? 'Your conversation time is up' : 'Your listener ended the conversation',
+                'Thank you for talking. You can share how it went on the next screen.');
+            }
             setSessionEnded(true);
-            clearInterval(interval);
-            setTimeout(() => {
-              onSessionEnded();
-            }, 1000);
+            setTimeout(() => onSessionEndedRef.current(), 1000);
           }
         }
       } catch (err) {
         // The timer is kept on the server; a missed heartbeat just retries.
       }
     };
+    checkNowRef.current = () => { void syncHeartbeat(); };
 
     syncHeartbeat();
-    interval = setInterval(syncHeartbeat, 3000);
-
+    const interval = setInterval(syncHeartbeat, 5000);
     return () => clearInterval(interval);
-  }, [sessionId, onSessionEnded]);
+  }, [sessionId]);
+
+  // "Your listener has joined" -- once, the first time both are connected.
+  const announcedJoinRef = useRef(false);
+  useEffect(() => {
+    if (audio.status === 'CONNECTED' && !announcedJoinRef.current) {
+      announcedJoinRef.current = true;
+      liveAlertRef.current('MATCH_FOUND', 'Your listener has joined', 'You can start talking whenever you are ready.');
+    }
+  }, [audio.status]);
+
+  // A gentle heads-up two minutes before the end, so extending is a choice, not a surprise.
+  const warnedEndingRef = useRef(false);
+  useEffect(() => {
+    if (!sessionEnded && !warnedEndingRef.current && remainingSeconds > 0 && remainingSeconds <= 120) {
+      warnedEndingRef.current = true;
+      liveAlertRef.current('SESSION_ENDING', 'About 2 minutes left', 'You can continue talking by adding more time.');
+    }
+  }, [remainingSeconds, sessionEnded]);
+
+  // When the audio drops or the listener leaves, check straight away whether
+  // the conversation was ended rather than waiting for the next heartbeat.
+  const previousAudioStatus = useRef(audio.status);
+  useEffect(() => {
+    const was = previousAudioStatus.current;
+    previousAudioStatus.current = audio.status;
+    if (audio.status === 'DISCONNECTED' || (was === 'CONNECTED' && audio.status === 'WAITING')) {
+      checkNowRef.current();
+    }
+  }, [audio.status]);
 
   // Format MM:SS without flashing or panic
   const formatTimeRemaining = (seconds: number): string => {
@@ -139,6 +188,8 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
       const json = await res.json();
       if (json.success) {
         setShowEndConfirmModal(false);
+        endedByMeRef.current = true;
+        endedRef.current = true;
         setSessionEnded(true);
         setTimeout(() => {
           onSessionEnded();
@@ -354,7 +405,14 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
                 Tap to hear your listener
               </button>
             ) : connectionState === 'FAILED' ? (
-              <p>{audio.error || 'The audio connection was interrupted. Please check your internet connection.'}</p>
+              <>
+                <p>{audio.error || 'The audio connection was interrupted. Please check your internet connection.'}</p>
+                {audio.status !== 'NOT_CONFIGURED' && (
+                  <button onClick={audio.retry} className="w-full py-2 rounded-lg border border-[#123B5D] text-[#123B5D] font-semibold cursor-pointer">
+                    Try again
+                  </button>
+                )}
+              </>
             ) : (
               <p>You're in the conversation. Your listener is joining now.</p>
             )}
