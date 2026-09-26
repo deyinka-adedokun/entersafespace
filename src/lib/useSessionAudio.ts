@@ -18,6 +18,11 @@ export type SessionAudioStatus =
   | 'NOT_CONFIGURED'    // server has no LiveKit credentials yet
   | 'ERROR';
 
+// Android in-app browsers (a link opened inside another app) often can't make
+// audio calls; their user agent contains "; wv)".
+export const isInAppBrowser = () => typeof navigator !== 'undefined' && /; wv\)/.test(navigator.userAgent);
+const IN_APP_HINT = ' If you opened Safespace from inside another app, please open entersafespace.com in Chrome instead.';
+
 export function useSessionAudio(sessionId: string | null, enabled: boolean) {
   const [status, setStatus] = useState<SessionAudioStatus>('IDLE');
   const [error, setError] = useState<string | null>(null);
@@ -115,12 +120,12 @@ export function useSessionAudio(sessionId: string | null, enabled: boolean) {
         } catch (micErr) {
           reportClientProblem('audio-microphone', micErr instanceof Error ? `${micErr.name}: ${micErr.message}` : String(micErr), undefined, sessionId);
           setStatus('MIC_BLOCKED');
-          setError('Safespace needs your microphone. Please allow microphone access in your browser and try again.');
+          setError('Safespace needs your microphone. Please allow microphone access in your browser and try again.' + (isInAppBrowser() ? IN_APP_HINT : ''));
         }
       } catch (err) {
         if (!cancelled) {
           setStatus('ERROR');
-          setError('Could not connect the audio. Please check your connection.');
+          setError('Could not connect the audio. Please check your connection.' + (isInAppBrowser() ? IN_APP_HINT : ''));
         }
       }
     })();

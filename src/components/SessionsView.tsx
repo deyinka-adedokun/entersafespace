@@ -93,9 +93,9 @@ export const SessionsView: React.FC<SessionsViewProps> = ({
             <div className="flex items-center justify-between pt-2 border-t border-[#F3F1EC] text-xs text-[#59636B]">
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-[#59636B]" />
-                <span>{s.durationMinutes} minutes ({s.packageName})</span>
+                <span>{Math.max(1, Math.round((s.consumedSeconds || 0) / 60))} of {Math.round(s.allocatedSeconds / 60)} minutes ({s.packageName})</span>
               </div>
-              <div>{new Date(s.createdAt).toLocaleDateString()}</div>
+              <div>{s.startedAt ? new Date(s.startedAt).toLocaleDateString() : ''}</div>
             </div>
           </Card>
         ))}

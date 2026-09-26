@@ -18,7 +18,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onOpenEmergency
 }) => {
   const { user, isAuthenticated, logout, updateProfile, openAuthModal, refreshSession } = useAuth();
-  const { addToast } = useToast();
+  const { showToast: addToast } = useToast();
 
   const activeUser: User = user || currentUser || {
     id: 'guest',
