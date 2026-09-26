@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { disableCallAlerts } from '../lib/webPush';
 import { User, ProviderProfile } from '../types';
 // Importing this module also installs the fetch interceptor that attaches
 // `Authorization: Bearer <token>` to every same-origin API request.
@@ -221,6 +222,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
+      // Must run while still signed in, so the server can remove it.
+      await disableCallAlerts();
       await fetch('/api/v1/auth/logout', { method: 'POST' });
     } catch (err) {
       console.error(err);

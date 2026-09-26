@@ -2,7 +2,9 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Session, SessionExtension, UserRole } from '../types';
 import { CANONICAL_PACKAGES } from '../data/mockData';
 import { SafespaceLogo } from './ui/SafespaceLogo';
-import { useSessionAudio, isInAppBrowser } from '../lib/useSessionAudio';
+import { isInAppBrowser } from '../lib/useSessionAudio';
+import { useCall } from '../context/CallContext';
+import { reportClientProblem } from '../lib/clientLog';
 import { startRinging } from '../lib/ringtone';
 import { useNotifications } from '../context/NotificationContext';
 import { useToast } from './ui/ToastContext';
@@ -55,9 +57,18 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
   const [ringSecondsLeft, setRingSecondsLeft] = useState<number>(0);
   const isCalling = !callNotAnswered && (!session || session.status === 'CONNECTING');
 
-  // Live audio (LiveKit), once the listener has accepted. The room is left
-  // automatically when the session ends.
-  const audio = useSessionAudio(sessionId, !sessionEnded && session?.status === 'ACTIVE');
+  // Live audio (LiveKit), once the listener has accepted. It lives above this
+  // screen (CallContext), so it isn't cut off if this screen closes; it is
+  // left when the session ends.
+  const call = useCall();
+  const audio = call.audio;
+  const liveStatus = session?.status;
+  useEffect(() => {
+    if (!sessionEnded && liveStatus === 'ACTIVE') call.join(sessionId);
+    else if (sessionEnded || (liveStatus && liveStatus !== 'CONNECTING')) {
+      if (call.sessionId === sessionId) call.leave();
+    }
+  }, [liveStatus, sessionEnded, sessionId, call.sessionId, call.join, call.leave]);
   const connectionState: AudioConnectionState = sessionEnded ? 'ENDED'
     : audio.status === 'CONNECTED' ? 'CONNECTED'
     : audio.status === 'RECONNECTING' ? 'RECONNECTING'
@@ -161,17 +172,45 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
     };
     checkNowRef.current = () => { void syncHeartbeat(); };
 
-    // Every 2s while the listener's phone is ringing, every 4s during the call.
+    // Every 1.5s while the listener's phone is ringing, every 4s during the call.
     let timer: number | undefined;
     let stopped = false;
     const loop = async () => {
       await syncHeartbeat();
       if (stopped || endedRef.current) return;
-      timer = window.setTimeout(loop, statusRef.current === 'CONNECTING' ? 2000 : 4000);
+      timer = window.setTimeout(loop, statusRef.current === 'CONNECTING' ? 1500 : 4000);
     };
     void loop();
-    return () => { stopped = true; window.clearTimeout(timer); };
+    // Timers are slowed down while the page is hidden; catch up on return.
+    const onVisible = () => { if (document.visibilityState === 'visible') void syncHeartbeat(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      stopped = true;
+      window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [sessionId]);
+
+  // The phone's Back button (or closing the tab) shouldn't silently walk away
+  // from a live call: Back asks whether to end it, closing asks to confirm.
+  useEffect(() => {
+    if (sessionEnded) return;
+    window.history.pushState({ safespaceCall: sessionId }, '');
+    const onPopState = () => {
+      window.history.pushState({ safespaceCall: sessionId }, '');
+      if (statusRef.current === 'ACTIVE') setShowEndConfirmModal(true);
+    };
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('popstate', onPopState);
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => {
+      window.removeEventListener('popstate', onPopState);
+      window.removeEventListener('beforeunload', onBeforeUnload);
+    };
+  }, [sessionId, sessionEnded]);
 
   // The soft "calling" tone while we wait for the listener to answer.
   useEffect(() => {
@@ -240,10 +279,14 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
         setTimeout(() => {
           onSessionEnded();
         }, 800);
+      } else {
+        // Leaving now would keep the listener in a call that never ended.
+        reportClientProblem('session-end', json.error?.code || `HTTP ${res.status}`, json.error?.message, sessionId);
+        addToast(json.error?.message || 'The conversation could not be ended. Please try again.', 'error');
       }
     } catch (err) {
-      console.error('Failed to end session cleanly', err);
-      onSessionEnded();
+      reportClientProblem('session-end', err instanceof Error ? err.message : String(err), undefined, sessionId);
+      addToast('Could not reach Safespace to end the conversation. Please check your connection and try again.', 'error');
     } finally {
       setEnding(false);
     }

@@ -4,6 +4,7 @@ import { AccessToken, RoomServiceClient, TrackSource } from 'livekit-server-sdk'
 import { supabaseAdmin } from './supabaseClients.js';
 import { attachAuth, requireAuth, requireAdmin, type AuthenticatedUser } from './authMiddleware.js';
 import { UUID_RE, fail, handle, writeAudit, receiveAvatar, sniffImage } from './routeHelpers.js';
+import { sendPushToUser, usersWithPush } from './pushRoutes.js';
 
 // ---------------------------------------------------------------------------
 // Sessions, support requests, service-led matching and the provider-side
@@ -24,7 +25,39 @@ import { UUID_RE, fail, handle, writeAudit, receiveAvatar, sniffImage } from './
 // How long a matched provider is held for the seeker to press "Start talking".
 const RESERVATION_MS = 10 * 60 * 1000;
 // How long the listener's phone rings before an unanswered call is cancelled.
-export const RING_SECONDS = 45;
+export const RING_SECONDS = 30;
+// A listener counts as online if their Safespace page checked in this recently
+// (pages in the background check in less often, so this is generous).
+const PRESENCE_MS = 90 * 1000;
+// Same tag for every call alert to one listener, so a newer alert (or "missed
+// call") replaces the older one on their phone instead of stacking.
+const callAlertTag = (listenerUserId: string) => `safespace-call-${listenerUserId}`;
+// While a call rings, the phone alert is repeated so it keeps sounding and
+// vibrating like a real call, until it is answered, declined or rings out.
+const CALL_ALERT_REPEAT_MS = 7000;
+
+function ringListenerPhone(sessionId: string, listenerUserId: string, callerName: string) {
+  const alert = () => sendPushToUser(listenerUserId, {
+    title: 'Incoming call',
+    body: `${callerName} is calling you on Safespace. Tap to answer.`,
+    tag: callAlertTag(listenerUserId),
+    kind: 'INCOMING_CALL',
+    actionUrl: '/?open=listener',
+    requireInteraction: true
+  });
+  void alert();
+  const repeat = () => setTimeout(async () => {
+    try {
+      const { data } = await supabaseAdmin.from('sessions').select('status, started_at').eq('id', sessionId).maybeSingle();
+      if (!data || data.status !== 'CONNECTING' || ringExpired(data)) return;
+      await alert();
+      repeat();
+    } catch (err) {
+      console.error('[Safespace] repeat call alert failed:', err);
+    }
+  }, CALL_ALERT_REPEAT_MS);
+  repeat();
+}
 const PROVIDER_SET_STATUSES = ['AVAILABLE', 'AWAY', 'OFFLINE'];
 const MAX_DURATION_OPTIONS = [15, 30, 60, 90];
 const AVATAR_BUCKET = 'provider-avatars';
@@ -289,6 +322,18 @@ async function cancelSession(session: Row, actor: AuthenticatedUser | null, reas
     await releaseProvider(cancelled.provider_id, false, reason === 'SEEKER_CANCELLED' ? 'AVAILABLE' : 'AWAY');
   }
   await writeAudit(actor, 'SESSION_CANCELLED', 'SESSION', cancelled.id, { reason });
+  if (cancelled.provider_id && reason !== 'DECLINED') {
+    // Replaces the "Incoming call" alert on the listener's phone.
+    void sendPushToUser(cancelled.provider_id, {
+      title: 'Missed call',
+      body: reason === 'NO_ANSWER'
+        ? "A seeker called but the call wasn't answered. You've been set to Away."
+        : 'The seeker called off the call before it was answered.',
+      tag: callAlertTag(cancelled.provider_id),
+      kind: 'MISSED_CALL',
+      actionUrl: '/?open=listener'
+    });
+  }
   return cancelled;
 }
 
@@ -464,11 +509,21 @@ export function registerSessionRoutes(app: Express) {
     const blockedUserIds = new Set((blocks || []).map(b => (b.blocker_user_id === user.id ? b.blocked_user_id : b.blocker_user_id)));
     const preferredProviderId = seekerProfile?.preferred_provider_id;
 
+    // Only listeners who can actually answer: Safespace open recently, or a
+    // phone that will ring through a push alert. Otherwise the call would
+    // ring into nothing.
+    const onlineSince = Date.now() - PRESENCE_MS;
+    const isOnline = (p: Row) => Boolean(p.last_seen_at) && new Date(p.last_seen_at).getTime() >= onlineSince;
+    const pushable = await usersWithPush((candidates || []).filter(p => !isOnline(p)).map(p => p.user_id));
+
     // Soft ranking.
     const ranked = (candidates || [])
       .filter(p => !blockedUserIds.has(p.user_id))
+      .filter(p => isOnline(p) || pushable.has(p.user_id))
       .map(p => {
         let score = Number(p.rating) * 20;
+        // Someone with Safespace open answers fastest.
+        if (isOnline(p)) score += 40;
         if (request.language_preference && (p.languages || []).includes(request.language_preference)) score += 15;
         if (gender && gender !== 'no-preference' && p.gender === gender) score += 15;
         if (preferredProviderId && p.id === preferredProviderId) score += 30;
@@ -497,6 +552,15 @@ export function registerSessionRoutes(app: Express) {
       if (matchError) throw matchError;
 
       await writeAudit(user, 'MATCH_RESERVED', 'SUPPORT_REQUEST', request.id, { providerProfileId: reserved.id, packageId: pkg.id });
+      // A heads-up so the listener can open Safespace before the call rings.
+      void sendPushToUser(reserved.user_id, {
+        title: 'A seeker has been matched with you',
+        body: 'Their call will come through shortly. Please open Safespace.',
+        tag: callAlertTag(reserved.user_id),
+        kind: 'MATCHED',
+        actionUrl: '/?open=listener',
+        requireInteraction: true
+      });
       return res.json({ success: true, data: { requestId: request.id, matched: true, provider: publicProvider(reserved), request: mapRequest(matched) } });
     }
 
@@ -582,8 +646,26 @@ export function registerSessionRoutes(app: Express) {
       supabaseAdmin.from('provider_profiles').update({ current_session_id: session.id, availability_status: 'BUSY' }).eq('id', provider.id)
     ]);
     await writeAudit(user, 'SESSION_RINGING', 'SESSION', session.id, { package: pkg.name, providerProfileId: provider.id });
+    ringListenerPhone(session.id, provider.user_id, user.displayName || 'A seeker');
 
     res.json({ success: true, data: sessionPayload(session) });
+  }));
+
+  // The seeker's call that is still ringing or live, so they can get back to
+  // it after a reload or after leaving the page. Registered before '/:id'.
+  app.get('/api/v1/sessions/current', requireAuth, handle('session current', async (req, res) => {
+    const { data, error } = await supabaseAdmin
+      .from('sessions')
+      .select('*')
+      .eq('seeker_id', req.user!.id)
+      .in('status', ['CONNECTING', 'ACTIVE'])
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return res.json({ success: true, data: { session: null } });
+    const current = await syncClock(data, req.user!, false);
+    res.json({ success: true, data: ['CONNECTING', 'ACTIVE'].includes(current.status) ? sessionPayload(current) : { session: null } });
   }));
 
   // History must be registered before '/:id' so "history" isn't read as an id.
@@ -923,6 +1005,9 @@ export function registerSessionRoutes(app: Express) {
   app.get('/api/v1/providers/active-session', requireAuth, handle('provider active session', async (req, res) => {
     const provider = await getOwnProvider(req, res);
     if (!provider) return;
+    // This poll doubles as the listener's "I'm online" signal for matching.
+    const { error: seenError } = await supabaseAdmin.from('provider_profiles').update({ last_seen_at: new Date().toISOString() }).eq('id', provider.id);
+    if (seenError) console.error('[Safespace] presence update failed:', seenError);
     const { data, error } = await supabaseAdmin
       .from('sessions')
       .select('*')

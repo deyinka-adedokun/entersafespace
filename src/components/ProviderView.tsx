@@ -27,7 +27,9 @@ import {
 } from 'lucide-react';
 import { SafetyReportModal } from './SafetyReportModal';
 import { Avatar } from './ui/Avatar';
-import { useSessionAudio, isInAppBrowser } from '../lib/useSessionAudio';
+import { isInAppBrowser } from '../lib/useSessionAudio';
+import { useCall } from '../context/CallContext';
+import { enableCallAlerts, clearCallAlerts, pushSupported } from '../lib/webPush';
 import { startRinging } from '../lib/ringtone';
 import { useNotifications } from '../context/NotificationContext';
 import { useToast } from './ui/ToastContext';
@@ -79,14 +81,20 @@ export const ProviderView: React.FC = () => {
   // Live conversation: the session the seeker started with this listener.
   const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
-  const [joinedCall, setJoinedCall] = useState<boolean>(false);
   const [ringSecondsLeft, setRingSecondsLeft] = useState<number>(0);
   const [answering, setAnswering] = useState<boolean>(false);
   const [endingCall, setEndingCall] = useState<boolean>(false);
   const [lastMatchedRequest, setLastMatchedRequest] = useState<IncomingRequest | null>(null);
   const isRinging = activeSession?.status === 'CONNECTING';
-  // Audio only once the call has been accepted and is live.
-  const audio = useSessionAudio(activeSession?.id ?? null, joinedCall && activeSession?.status === 'ACTIVE');
+  // The call's audio lives above this page (CallContext), so it keeps going
+  // when the listener moves to another part of Safespace.
+  const call = useCall();
+  const audio = call.audio;
+  const joinedCall = !!activeSession && call.sessionId === activeSession.id;
+  const setJoinedCall = (next: boolean) => {
+    if (!next) call.leave();
+    else if (activeSessionRef.current) call.join(activeSessionRef.current.id);
+  };
   const isCallActive = joinedCall && activeSession?.status === 'ACTIVE';
   const isMuted = audio.muted;
   const setIsMuted = (next: boolean) => { void audio.setMuted(next); };
@@ -202,9 +210,32 @@ export const ProviderView: React.FC = () => {
 
   useEffect(() => {
     pollLiveState();
-    const interval = setInterval(pollLiveState, 2500);
-    return () => clearInterval(interval);
+    const interval = setInterval(pollLiveState, 2000);
+    // Check at once when the listener comes back to the page (timers are
+    // slowed down while it is hidden).
+    const onVisible = () => { if (document.visibilityState === 'visible') pollLiveState(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
+
+  // Phone alerts for incoming calls when Safespace isn't open.
+  const [callAlertsOn, setCallAlertsOn] = useState<boolean>(false);
+  useEffect(() => {
+    if (pushPermissionState === 'granted') void enableCallAlerts().then(setCallAlertsOn);
+  }, [pushPermissionState]);
+
+  // Being Available is what makes calls reach this phone, so choosing it
+  // turns call alerts on (asking for notification permission if needed).
+  const turnOnCallAlerts = async (): Promise<boolean> => {
+    if (!pushSupported()) return false;
+    const allowed = pushPermissionState === 'granted' || (pushPermissionState === 'default' && await requestPushPermission());
+    const on = allowed ? await enableCallAlerts() : false;
+    setCallAlertsOn(on);
+    return on;
+  };
 
   // Ring (sound + vibration, repeating) for as long as the call is waiting.
   useEffect(() => {
@@ -230,7 +261,8 @@ export const ProviderView: React.FC = () => {
         setActiveSession(json.data.session);
         setRemainingSeconds(json.data.remainingSeconds ?? 0);
         // This tap also lets the browser play the seeker's audio.
-        setJoinedCall(true);
+        call.join(json.data.session.id);
+        void clearCallAlerts();
       } else {
         addToast(json.error?.message || 'This call is no longer waiting.', 'error');
         pollLiveState();
@@ -247,6 +279,7 @@ export const ProviderView: React.FC = () => {
     setAnswering(true);
     try {
       await fetch(`/api/v1/sessions/${activeSession.id}/decline`, { method: 'POST' });
+      void clearCallAlerts();
       setActiveSession(null);
       setJoinedCall(false);
       addToast("Call declined. You're set to Away until you go Available again.", 'info');
@@ -278,9 +311,14 @@ export const ProviderView: React.FC = () => {
 
   const handleUpdateAvailability = async (newStatus: string) => {
     setAvailability(newStatus);
-    // So a match can reach them even when Safespace isn't the tab they're on.
-    if (newStatus === 'AVAILABLE' && pushPermissionState === 'default') {
-      void requestPushPermission();
+    // So calls reach them even when Safespace isn't open.
+    if (newStatus === 'AVAILABLE') {
+      void turnOnCallAlerts().then(on => {
+        addToast(on
+          ? "You're available. Calls will ring on this phone even when Safespace is closed."
+          : "You're available, but calls can only reach you while Safespace is open. Allow notifications to get calls when it's closed.",
+        on ? 'success' : 'info');
+      });
     }
     try {
       await fetch('/api/v1/providers/availability', {
@@ -691,7 +729,7 @@ export const ProviderView: React.FC = () => {
                     availability === status
                       ? status === 'AVAILABLE' 
                         ? 'bg-[#123B5D] text-white shadow-2xs' 
-                        : 'bg-white/10 text-white'
+                        : 'bg-white text-[#17212B] border border-[#E3E2DE]'
                       : 'text-[#59636B] hover:bg-[#E3E2DE]/60'
                   }`}
                 >
@@ -701,6 +739,33 @@ export const ProviderView: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Phone alerts, so calls reach the listener when Safespace isn't open */}
+        {availability === 'AVAILABLE' && callAlertsOn && (
+          <div className="px-3.5 py-2.5 bg-[#FAF9F6] rounded-2xl border border-[#E3E2DE] text-xs text-[#59636B] flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#123B5D] shrink-0" aria-hidden="true" />
+            <span>Call alerts are on for this phone. You can close Safespace; incoming calls will still ring here.</span>
+          </div>
+        )}
+        {availability === 'AVAILABLE' && !callAlertsOn && pushPermissionState !== 'granted' && (
+          <div className="p-3.5 bg-white rounded-2xl border border-[#123B5D]/30 text-xs text-[#17212B] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <span>
+              {pushPermissionState === 'denied'
+                ? "Notifications are blocked for Safespace, so calls can only reach you while this page is open. Allow notifications in your browser's site settings to get calls on your phone."
+                : pushPermissionState === 'unsupported'
+                  ? 'This browser cannot show call alerts. Keep this page open to receive calls, or open Safespace in Chrome.'
+                  : 'Turn on call alerts so seekers can reach you even when Safespace is not open on your screen.'}
+            </span>
+            {pushPermissionState === 'default' && (
+              <button
+                onClick={() => { void turnOnCallAlerts(); }}
+                className="px-3 py-1.5 rounded-lg bg-[#123B5D] hover:bg-[#0D2A42] text-white text-xs font-semibold shrink-0"
+              >
+                Turn on call alerts
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Non-Clinical Disclaimer & Verification Trust Safeguard */}
         <div className="p-3.5 bg-[#FAF9F6] rounded-2xl border border-[#E3E2DE]/80 text-xs text-[#59636B] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

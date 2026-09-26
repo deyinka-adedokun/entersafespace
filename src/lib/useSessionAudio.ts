@@ -21,6 +21,10 @@ export type SessionAudioStatus =
 // Android in-app browsers (a link opened inside another app) often can't make
 // audio calls; their user agent contains "; wv)".
 export const isInAppBrowser = () => typeof navigator !== 'undefined' && /; wv\)/.test(navigator.userAgent);
+// LiveKit disconnect reasons that mean the call is over, not a network drop:
+// we left (1), signed in elsewhere (2), removed (4), room closed at the end
+// of the conversation (5).
+const ENDED_REASONS = [1, 2, 4, 5];
 const IN_APP_HINT = ' If you opened Safespace from inside another app, please open entersafespace.com in Chrome instead.';
 
 export function useSessionAudio(sessionId: string | null, enabled: boolean) {
@@ -36,6 +40,9 @@ export function useSessionAudio(sessionId: string | null, enabled: boolean) {
   const roomRef = useRef<Room | null>(null);
   const audioElements = useRef<HTMLMediaElement[]>([]);
   const speakerOnRef = useRef(true);
+  const mutedRef = useRef(false);
+  // Why LiveKit last dropped us; decides whether reconnecting makes sense.
+  const lastDisconnectReason = useRef<number | undefined>(undefined);
 
   const refreshPresence = useCallback((room: Room) => {
     setStatus(room.remoteParticipants.size > 0 ? 'CONNECTED' : 'WAITING');
@@ -61,8 +68,14 @@ export function useSessionAudio(sessionId: string | null, enabled: boolean) {
         .on(RoomEvent.Reconnected, () => refreshPresence(r))
         .on(RoomEvent.Disconnected, reason => {
           if (!cancelled) {
+            lastDisconnectReason.current = reason;
             setStatus('DISCONNECTED');
             reportClientProblem('audio-disconnected', `reason ${String(reason)}`, undefined, sessionId);
+            // A network drop LiveKit couldn't recover from: try once more by
+            // ourselves. Not when the call was ended (room closed) or we left.
+            if (reason !== undefined && !ENDED_REASONS.includes(reason)) {
+              window.setTimeout(() => { if (!cancelled) setAttempt(a => a + 1); }, 2000);
+            }
           }
         })
         .on(RoomEvent.MediaDevicesError, (e: Error) => reportClientProblem('audio-device', e.message, e.name, sessionId))
@@ -89,6 +102,7 @@ export function useSessionAudio(sessionId: string | null, enabled: boolean) {
     };
 
     (async () => {
+      lastDisconnectReason.current = undefined;
       setStatus('CONNECTING');
       setError(null);
       try {
@@ -116,7 +130,7 @@ export function useSessionAudio(sessionId: string | null, enabled: boolean) {
         refreshPresence(room);
         setNeedsAudioUnlock(!room.canPlaybackAudio);
         try {
-          await room.localParticipant.setMicrophoneEnabled(true);
+          await room.localParticipant.setMicrophoneEnabled(!mutedRef.current);
         } catch (micErr) {
           reportClientProblem('audio-microphone', micErr instanceof Error ? `${micErr.name}: ${micErr.message}` : String(micErr), undefined, sessionId);
           setStatus('MIC_BLOCKED');
@@ -139,7 +153,61 @@ export function useSessionAudio(sessionId: string | null, enabled: boolean) {
     };
   }, [sessionId, enabled, refreshPresence, attempt]);
 
+  // Keep the call going when the phone screen locks or the person switches to
+  // another app: hold the screen awake, and when the page is visible again
+  // resume playback, restart a microphone the system stopped, and rejoin if
+  // the connection was lost while hidden.
+  useEffect(() => {
+    if (!sessionId || !enabled) return;
+    let wakeLock: { release: () => Promise<void> } | null = null;
+    let active = true;
+
+    const holdScreen = async () => {
+      try {
+        if (active && document.visibilityState === 'visible' && !wakeLock) {
+          wakeLock = await (navigator as any).wakeLock?.request('screen') ?? null;
+          (wakeLock as any)?.addEventListener?.('release', () => { wakeLock = null; });
+        }
+      } catch { /* not supported or refused */ }
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') return;
+      void holdScreen();
+      const room = roomRef.current;
+      if (!room) return;
+      room.startAudio().then(() => setNeedsAudioUnlock(!room.canPlaybackAudio)).catch(() => undefined);
+      audioElements.current.forEach(el => { if (el.paused) el.play().catch(() => undefined); });
+      room.localParticipant.audioTrackPublications.forEach(pub => {
+        const track = pub.track as any;
+        if (!mutedRef.current && track?.mediaStreamTrack?.readyState === 'ended' && typeof track.restartTrack === 'function') {
+          track.restartTrack().catch((e: Error) => reportClientProblem('audio-microphone', `restart: ${e.message}`, undefined, sessionId));
+        }
+      });
+      const reason = lastDisconnectReason.current;
+      if (room.state === 'disconnected' && (reason === undefined || !ENDED_REASONS.includes(reason))) {
+        setAttempt(a => a + 1);
+      }
+    };
+
+    void holdScreen();
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    try {
+      if ('mediaSession' in navigator && typeof MediaMetadata !== 'undefined') {
+        navigator.mediaSession.metadata = new MediaMetadata({ title: 'Safespace conversation', artist: 'Safespace' });
+      }
+    } catch { /* not supported */ }
+
+    return () => {
+      active = false;
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      wakeLock?.release().catch(() => undefined);
+      try { if ('mediaSession' in navigator) navigator.mediaSession.metadata = null; } catch { /* not supported */ }
+    };
+  }, [sessionId, enabled]);
+
   const setMuted = useCallback(async (next: boolean) => {
+    mutedRef.current = next;
     setMutedState(next);
     await roomRef.current?.localParticipant.setMicrophoneEnabled(!next).catch(() => undefined);
   }, []);

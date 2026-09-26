@@ -1,4 +1,4 @@
-const CACHE_NAME = 'safespace-pwa-v5';
+const CACHE_NAME = 'safespace-pwa-v6';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -102,18 +102,25 @@ self.addEventListener('push', (event) => {
     if (event.data) data.body = event.data.text();
   }
 
+  const isCall = data.kind === 'INCOMING_CALL' || data.kind === 'MATCHED';
   const options = {
     body: data.body,
     icon: data.icon || '/pwa-192.png',
     badge: '/pwa-192.png',
-    vibrate: [100, 50, 100],
+    // A call vibrates like a phone call; other updates stay gentle.
+    vibrate: isCall ? [800, 400, 800, 400, 800, 400, 800] : [100, 50, 100],
+    tag: data.tag || undefined,
+    renotify: Boolean(data.tag),
+    requireInteraction: Boolean(data.requireInteraction),
     data: {
       url: data.actionUrl || '/'
     },
-    actions: [
-      { action: 'open', title: 'Open Safespace' },
-      { action: 'close', title: 'Dismiss' }
-    ]
+    actions: isCall
+      ? [{ action: 'open', title: 'Answer in Safespace' }]
+      : [
+          { action: 'open', title: 'Open Safespace' },
+          { action: 'close', title: 'Dismiss' }
+        ]
   };
 
   event.waitUntil(
@@ -127,12 +134,15 @@ self.addEventListener('notificationclick', (event) => {
   if (event.action === 'close') return;
 
   const targetUrl = event.notification.data?.url || '/';
+  const opensDashboard = targetUrl.includes('open=listener');
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      for (let client of windowClients) {
-        if (client.url.includes(targetUrl) && 'focus' in client) {
-          return client.focus();
-        }
+      // Prefer the Safespace page that is already open: bring it forward and
+      // tell it where to go, so an ongoing session isn't reloaded.
+      const existing = windowClients.find((client) => new URL(client.url).origin === self.location.origin);
+      if (existing && 'focus' in existing) {
+        if (opensDashboard) existing.postMessage({ type: 'SAFESPACE_OPEN_LISTENER' });
+        return existing.focus();
       }
       if (clients.openWindow) {
         return clients.openWindow(targetUrl);
