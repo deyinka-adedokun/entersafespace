@@ -27,6 +27,7 @@ import { PublicInfoModal, PublicInfoTopic } from './components/PublicInfoModal';
 import { PwaBanners } from './components/PwaBanners';
 import { NotificationModal } from './components/NotificationModal';
 import { CallProvider, useCall } from './context/CallContext';
+import { enableCallAlerts } from './lib/webPush';
 
 const AppContent: React.FC = () => {
   const { user, isAuthenticated, refreshSession, openAuthModal } = useAuth();
@@ -111,6 +112,14 @@ const AppContent: React.FC = () => {
       document.removeEventListener('visibilitychange', onVisible);
     };
   }, [isAuthenticated, isListenerRole, onListenerTab]);
+
+  // Keep this phone's call alerts registered for listeners, even if they
+  // never open the dashboard this visit.
+  useEffect(() => {
+    if (isAuthenticated && isListenerRole && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      void enableCallAlerts();
+    }
+  }, [isAuthenticated, isListenerRole, user?.id]);
 
   // A seeker whose page was reloaded or closed mid-call comes straight back
   // to it (the conversation is still running on the server).

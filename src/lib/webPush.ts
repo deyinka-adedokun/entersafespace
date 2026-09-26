@@ -55,3 +55,35 @@ export async function enableCallAlerts(): Promise<boolean> {
     return false;
   }
 }
+
+// Clears incoming-call alerts from the phone once the call has been answered
+// or declined in the app.
+export async function clearCallAlerts() {
+  try {
+    if (!('serviceWorker' in navigator)) return;
+    const registration = await navigator.serviceWorker.getRegistration();
+    const shown = await registration?.getNotifications();
+    shown?.filter(n => n.tag.startsWith('safespace-call-')).forEach(n => n.close());
+  } catch {
+    // Nothing to clear.
+  }
+}
+
+// Stops phone alerts on this device (used when signing out, so a shared or
+// handed-over phone doesn't keep getting someone else's calls).
+export async function disableCallAlerts() {
+  try {
+    if (!pushSupported()) return;
+    const registration = await navigator.serviceWorker.getRegistration();
+    const subscription = await registration?.pushManager.getSubscription();
+    if (!subscription) return;
+    await fetch('/api/v1/push/unsubscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ endpoint: subscription.endpoint })
+    }).catch(() => undefined);
+    await subscription.unsubscribe();
+  } catch {
+    // Best effort.
+  }
+}

@@ -32,6 +32,32 @@ const PRESENCE_MS = 90 * 1000;
 // Same tag for every call alert to one listener, so a newer alert (or "missed
 // call") replaces the older one on their phone instead of stacking.
 const callAlertTag = (listenerUserId: string) => `safespace-call-${listenerUserId}`;
+// While a call rings, the phone alert is repeated so it keeps sounding and
+// vibrating like a real call, until it is answered, declined or rings out.
+const CALL_ALERT_REPEAT_MS = 7000;
+
+function ringListenerPhone(sessionId: string, listenerUserId: string, callerName: string) {
+  const alert = () => sendPushToUser(listenerUserId, {
+    title: 'Incoming call',
+    body: `${callerName} is calling you on Safespace. Tap to answer.`,
+    tag: callAlertTag(listenerUserId),
+    kind: 'INCOMING_CALL',
+    actionUrl: '/?open=listener',
+    requireInteraction: true
+  });
+  void alert();
+  const repeat = () => setTimeout(async () => {
+    try {
+      const { data } = await supabaseAdmin.from('sessions').select('status, started_at').eq('id', sessionId).maybeSingle();
+      if (!data || data.status !== 'CONNECTING' || ringExpired(data)) return;
+      await alert();
+      repeat();
+    } catch (err) {
+      console.error('[Safespace] repeat call alert failed:', err);
+    }
+  }, CALL_ALERT_REPEAT_MS);
+  repeat();
+}
 const PROVIDER_SET_STATUSES = ['AVAILABLE', 'AWAY', 'OFFLINE'];
 const MAX_DURATION_OPTIONS = [15, 30, 60, 90];
 const AVATAR_BUCKET = 'provider-avatars';
@@ -620,14 +646,7 @@ export function registerSessionRoutes(app: Express) {
       supabaseAdmin.from('provider_profiles').update({ current_session_id: session.id, availability_status: 'BUSY' }).eq('id', provider.id)
     ]);
     await writeAudit(user, 'SESSION_RINGING', 'SESSION', session.id, { package: pkg.name, providerProfileId: provider.id });
-    void sendPushToUser(provider.user_id, {
-      title: 'Incoming call',
-      body: `${user.displayName || 'A seeker'} is calling you on Safespace. Tap to answer.`,
-      tag: callAlertTag(provider.user_id),
-      kind: 'INCOMING_CALL',
-      actionUrl: '/?open=listener',
-      requireInteraction: true
-    });
+    ringListenerPhone(session.id, provider.user_id, user.displayName || 'A seeker');
 
     res.json({ success: true, data: sessionPayload(session) });
   }));
