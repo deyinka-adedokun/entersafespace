@@ -162,6 +162,16 @@ const AppContent: React.FC = () => {
           <ActiveSessionView
             sessionId={activeSessionId}
             onSessionEnded={handleSessionEnded}
+            onFindAnotherListener={() => {
+              setActiveSessionId(null);
+              setActiveSession(null);
+              setViewState('REQUESTING');
+            }}
+            onCallCancelled={() => {
+              setActiveSessionId(null);
+              setActiveSession(null);
+              setViewState('IDLE');
+            }}
             onOpenEmergency={() => setIsEmergencyOpen(true)}
             currentUserRole={currentUser?.role}
           />

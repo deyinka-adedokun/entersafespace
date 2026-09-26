@@ -3,6 +3,7 @@ import { Session, SessionExtension, UserRole } from '../types';
 import { CANONICAL_PACKAGES } from '../data/mockData';
 import { SafespaceLogo } from './ui/SafespaceLogo';
 import { useSessionAudio } from '../lib/useSessionAudio';
+import { startRinging } from '../lib/ringtone';
 import { useNotifications } from '../context/NotificationContext';
 import { useToast } from './ui/ToastContext';
 import { 
@@ -27,6 +28,10 @@ import {
 interface ActiveSessionViewProps {
   sessionId: string;
   onSessionEnded: () => void;
+  // Called when the listener declined or didn't answer, to look for someone else.
+  onFindAnotherListener?: () => void;
+  // Called when the seeker calls off the call before it was answered.
+  onCallCancelled?: () => void;
   onOpenEmergency: () => void;
   currentUserRole?: UserRole;
 }
@@ -36,6 +41,8 @@ type AudioConnectionState = 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'FAILE
 export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
   sessionId,
   onSessionEnded,
+  onFindAnotherListener,
+  onCallCancelled,
   onOpenEmergency,
   currentUserRole = 'SUPPORT_SEEKER'
 }) => {
@@ -43,9 +50,14 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
   const [session, setSession] = useState<Session | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
   const [sessionEnded, setSessionEnded] = useState<boolean>(false);
+  // The listener declined or didn't answer: nothing was charged.
+  const [callNotAnswered, setCallNotAnswered] = useState<boolean>(false);
+  const [ringSecondsLeft, setRingSecondsLeft] = useState<number>(0);
+  const isCalling = !callNotAnswered && (!session || session.status === 'CONNECTING');
 
-  // Live audio (LiveKit). The room is left automatically once the session ends.
-  const audio = useSessionAudio(sessionId, !sessionEnded);
+  // Live audio (LiveKit), once the listener has accepted. The room is left
+  // automatically when the session ends.
+  const audio = useSessionAudio(sessionId, !sessionEnded && session?.status === 'ACTIVE');
   const connectionState: AudioConnectionState = sessionEnded ? 'ENDED'
     : audio.status === 'CONNECTED' ? 'CONNECTED'
     : audio.status === 'RECONNECTING' ? 'RECONNECTING'
@@ -105,6 +117,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
   const onSessionEndedRef = useRef(onSessionEnded);
   onSessionEndedRef.current = onSessionEnded;
   const endedRef = useRef(false);
+  const statusRef = useRef<string>('CONNECTING');
   const checkNowRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
@@ -116,7 +129,20 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
         if (json.success && json.data) {
           setSession(json.data.session);
           setRemainingSeconds(json.data.remainingSeconds);
-          if (json.data.session.status !== 'ACTIVE' && !endedRef.current) {
+          setRingSecondsLeft(json.data.ringSecondsLeft ?? 0);
+          statusRef.current = json.data.session.status;
+          if (json.data.session.status === 'CANCELLED' && !endedRef.current) {
+            endedRef.current = true;
+            if (!endedByMeRef.current) {
+              setCallNotAnswered(true);
+              liveAlertRef.current('PROVIDER_SESSION', "Your listener couldn't take this call", "You haven't been charged. You can find another listener now.");
+            } else {
+              setSessionEnded(true);
+              setTimeout(() => onSessionEndedRef.current(), 300);
+            }
+            return;
+          }
+          if (json.data.session.status !== 'ACTIVE' && json.data.session.status !== 'CONNECTING' && !endedRef.current) {
             endedRef.current = true;
             if (!endedByMeRef.current) {
               const s = json.data.session;
@@ -135,10 +161,30 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
     };
     checkNowRef.current = () => { void syncHeartbeat(); };
 
-    syncHeartbeat();
-    const interval = setInterval(syncHeartbeat, 5000);
-    return () => clearInterval(interval);
+    // Every 2s while the listener's phone is ringing, every 4s during the call.
+    let timer: number | undefined;
+    let stopped = false;
+    const loop = async () => {
+      await syncHeartbeat();
+      if (stopped || endedRef.current) return;
+      timer = window.setTimeout(loop, statusRef.current === 'CONNECTING' ? 2000 : 4000);
+    };
+    void loop();
+    return () => { stopped = true; window.clearTimeout(timer); };
   }, [sessionId]);
+
+  // The soft "calling" tone while we wait for the listener to answer.
+  useEffect(() => {
+    if (!isCalling || sessionEnded) return;
+    return startRinging('calling');
+  }, [isCalling, sessionEnded]);
+
+  // Count the ring down between heartbeats.
+  useEffect(() => {
+    if (!isCalling) return;
+    const t = setInterval(() => setRingSecondsLeft(prev => Math.max(0, prev - 1)), 1000);
+    return () => clearInterval(t);
+  }, [isCalling]);
 
   // "Your listener has joined" -- once, the first time both are connected.
   const announcedJoinRef = useRef(false);
@@ -315,6 +361,75 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
     .slice(0, 2) || 'SP';
 
   const extensionPackages = CANONICAL_PACKAGES.filter(p => !p.isFreeTrial);
+
+  const handleCancelCall = async () => {
+    endedByMeRef.current = true;
+    endedRef.current = true;
+    try {
+      await fetch(`/api/v1/sessions/${sessionId}/end`, { method: 'POST' });
+    } catch (err) {
+      // The ring times out on the server regardless.
+    }
+    (onCallCancelled || onSessionEnded)();
+  };
+
+  // Listener declined or didn't answer.
+  if (callNotAnswered) {
+    return (
+      <div className="min-h-screen bg-[#FAF9F6] flex items-center justify-center p-6">
+        <div className="w-full max-w-sm text-center space-y-5">
+          <h1 className="text-2xl font-semibold text-[#17212B]">Your listener couldn't take this call</h1>
+          <p className="text-sm text-[#59636B]">You haven't been charged, and your time hasn't started. We can find someone else for you now.</p>
+          <div className="space-y-2">
+            <button
+              onClick={() => (onFindAnotherListener || onSessionEnded)()}
+              className="w-full py-3 rounded-lg bg-[#123B5D] hover:bg-[#0D2A42] text-white text-sm font-semibold cursor-pointer"
+            >
+              Find another listener
+            </button>
+            <button
+              onClick={() => (onCallCancelled || onSessionEnded)()}
+              className="w-full py-2 text-sm text-[#59636B] hover:text-[#17212B] cursor-pointer"
+            >
+              Not now
+            </button>
+          </div>
+          <button onClick={onOpenEmergency} className="text-xs text-[#8C1D18] underline cursor-pointer">Need urgent help?</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Ringing the listener: the seeker's time hasn't started yet.
+  if (isCalling) {
+    return (
+      <div className="min-h-screen bg-[#FAF9F6] flex items-center justify-center p-6">
+        <div className="w-full max-w-sm text-center space-y-6">
+          <div className="relative mx-auto w-28 h-28">
+            <span className="absolute inset-0 rounded-full bg-[#123B5D]/10 animate-ping" aria-hidden="true" />
+            {session?.providerAvatarUrl ? (
+              <img src={session.providerAvatarUrl} alt={partnerName} className="relative w-28 h-28 rounded-full object-cover border border-[#E3E2DE]" />
+            ) : (
+              <div className="relative w-28 h-28 rounded-full bg-[#F3F1EC] border border-[#E3E2DE] flex items-center justify-center text-3xl font-display text-[#123B5D]">
+                {partnerInitials}
+              </div>
+            )}
+          </div>
+          <div className="space-y-1" role="status">
+            <h1 className="text-2xl font-semibold text-[#17212B]">Calling {partnerName}…</h1>
+            <p className="text-sm text-[#59636B]">Your time starts when they answer.</p>
+            {ringSecondsLeft > 0 && <p className="text-xs text-[#59636B]">Waiting up to {ringSecondsLeft}s</p>}
+          </div>
+          <button
+            onClick={handleCancelCall}
+            className="px-6 py-2.5 rounded-lg border border-[#E3E2DE] bg-white text-sm font-semibold text-[#17212B] hover:bg-[#F3F1EC] cursor-pointer"
+          >
+            Cancel call
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FAF9F6] text-[#17212B] flex flex-col justify-between selection:bg-[#123B5D]/10 selection:text-[#123B5D]">

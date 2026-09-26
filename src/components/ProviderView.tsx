@@ -28,6 +28,7 @@ import {
 import { SafetyReportModal } from './SafetyReportModal';
 import { Avatar } from './ui/Avatar';
 import { useSessionAudio } from '../lib/useSessionAudio';
+import { startRinging } from '../lib/ringtone';
 import { useNotifications } from '../context/NotificationContext';
 import { useToast } from './ui/ToastContext';
 import type { Session } from '../types';
@@ -79,10 +80,14 @@ export const ProviderView: React.FC = () => {
   const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
   const [joinedCall, setJoinedCall] = useState<boolean>(false);
+  const [ringSecondsLeft, setRingSecondsLeft] = useState<number>(0);
+  const [answering, setAnswering] = useState<boolean>(false);
   const [endingCall, setEndingCall] = useState<boolean>(false);
   const [lastMatchedRequest, setLastMatchedRequest] = useState<IncomingRequest | null>(null);
-  const audio = useSessionAudio(activeSession?.id ?? null, joinedCall && !!activeSession);
-  const isCallActive = joinedCall && !!activeSession;
+  const isRinging = activeSession?.status === 'CONNECTING';
+  // Audio only once the call has been accepted and is live.
+  const audio = useSessionAudio(activeSession?.id ?? null, joinedCall && activeSession?.status === 'ACTIVE');
+  const isCallActive = joinedCall && activeSession?.status === 'ACTIVE';
   const isMuted = audio.muted;
   const setIsMuted = (next: boolean) => { void audio.setMuted(next); };
   const isSpeakerOn = audio.speakerOn;
@@ -171,16 +176,24 @@ export const ProviderView: React.FC = () => {
       const next: Session | null = json.data?.session || null;
       const previous = activeSessionRef.current;
       if (next) {
-        if (announcedSessionIdRef.current !== next.id && !joinedCallRef.current) {
+        if (next.status === 'CONNECTING' && announcedSessionIdRef.current !== next.id) {
           announcedSessionIdRef.current = next.id;
-          liveAlertRef.current('PROVIDER_SESSION', 'Your seeker is waiting', `${next.seekerDisplayName || 'A seeker'} has started the conversation. Join now.`);
+          liveAlertRef.current('PROVIDER_SESSION', 'Incoming call', `${next.seekerDisplayName || 'A seeker'} is calling you on Safespace.`);
         }
         setActiveSession(next);
         setRemainingSeconds(json.data.remainingSeconds ?? 0);
+        setRingSecondsLeft(json.data.ringSecondsLeft ?? 0);
       } else if (previous) {
-        // The conversation ended (time ran out, or the seeker ended it).
-        liveAlertRef.current('PROVIDER_SESSION', 'The conversation has ended', 'Thank you for listening.');
-        finishCall(previous);
+        if (previous.status === 'CONNECTING') {
+          // Rang out, or the seeker called off before it was answered.
+          liveAlertRef.current('PROVIDER_SESSION', 'Missed call', 'The call ended before it was answered.');
+          setActiveSession(null);
+          setJoinedCall(false);
+        } else {
+          // The conversation ended (time ran out, or the seeker ended it).
+          liveAlertRef.current('PROVIDER_SESSION', 'The conversation has ended', 'Thank you for listening.');
+          finishCall(previous);
+        }
       }
     } catch (err) {
       console.error('Failed to poll active session', err);
@@ -189,18 +202,61 @@ export const ProviderView: React.FC = () => {
 
   useEffect(() => {
     pollLiveState();
-    const interval = setInterval(pollLiveState, 5000);
+    const interval = setInterval(pollLiveState, 2500);
     return () => clearInterval(interval);
   }, []);
 
-  // One reminder if the seeker has been waiting 30 seconds and the listener hasn't joined.
+  // Ring (sound + vibration, repeating) for as long as the call is waiting.
   useEffect(() => {
-    if (!activeSession || joinedCall) return;
-    const t = setTimeout(() => {
-      liveAlertRef.current('PROVIDER_SESSION', 'Your seeker is still waiting', 'Press Join conversation to start talking.');
-    }, 30000);
-    return () => clearTimeout(t);
-  }, [activeSession?.id, joinedCall]);
+    if (!isRinging) return;
+    const stop = startRinging('incoming');
+    return stop;
+  }, [isRinging, activeSession?.id]);
+
+  // Count the ring down between polls.
+  useEffect(() => {
+    if (!isRinging) return;
+    const timer = setInterval(() => setRingSecondsLeft(prev => Math.max(0, prev - 1)), 1000);
+    return () => clearInterval(timer);
+  }, [isRinging]);
+
+  const handleAcceptCall = async () => {
+    if (!activeSession) return;
+    setAnswering(true);
+    try {
+      const res = await fetch(`/api/v1/sessions/${activeSession.id}/accept`, { method: 'POST' });
+      const json = await res.json();
+      if (json.success) {
+        setActiveSession(json.data.session);
+        setRemainingSeconds(json.data.remainingSeconds ?? 0);
+        // This tap also lets the browser play the seeker's audio.
+        setJoinedCall(true);
+      } else {
+        addToast(json.error?.message || 'This call is no longer waiting.', 'error');
+        pollLiveState();
+      }
+    } catch (err) {
+      addToast('Could not answer the call. Please check your connection.', 'error');
+    } finally {
+      setAnswering(false);
+    }
+  };
+
+  const handleDeclineCall = async () => {
+    if (!activeSession) return;
+    setAnswering(true);
+    try {
+      await fetch(`/api/v1/sessions/${activeSession.id}/decline`, { method: 'POST' });
+      setActiveSession(null);
+      setJoinedCall(false);
+      addToast("Call declined. You're set to Away until you go Available again.", 'info');
+      fetchProviderData();
+    } catch (err) {
+      addToast('Could not decline the call. Please try again.', 'error');
+    } finally {
+      setAnswering(false);
+    }
+  };
 
   // If the audio drops or the seeker leaves, check at once whether the
   // conversation was ended instead of waiting for the next poll.
@@ -374,18 +430,65 @@ export const ProviderView: React.FC = () => {
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 animate-in fade-in duration-300">
       
       {/* Active Provider Call Shell Mode */}
-      {/* The seeker has started: the listener joins with a tap (browsers need one to allow audio). */}
-      {activeSession && !joinedCall && (
+      {/* Incoming call: rings and vibrates until answered, declined or it times out. */}
+      {isRinging && activeSession && (
+        <div className="fixed inset-0 z-[60] bg-[#0D2A42] text-white flex flex-col items-center justify-center p-6 animate-in fade-in duration-200" role="alertdialog" aria-labelledby="incoming-call-title">
+          <div className="w-full max-w-sm text-center space-y-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-[#C5D6E4]">Incoming Safespace call</p>
+            <div className="relative mx-auto w-28 h-28">
+              <span className="absolute inset-0 rounded-full bg-white/10 animate-ping" aria-hidden="true" />
+              <div className="relative w-28 h-28 rounded-full bg-[#123B5D] border-2 border-white/30 flex items-center justify-center text-4xl font-serif">
+                {(activeSession.seekerDisplayName || 'S')[0].toUpperCase()}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <h2 id="incoming-call-title" className="font-serif text-2xl font-bold">{activeSession.seekerDisplayName || 'A seeker'}</h2>
+              <p className="text-sm text-white/80">{activeSession.packageName}</p>
+              {lastMatchedRequest?.supportReason && (
+                <p className="text-xs italic text-[#C5D6E4]">"{lastMatchedRequest.supportReason}"</p>
+              )}
+              <p className="text-xs text-white/60 pt-1">Rings for {ringSecondsLeft}s more</p>
+            </div>
+            <div className="flex items-center justify-center gap-10 pt-2">
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={handleDeclineCall}
+                  disabled={answering}
+                  className="w-16 h-16 rounded-full bg-[#8C1D18] hover:bg-[#731713] flex items-center justify-center shadow-lg disabled:opacity-50 cursor-pointer"
+                  aria-label="Decline call"
+                >
+                  <PhoneOff className="w-7 h-7" />
+                </button>
+                <span className="text-xs text-white/80">Decline</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={handleAcceptCall}
+                  disabled={answering}
+                  className="w-16 h-16 rounded-full bg-white text-[#123B5D] hover:bg-[#F3F1EC] flex items-center justify-center shadow-lg disabled:opacity-50 cursor-pointer"
+                  aria-label="Accept call"
+                >
+                  <PhoneCall className="w-7 h-7" />
+                </button>
+                <span className="text-xs text-white/80">Accept</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rejoining a call that is already live (e.g. after a page reload). */}
+      {activeSession?.status === 'ACTIVE' && !joinedCall && (
         <div className="bg-[#0D2A42] text-white rounded-2xl p-5 border border-[#123B5D] shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <h3 className="font-serif text-base font-bold">{activeSession.seekerDisplayName || 'Your seeker'} has started the conversation</h3>
-            <p className="text-xs text-white/75">{activeSession.packageName} · Join now so they aren't left waiting.</p>
+            <h3 className="font-serif text-base font-bold">Your conversation with {activeSession.seekerDisplayName || 'your seeker'} is in progress</h3>
+            <p className="text-xs text-white/75">{activeSession.packageName} · Rejoin so they aren't left waiting.</p>
           </div>
           <button
             onClick={() => setJoinedCall(true)}
             className="px-5 py-2.5 bg-white hover:bg-[#F3F1EC] text-[#123B5D] font-bold text-xs rounded-lg shadow-md cursor-pointer"
           >
-            Join conversation
+            Rejoin conversation
           </button>
         </div>
       )}
@@ -526,7 +629,7 @@ export const ProviderView: React.FC = () => {
 
               {/* Service-led matching: the seeker starts the call, then you join. */}
               <p className="text-xs text-white/80 sm:max-w-[12rem]">
-                Matched with you. You'll be able to join as soon as they press Start.
+                Matched with you. Your screen will ring when they press Start.
               </p>
             </div>
           ))}
