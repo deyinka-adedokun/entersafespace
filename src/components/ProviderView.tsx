@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { SafetyReportModal } from './SafetyReportModal';
 import { Avatar } from './ui/Avatar';
-import { useSessionAudio } from '../lib/useSessionAudio';
+import { useSessionAudio, isInAppBrowser } from '../lib/useSessionAudio';
 import { startRinging } from '../lib/ringtone';
 import { useNotifications } from '../context/NotificationContext';
 import { useToast } from './ui/ToastContext';
@@ -126,7 +126,7 @@ export const ProviderView: React.FC = () => {
   // Alerts for live-conversation moments. The pollers are created once, so
   // they reach the latest functions through refs.
   const { alertLiveSession, requestPushPermission, pushPermissionState } = useNotifications();
-  const { addToast } = useToast();
+  const { showToast: addToast } = useToast();
   const liveAlertRef = React.useRef((type: 'PROVIDER_REQUEST' | 'PROVIDER_SESSION', title: string, body: string) => {});
   liveAlertRef.current = (type, title, body) => {
     alertLiveSession(type, title, body);
@@ -448,6 +448,9 @@ export const ProviderView: React.FC = () => {
                 <p className="text-xs italic text-[#C5D6E4]">"{lastMatchedRequest.supportReason}"</p>
               )}
               <p className="text-xs text-white/60 pt-1">Rings for {ringSecondsLeft}s more</p>
+              {isInAppBrowser() && (
+                <p className="text-xs text-[#F6DBA9] pt-1">Calls work best in Chrome. If you opened this inside another app, open entersafespace.com in Chrome.</p>
+              )}
             </div>
             <div className="flex items-center justify-center gap-10 pt-2">
               <div className="flex flex-col items-center gap-2">

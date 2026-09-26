@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Session, SessionExtension, UserRole } from '../types';
 import { CANONICAL_PACKAGES } from '../data/mockData';
 import { SafespaceLogo } from './ui/SafespaceLogo';
-import { useSessionAudio } from '../lib/useSessionAudio';
+import { useSessionAudio, isInAppBrowser } from '../lib/useSessionAudio';
 import { startRinging } from '../lib/ringtone';
 import { useNotifications } from '../context/NotificationContext';
 import { useToast } from './ui/ToastContext';
@@ -104,7 +104,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
   // Alerts for the moments that matter in a live conversation.
   const { alertLiveSession } = useNotifications();
-  const { addToast } = useToast();
+  const { showToast: addToast } = useToast();
   const liveAlert = (type: 'MATCH_FOUND' | 'SESSION_ENDING' | 'PROVIDER_SESSION', title: string, body: string) => {
     alertLiveSession(type, title, body);
     addToast(title, 'info');
@@ -418,6 +418,9 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
           <div className="space-y-1" role="status">
             <h1 className="text-2xl font-semibold text-[#17212B]">Calling {partnerName}…</h1>
             <p className="text-sm text-[#59636B]">Your time starts when they answer.</p>
+            {isInAppBrowser() && (
+              <p className="text-xs text-[#9C5B0B]">Calls work best in Chrome. If you opened this link inside another app, open entersafespace.com in Chrome.</p>
+            )}
             {ringSecondsLeft > 0 && <p className="text-xs text-[#59636B]">Waiting up to {ringSecondsLeft}s</p>}
           </div>
           <button
